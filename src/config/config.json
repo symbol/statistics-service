@@ -1,7 +1,6 @@
 {
     "PORT": 4001,
     "MONGODB_ENDPOINT": "",
-    "MONGODB_PASSWORD": "",
     "NODE_MONITOR_SCHEDULE_INTERVAL": 5000,
     "NODES": [
         "http://api-01.ap-northeast-1.0.10.0.x.symboldev.network:3000",

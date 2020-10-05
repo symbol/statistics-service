@@ -5,12 +5,11 @@ export const network = {
 }
 
 export const db = {
-    MONGODB_ENDPOINT: process.env.MONGODB_ENDPOINT || config.MONGODB_ENDPOINT,
-    MONGODB_PASSWORD: process.env.MONGODB_PASSWORD || config.MONGODB_PASSWORD
+    MONGODB_ENDPOINT: process.env.MONGODB_ENDPOINT || config.MONGODB_ENDPOINT
 }
 
 export const symbol = {
-    NODES: process.env.MONGODB_PASSWORD || config.MONGODB_PASSWORD,
+    NODES: process.env.NODES || config.NODES,
 }
 
 export const monitor = {

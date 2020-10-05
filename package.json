@@ -9,6 +9,9 @@
     },
     "main": "dist/app.js",
     "typings": "dist/index.d.ts",
+    "_moduleAliases": {
+        "@src": "dist"
+    },
     "devDependencies": {
         "@types/mongoose": "^5.7.14",
         "nodemon": "^2.0.3",
@@ -24,6 +27,7 @@
         "cors": "^2.8.5",
         "dotenv": "^8.2.0",
         "express": "^4.17.1",
+        "module-alias": "^2.2.2",
         "mongoose": "^5.9.16",
         "uuid": "^8.0.0"
     }
