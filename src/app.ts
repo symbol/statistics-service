@@ -2,7 +2,7 @@ import * as express from 'express';
 import * as dotenv from 'dotenv';
 dotenv.config();
 import * as cors from 'cors';
-import { network } from './config';
+import * as config from './config';
 
 
 /**
@@ -23,10 +23,6 @@ app.use(cors());
 /**
  * -------------- Server listen --------------
  */ 
-app.listen(network.PORT, (err: any) => {
-    if (err) {
-        console.error('[App]: Error starting server', err);
-        return;
-    }
-    console.log(`[App]: Server is running on port: ${network.PORT}`);
+app.listen(config.network.PORT, () => {
+    console.log(`[App]: Server is running on port: ${config.network.PORT}`);
 });

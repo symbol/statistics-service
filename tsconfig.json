@@ -21,9 +21,6 @@
             "config/*": [ "src/config/*" ],
         }
     },
-    "files": [
-        "src/types/vendor.d.ts"
-    ],
     "include": [
         "./src/**/*.ts"
     ],
