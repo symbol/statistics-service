@@ -52,6 +52,9 @@ export const verifyConfig = (cfg: Config): boolean => {
     try { new URL(cfg.db.MONGODB_ENDPOINT); }
     catch(e) { error = 'Invalid "MONGODB_ENDPOINT"'; }
 
+    if(cfg.symbol.NODES.length === 0)
+        error = 'Invalid "NODES"';
+
     try { cfg.symbol.NODES.forEach(nodeUrl => new URL(nodeUrl)); }
     catch(e) { error = 'Invalid "NODES"'; }
 

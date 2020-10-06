@@ -5,19 +5,21 @@ dotenv.config();
 import * as cors from 'cors';
 import * as config from './config';
 import { DataBase } from './DataBase';
-import { Routes } from './Routes'
+import { Routes } from './Routes';
+import { NodeMonitor } from './infrastructure/NodeMonitor';
 
 
 class App {
     static start = async () => {
         /**
-         * -------------- Initialize Express App --------------
+         * -------------- Initialize App --------------
          */ 
-
         config.verifyConfig(config);
         const app = express();
         await DataBase.connect();
         await Routes.register(app);
+        const nodeMonitor = new NodeMonitor(config.monitor.NODE_MONITOR_SCHEDULE_INTERVAL);
+        nodeMonitor.start();
 
 
         /**

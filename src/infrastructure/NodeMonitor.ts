@@ -1,17 +1,19 @@
-import * as config from '@src/config';
 import NodeModel, { INode } from '@src/DataBase/models/Node';
+import Axios from 'axios';
 
-class NodeMonitor {
+export class NodeMonitor {
     private visitedNodes: INode[];
     private nodeList: INode[];
     private currentNodeIndex: number;
     private isRunning: boolean;
+    private interval: number;
 
-    constructor() {
+    constructor(_interval: number) {
         this.visitedNodes = [];
         this.nodeList = [];
         this.currentNodeIndex = 0;
         this.isRunning = false;
+        this.interval = _interval || 300000;
     }
 
     public start = async () => {
@@ -24,7 +26,7 @@ class NodeMonitor {
             await this.updateCollection();
             setTimeout(
                 () => this.start(), 
-                config.monitor.NODE_MONITOR_SCHEDULE_INTERVAL
+                this.interval
             );
         }
     }
@@ -35,16 +37,22 @@ class NodeMonitor {
     }
 
     private main = async (): Promise<any> => {
-        let isFinished = false;
+        for(;this.currentNodeIndex < this.nodeList.length; this.currentNodeIndex++) {
+            await this.fetchNodeList('http://' + this.nodeList[this.currentNodeIndex].host + '3000')
+            if(!this.isRunning)
+                return Promise.resolve();
+        }
 
-        if(!this.isRunning)
-            return;
-
-        if(isFinished)
-            return Promise.resolve();
+        return Promise.resolve();
     }
 
     private fetchNodeList = async (nodeUrl: string): Promise<Array<INode>> => {
+        try {
+            const nodeList = await Axios.get(nodeUrl + '/node/peers');
+            if(Array.isArray(nodeList))
+                return nodeList;
+        }
+        catch(e){}
         return [];
     }
 
