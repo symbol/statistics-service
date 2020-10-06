@@ -1,5 +1,6 @@
 import * as mongoose from 'mongoose';
 import * as config from '@src/config';
+export * as models from './models';
 
 export class DataBase {
     static connect = async () => {
