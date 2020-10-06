@@ -14,6 +14,7 @@ class App {
          * -------------- Initialize Express App --------------
          */ 
 
+        config.verifyConfig(config);
         const app = express();
         await DataBase.connect();
         await Routes.register(app);
