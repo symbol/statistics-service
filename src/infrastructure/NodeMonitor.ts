@@ -37,11 +37,11 @@ export class NodeMonitor {
     }
 
     private main = async (): Promise<any> => {
-        for(;this.currentNodeIndex < this.nodeList.length; this.currentNodeIndex++) {
-            await this.fetchNodeList('http://' + this.nodeList[this.currentNodeIndex].host + '3000')
-            if(!this.isRunning)
-                return Promise.resolve();
-        }
+        // for(;this.currentNodeIndex < this.nodeList.length; this.currentNodeIndex++) {
+        //     await this.fetchNodeList('http://' + this.nodeList[this.currentNodeIndex].host + '3000')
+        //     if(!this.isRunning)
+        //         return Promise.resolve();
+        // }
 
         return Promise.resolve();
     }
