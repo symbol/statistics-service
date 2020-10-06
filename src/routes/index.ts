@@ -1,9 +1,9 @@
-interface Services {
-    
-}
+import { Express, Request, Response } from 'express';
 
-class Routes {
-    constructor(services: Services) {
-
+export class Routes {
+    static register = async (app: Express) => {
+        app.get('/nodes', (req: Request, res: Response) => {
+            res.send('/nodes');
+        });
     }
 }

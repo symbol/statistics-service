@@ -5,6 +5,7 @@ dotenv.config();
 import * as cors from 'cors';
 import * as config from './config';
 import { DataBase } from './DataBase';
+import { Routes } from './Routes'
 
 
 class App {
@@ -15,6 +16,7 @@ class App {
 
         const app = express();
         await DataBase.connect();
+        await Routes.register(app);
 
 
         /**
