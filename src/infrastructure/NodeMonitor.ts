@@ -3,108 +3,98 @@ import Axios from 'axios';
 import { symbol, monitor } from '../config';
 import { isAPIRole } from '../utils';
 
-
 export class NodeMonitor {
-    private visitedNodes: INode[];
-    private nodeList: INode[];
-    private currentNodeIndex: number;
-    private isRunning: boolean;
-    private interval: number;
+	private visitedNodes: INode[];
+	private nodeList: INode[];
+	private currentNodeIndex: number;
+	private isRunning: boolean;
+	private interval: number;
 
-    constructor(_interval: number) {
-        this.visitedNodes = [];
-        this.nodeList = [];
-        this.currentNodeIndex = 0;
-        this.isRunning = false;
-        this.interval = _interval || 300000;
-    }
+	constructor(_interval: number) {
+		this.visitedNodes = [];
+		this.nodeList = [];
+		this.currentNodeIndex = 0;
+		this.isRunning = false;
+		this.interval = _interval || 300000;
+	}
 
-    public start = async () => {
-        this.isRunning = true;
-        this.clear();
+	public start = async () => {
+		this.isRunning = true;
+		this.clear();
 
-        await this.main();
+		await this.main();
 
-        if(this.isRunning) {
-            await this.updateCollection();
-            setTimeout(
-                () => this.start(),
-                this.interval
-            );
-        }
-    }
+		if (this.isRunning) {
+			await this.updateCollection();
+			setTimeout(() => this.start(), this.interval);
+		}
+	};
 
-    public stop = () => {
-        this.isRunning = false;
-        this.clear();
-    }
+	public stop = () => {
+		this.isRunning = false;
+		this.clear();
+	};
 
-    private main = async (): Promise<any> => {
-        // Init fetch node list from config nodes
-        for (const node of symbol.NODES ){
-            const peers = await this.fetchNodeList(node)
-            this.addNodesToList(peers)
-        }
+	private main = async (): Promise<any> => {
+		// Init fetch node list from config nodes
+		for (const node of symbol.NODES) {
+			const peers = await this.fetchNodeList(node);
 
-        // Nested fetch node list from current nodeList[]
-        for (const node of this.nodeList){
-            if (!isAPIRole(node.roles)) return;
+			this.addNodesToList(peers);
+		}
 
-            const peers = await this.fetchNodeList(`http://${node.host}:${monitor.API_NODE_PORT}` )
-            this.addNodesToList(peers)
-        }
+		// Nested fetch node list from current nodeList[]
+		for (const node of this.nodeList) {
+			if (!isAPIRole(node.roles)) return;
 
-        return Promise.resolve();
-    }
+			const peers = await this.fetchNodeList(`http://${node.host}:${monitor.API_NODE_PORT}`);
 
-    private fetchNodeList = async (nodeUrl: string): Promise<Array<INode>> => {
-        try {
-            const nodeList = await Axios.get(nodeUrl + '/node/peers', {
-                timeout: monitor.REQUEST_TIMEOUT
-            });
-            if(Array.isArray(nodeList.data))
-                return nodeList.data;
-        }
-        catch(e){}
-        return [];
-    }
+			this.addNodesToList(peers);
+		}
 
-    private clear = () => {
-        this.visitedNodes = [];
-        this.nodeList = [];
-        this.currentNodeIndex = 0;
-    }
+		return Promise.resolve();
+	};
 
-    private updateCollection = async (): Promise<any> => {
-        await NodeModel.remove({}).exec();
-        await NodeModel.insertMany(this.nodeList);
-    }
+	private fetchNodeList = async (nodeUrl: string): Promise<Array<INode>> => {
+		try {
+			const nodeList = await Axios.get(nodeUrl + '/node/peers', {
+				timeout: monitor.REQUEST_TIMEOUT,
+			});
 
-    private checkAPINode = (nodeUrl: string): Promise<boolean> => {
-        return Promise.resolve(true);
-    }
+			if (Array.isArray(nodeList.data)) return nodeList.data;
+		} catch (e) {}
+		return [];
+	};
 
-    private addNodesToList = (nodes: INode[]) => {
-        nodes.map((node: INode)=> {
-            if(!!this.nodeList.find(addedNode =>
-                addedNode.publicKey === node.publicKey
-            ))
-                return;
-            this.nodeList.push(node);
-        })
-    }
+	private clear = () => {
+		this.visitedNodes = [];
+		this.nodeList = [];
+		this.currentNodeIndex = 0;
+	};
 
-    private removeNodeFromList = (node: INode) => {
+	private updateCollection = async (): Promise<any> => {
+		await NodeModel.remove({}).exec();
+		await NodeModel.insertMany(this.nodeList);
+	};
 
-    }
+	private checkAPINode = (nodeUrl: string): Promise<boolean> => {
+		return Promise.resolve(true);
+	};
 
-    private addNodeToVisited = (node: INode) => {
-        this.visitedNodes.push(node);
-    }
+	private addNodesToList = (nodes: INode[]) => {
+		nodes.map((node: INode) => {
+			if (!!this.nodeList.find((addedNode) => addedNode.publicKey === node.publicKey)) return;
+			this.nodeList.push(node);
+		});
+	};
 
-    private isNodeVisited = (node: INode): boolean => {
-        return !!this.visitedNodes.find(visitedNode =>
-            visitedNode.publicKey === node.publicKey
-        );
-    }
+	private removeNodeFromList = (node: INode) => {};
+
+	private addNodeToVisited = (node: INode) => {
+		this.visitedNodes.push(node);
+	};
+
+	private isNodeVisited = (node: INode): boolean => {
+		return !!this.visitedNodes.find((visitedNode) => visitedNode.publicKey === node.publicKey);
+	};
 }

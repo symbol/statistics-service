@@ -5,7 +5,12 @@
     "scripts": {
         "dev": "nodemon",
         "build": "rimraf ./dist/ && tsc",
-        "start": "node dist/app.js"
+        "start": "node dist/app.js",
+        "version": "echo $npm_package_version",
+        "prettier": "prettier --write ./src",
+        "lint": "eslint --cache src/ --ext .ts",
+        "lint:fix": "eslint src/ --ext .ts --fix",
+        "style:fix": "npm run prettier && npm run lint:fix"
     },
     "main": "dist/app.js",
     "typings": "dist/index.d.ts",
@@ -14,7 +19,13 @@
     },
     "devDependencies": {
         "@types/mongoose": "^5.7.14",
+        "@typescript-eslint/eslint-plugin": "^4.4.0",
+        "@typescript-eslint/parser": "^4.4.0",
+        "eslint": "^7.10.0",
+        "eslint-config-prettier": "^6.12.0",
+        "eslint-plugin-prettier": "^3.1.4",
         "nodemon": "^2.0.3",
+        "prettier": "^2.1.2",
         "rimraf": "^3.0.2",
         "ts-node": "^8.10.1",
         "tslint": "^6.1.2",
