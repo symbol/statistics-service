@@ -11,5 +11,6 @@
         "http://api-01.us-west-1.0.10.0.x.symboldev.network:3000"
     ],
     "API_NODE_PORT": 3000,
-    "PEER_NODE_PORT": 7900
+    "PEER_NODE_PORT": 7900,
+    "REQUEST_TIMEOUT": 5000
 }

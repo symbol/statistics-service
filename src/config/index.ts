@@ -17,6 +17,7 @@ interface Monitor {
     NODE_MONITOR_SCHEDULE_INTERVAL: number;
     API_NODE_PORT: number;
     PEER_NODE_PORT: number;
+    REQUEST_TIMEOUT: number;
 }
 
 export interface Config {
@@ -41,14 +42,15 @@ export const symbol: Symbol = {
 export const monitor: Monitor = {
     NODE_MONITOR_SCHEDULE_INTERVAL: Number(process.env.NODE_MONITOR_SCHEDULE_INTERVAL) || config.NODE_MONITOR_SCHEDULE_INTERVAL,
     API_NODE_PORT: Number(process.env.API_NODE_PORT) || config.API_NODE_PORT,
-    PEER_NODE_PORT: Number(process.env.PEER_NODE_PORT) || config.PEER_NODE_PORT
+    PEER_NODE_PORT: Number(process.env.PEER_NODE_PORT) || config.PEER_NODE_PORT,
+    REQUEST_TIMEOUT: Number(process.env.REQUEST_TIMEOUT) || config.REQUEST_TIMEOUT
 }
 
 export const verifyConfig = (cfg: Config): boolean => {
     let error: string | undefined = undefined;
     if(isNaN(cfg.network.PORT) || cfg.network.PORT <= 0 || cfg.network.PORT >= 10000)
         error = 'Invalid "PORT"';
-    
+
     try { new URL(cfg.db.MONGODB_ENDPOINT); }
     catch(e) { error = 'Invalid "MONGODB_ENDPOINT"'; }
 
@@ -60,13 +62,16 @@ export const verifyConfig = (cfg: Config): boolean => {
 
     if(isNaN(cfg.monitor.NODE_MONITOR_SCHEDULE_INTERVAL) || cfg.monitor.NODE_MONITOR_SCHEDULE_INTERVAL < 0)
         error = 'Invalid "NODE_MONITOR_SCHEDULE_INTERVAL"';
-    
+
     if(isNaN(cfg.monitor.API_NODE_PORT) || cfg.monitor.API_NODE_PORT <= 0 || cfg.monitor.API_NODE_PORT >= 10000)
         error = 'Invalid "API_NODE_PORT"';
 
     if(isNaN(cfg.monitor.PEER_NODE_PORT) || cfg.monitor.PEER_NODE_PORT <= 0 || cfg.monitor.PEER_NODE_PORT >= 10000)
         error = 'Invalid "PEER_NODE_PORT"';
-    
+
+    if(isNaN(cfg.monitor.REQUEST_TIMEOUT) || cfg.monitor.REQUEST_TIMEOUT <= 0)
+        error = 'Invalid "REQUEST_TIMEOUT"';
+
     if(error)
         throw('Invalid config. ' + error);
     return true;
