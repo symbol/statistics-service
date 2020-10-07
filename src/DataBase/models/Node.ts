@@ -19,44 +19,44 @@ export interface NodeDocument extends INode, Document {
 }
 
 const NodeSchema: Schema = new Schema({
-    friendlyName: { 
+    friendlyName: {
+        type: String,
+        required: false
+    },
+    host: {
         type: String,
         required: true
     },
-    host: { 
+    networkGenerationHashSeed: {
         type: String,
         required: true
     },
-    networkGenerationHashSeed: { 
-        type: String,
-        required: true
-    },
-    networkIdentifier: { 
+    networkIdentifier: {
         type: Number,
         required: true
     },
-    port: { 
+    port: {
         type: Number,
         required: true
     },
-    publicKey: { 
+    publicKey: {
         type: String,
         required: true,
         unique: true
     },
-    roles: { 
+    roles: {
         type: Number,
         required: true
     },
-    version: { 
+    version: {
         type: Number,
         required: true
     },
-    coordinates: { 
+    coordinates: {
         type: [Schema.Types.Mixed],
         required: false
     },
-    location: { 
+    location: {
         type: String,
         required: false
     }
