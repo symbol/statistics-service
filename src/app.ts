@@ -5,7 +5,7 @@ dotenv.config();
 import * as cors from 'cors';
 import * as config from './config';
 import { DataBase } from './DataBase';
-import { Routes } from './Routes';
+import { Routes } from './routes';
 import { NodeMonitor } from './infrastructure/NodeMonitor';
 
 class App {
