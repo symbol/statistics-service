@@ -46,11 +46,11 @@ export class NodeMonitor {
 
 		// Nested fetch node list from current nodeList[]
 		for (const node of this.nodeList) {
-			if (!isAPIRole(node.roles)) return;
+			if (isAPIRole(node.roles)) {
+                const peers = await this.fetchNodeList(`http://${node.host}:${monitor.API_NODE_PORT}`);
 
-			const peers = await this.fetchNodeList(`http://${node.host}:${monitor.API_NODE_PORT}`);
-
-			this.addNodesToList(peers);
+                this.addNodesToList(peers);
+            }
 		}
 
 		return Promise.resolve();
@@ -82,7 +82,7 @@ export class NodeMonitor {
 	};
 
 	private addNodesToList = (nodes: INode[]) => {
-		nodes.map((node: INode) => {
+		nodes.forEach((node: INode) => {
 			if (!!this.nodeList.find((addedNode) => addedNode.publicKey === node.publicKey)) return;
 			this.nodeList.push(node);
 		});
