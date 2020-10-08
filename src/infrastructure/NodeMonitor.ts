@@ -1,4 +1,5 @@
-import NodeModel, { INode } from '@src/DataBase/models/Node';
+import { DataBase } from '@src/DataBase';
+import { INode } from '@src/DataBase/models/Node';
 import Axios from 'axios';
 import { symbol, monitor } from '../config';
 import { isAPIRole } from '../utils';
@@ -73,8 +74,7 @@ export class NodeMonitor {
 	};
 
 	private updateCollection = async (): Promise<any> => {
-		await NodeModel.remove({}).exec();
-		await NodeModel.insertMany(this.nodeList);
+		await DataBase.updateNodeList(this.nodeList);
 	};
 
 	private checkAPINode = (nodeUrl: string): Promise<boolean> => {
