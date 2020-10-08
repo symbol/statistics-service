@@ -20,7 +20,7 @@ export interface NodeDocument extends INode, Document {}
 const NodeSchema: Schema = new Schema({
 	friendlyName: {
 		type: String,
-		required: true,
+		required: false,
 	},
 	host: {
 		type: String,

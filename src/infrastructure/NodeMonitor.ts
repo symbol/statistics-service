@@ -1,5 +1,7 @@
 import NodeModel, { INode } from '@src/DataBase/models/Node';
 import Axios from 'axios';
+import { symbol, monitor } from '../config';
+import { isAPIRole } from '../utils';
 
 export class NodeMonitor {
 	private visitedNodes: INode[];
@@ -34,20 +36,32 @@ export class NodeMonitor {
 	};
 
 	private main = async (): Promise<any> => {
-		// for(;this.currentNodeIndex < this.nodeList.length; this.currentNodeIndex++) {
-		//     await this.fetchNodeList('http://' + this.nodeList[this.currentNodeIndex].host + '3000')
-		//     if(!this.isRunning)
-		//         return Promise.resolve();
-		// }
+		// Init fetch node list from config nodes
+		for (const node of symbol.NODES) {
+			const peers = await this.fetchNodeList(node);
+
+			this.addNodesToList(peers);
+		}
+
+		// Nested fetch node list from current nodeList[]
+		for (const node of this.nodeList) {
+			if (!isAPIRole(node.roles)) return;
+
+			const peers = await this.fetchNodeList(`http://${node.host}:${monitor.API_NODE_PORT}`);
+
+			this.addNodesToList(peers);
+		}
 
 		return Promise.resolve();
 	};
 
 	private fetchNodeList = async (nodeUrl: string): Promise<Array<INode>> => {
 		try {
-			const nodeList = await Axios.get(nodeUrl + '/node/peers');
+			const nodeList = await Axios.get(nodeUrl + '/node/peers', {
+				timeout: monitor.REQUEST_TIMEOUT,
+			});
 
-			if (Array.isArray(nodeList)) return nodeList;
+			if (Array.isArray(nodeList.data)) return nodeList.data;
 		} catch (e) {}
 		return [];
 	};
@@ -67,10 +81,11 @@ export class NodeMonitor {
 		return Promise.resolve(true);
 	};
 
-	private addNodeToList = (node: INode) => {
-		//TODO: replace with MAP
-		if (!!this.nodeList.find((addedNode) => addedNode.publicKey === node.publicKey)) return;
-		this.nodeList.push(node);
+	private addNodesToList = (nodes: INode[]) => {
+		nodes.map((node: INode) => {
+			if (!!this.nodeList.find((addedNode) => addedNode.publicKey === node.publicKey)) return;
+			this.nodeList.push(node);
+		});
 	};
 
 	private removeNodeFromList = (node: INode) => {};
