@@ -30,7 +30,16 @@ export class NodeLocation {
 
 			return {
 				coordinates,
-				location,
+                location,
+                ip: data.query,
+                organization: data.org,
+                as: data.as,
+                continent: data.continent,
+                country: data.country,
+                region: data.region,
+                city: data.city,
+                district: data.district,
+                zip: data.zip,
 			};
 		} catch (e) {
 			console.error('Failed to get location', e.message);

@@ -13,6 +13,15 @@ export interface INode {
 	version: number;
 	coordinates?: Coordinates;
 	location?: string;
+	ip?: string;
+	organization?: string;
+	as?: string;
+	continent?: string;
+	country?: string;
+	region?: string;
+	city?: string;
+	district?: string;
+	zip?: string;
 }
 
 export interface NodeDocument extends INode, Document {}
@@ -65,6 +74,42 @@ const NodeSchema: Schema = new Schema({
 		required: false,
 	},
 	location: {
+		type: String,
+		required: false,
+	},
+	ip: {
+		type: String,
+		required: false,
+	},
+	organization: {
+		type: String,
+		required: false,
+	},
+	as: {
+		type: String,
+		required: false,
+	},
+	continent: {
+		type: String,
+		required: false,
+	},
+	country: {
+		type: String,
+		required: false,
+	},
+	region: {
+		type: String,
+		required: false,
+	},
+	city: {
+		type: String,
+		required: false,
+	},
+	district: {
+		type: String,
+		required: false,
+	},
+	zip: {
 		type: String,
 		required: false,
 	},
