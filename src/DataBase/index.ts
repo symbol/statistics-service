@@ -1,11 +1,10 @@
 import * as mongoose from 'mongoose';
-import * as config from '@src/config';
 import * as models from './models';
 
 export class DataBase {
-	static connect = async () => {
+	static connect = async (url: string) => {
 		try {
-			await mongoose.connect(config.db.MONGODB_ENDPOINT, { useNewUrlParser: true, useUnifiedTopology: true });
+			await mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
 		} catch (err) {
 			console.error('[DataBase]: Failed to connect MongoDB');
 			throw err;
