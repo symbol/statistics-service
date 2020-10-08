@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 import { Schema, Document } from 'mongoose';
-import { Coordinates } from '@src/infrastructure/NodeLocation';
+import { Coordinates } from '@src/infrastructure/NodeInfo';
 
 export interface INode {
 	friendlyName: string;

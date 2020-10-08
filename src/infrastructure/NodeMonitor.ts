@@ -1,5 +1,5 @@
 import { DataBase } from '@src/DataBase';
-import { NodeLocation } from '@src/infrastructure/NodeLocation';
+import { NodeInfo } from '@src/infrastructure/NodeInfo';
 import { INode } from '@src/DataBase/models/Node';
 import Axios from 'axios';
 import { symbol, monitor } from '../config';
@@ -25,7 +25,7 @@ export class NodeMonitor {
 		this.clear();
 
         await this.main();
-        this.nodeList = await NodeLocation.getLocationForListOfNodes(this.nodeList);
+        this.nodeList = await NodeInfo.getInfoForListOfNodes(this.nodeList);
 
 		if (this.isRunning) {
 			await this.updateCollection();

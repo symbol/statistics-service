@@ -12,8 +12,8 @@ export interface Location {
 	location: string;
 }
 
-export class NodeLocation {
-	static getLocationByIp = async (ip: string): Promise<Location | object> => {
+export class NodeInfo {
+	static getHostInfo = async (ip: string): Promise<Location | object> => {
 		let coordinates: Coordinates;
 		let location = '';
 
@@ -47,14 +47,14 @@ export class NodeLocation {
 		}
     };
     
-    static getLocationForListOfNodes = async (nodes: INode[]): Promise<INode[]> => {
+    static getInfoForListOfNodes = async (nodes: INode[]): Promise<INode[]> => {
         const nodesWithLocation: INode[] = [];
         for(let node of nodes) {
             const nodeWithLocation: INode = {
                 ...node,
-                ...await NodeLocation.getLocationByIp(node.host)
+                ...await NodeInfo.getHostInfo(node.host)
             };
-            console.log('[NodeLocation] location for "', nodeWithLocation.host , '" is', nodeWithLocation.location);
+            console.log('[NodeInfo] location for "', nodeWithLocation.host , '" is', nodeWithLocation.location);
             nodesWithLocation.push(nodeWithLocation);
             await sleep(5000);
         }
