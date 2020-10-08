@@ -1,8 +1,9 @@
 import { DataBase } from '@src/DataBase';
+import { NodeLocation } from '@src/infrastructure/NodeLocation';
 import { INode } from '@src/DataBase/models/Node';
 import Axios from 'axios';
 import { symbol, monitor } from '../config';
-import { isAPIRole } from '../utils';
+import { isAPIRole, getNodeURL } from '../utils';
 
 export class NodeMonitor {
 	private visitedNodes: INode[];
@@ -23,7 +24,8 @@ export class NodeMonitor {
 		this.isRunning = true;
 		this.clear();
 
-		await this.main();
+        await this.main();
+        this.nodeList = await NodeLocation.getLocationForListOfNodes(this.nodeList);
 
 		if (this.isRunning) {
 			await this.updateCollection();
@@ -43,12 +45,16 @@ export class NodeMonitor {
 
 			this.addNodesToList(peers);
 		}
+        
 
 		// Nested fetch node list from current nodeList[]
 		for (const node of this.nodeList) {
 			if (isAPIRole(node.roles)) {
-                const peers = await this.fetchNodeList(`http://${node.host}:${monitor.API_NODE_PORT}`);
+                console.log('[NodeMonitor] Fetch node:', this.nodeList.length, node.host);
+                const peers = await this.fetchNodeList(getNodeURL(node, monitor.API_NODE_PORT));
 
+                if(this.nodeList.length >= 20)
+                    break;
                 this.addNodesToList(peers);
             }
 		}

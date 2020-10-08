@@ -52,7 +52,16 @@ const NodeSchema: Schema = new Schema({
 		required: true,
 	},
 	coordinates: {
-		type: [Schema.Types.Mixed],
+		type: {
+			latitude: {
+				type: Number,
+				required: true,
+			},
+			longitude: {
+				type: Number,
+				required: true,
+			},
+		},
 		required: false,
 	},
 	location: {
