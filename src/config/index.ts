@@ -74,8 +74,7 @@ export const verifyConfig = (cfg: Config): boolean => {
 	if (isNaN(cfg.monitor.PEER_NODE_PORT) || cfg.monitor.PEER_NODE_PORT <= 0 || cfg.monitor.PEER_NODE_PORT >= 10000)
 		error = 'Invalid "PEER_NODE_PORT"';
 
-	if (isNaN(cfg.monitor.REQUEST_TIMEOUT) || cfg.monitor.REQUEST_TIMEOUT <= 0) 
-		error = 'Invalid "REQUEST_TIMEOUT"';
+	if (isNaN(cfg.monitor.REQUEST_TIMEOUT) || cfg.monitor.REQUEST_TIMEOUT <= 0) error = 'Invalid "REQUEST_TIMEOUT"';
 
 	if (error) throw 'Invalid config. ' + error;
 	return true;
