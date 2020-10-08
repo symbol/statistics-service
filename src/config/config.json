@@ -1,15 +1,15 @@
 {
-    "PORT": 4001,
-    "MONGODB_ENDPOINT": "",
-    "NODE_MONITOR_SCHEDULE_INTERVAL": 5000,
-    "NODES": [
-        "http://api-01.ap-northeast-1.0.10.0.x.symboldev.network:3000",
-        "http://api-01.ap-southeast-1.0.10.0.x.symboldev.network:3000",
-        "http://api-01.eu-central-1.0.10.0.x.symboldev.network:3000",
-        "http://api-01.eu-west-1.0.10.0.x.symboldev.network:3000",
-        "http://api-01.us-east-1.0.10.0.x.symboldev.network:3000",
-        "http://api-01.us-west-1.0.10.0.x.symboldev.network:3000"
-    ],
-    "API_NODE_PORT": 3000,
-    "PEER_NODE_PORT": 7900
+	"PORT": 4001,
+	"MONGODB_ENDPOINT": "",
+	"NODE_MONITOR_SCHEDULE_INTERVAL": 5000,
+	"NODES": [
+		"http://api-01.ap-northeast-1.0.10.0.x.symboldev.network:3000",
+		"http://api-01.ap-southeast-1.0.10.0.x.symboldev.network:3000",
+		"http://api-01.eu-central-1.0.10.0.x.symboldev.network:3000",
+		"http://api-01.eu-west-1.0.10.0.x.symboldev.network:3000",
+		"http://api-01.us-east-1.0.10.0.x.symboldev.network:3000",
+		"http://api-01.us-west-1.0.10.0.x.symboldev.network:3000"
+	],
+	"API_NODE_PORT": 3000,
+	"PEER_NODE_PORT": 7900
 }
