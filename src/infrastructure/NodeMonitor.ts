@@ -24,8 +24,8 @@ export class NodeMonitor {
 		this.isRunning = true;
 		this.clear();
 
-        await this.main();
-        this.nodeList = await NodeInfo.getInfoForListOfNodes(this.nodeList);
+		await this.main();
+		this.nodeList = await NodeInfo.getInfoForListOfNodes(this.nodeList);
 
 		if (this.isRunning) {
 			await this.updateCollection();
@@ -39,11 +39,12 @@ export class NodeMonitor {
 	};
 
 	private main = async (): Promise<any> => {
-        // Init fetch node list from config nodes
-        let counter = 0;
+		// Init fetch node list from config nodes
+		let counter = 0;
+
 		for (const nodeUrl of symbol.NODES) {
-            counter ++;
-            console.log('[NodeMonitor] Fetching node (initial):', counter, nodeUrl);
+			counter++;
+			console.log('[NodeMonitor] Fetching node (initial):', counter, nodeUrl);
 			const peers = await this.fetchNodeList(nodeUrl);
 
 			this.addNodesToList(peers);
@@ -52,12 +53,12 @@ export class NodeMonitor {
 		// Nested fetch node list from current nodeList[]
 		for (const node of this.nodeList) {
 			if (isAPIRole(node.roles)) {
-                counter ++;
-                console.log('[NodeMonitor] Fetching node:', counter, node.host);
-                const peers = await this.fetchNodeList(getNodeURL(node, monitor.API_NODE_PORT));
+				counter++;
+				console.log('[NodeMonitor] Fetching node:', counter, node.host);
+				const peers = await this.fetchNodeList(getNodeURL(node, monitor.API_NODE_PORT));
 
-                this.addNodesToList(peers);
-            }
+				this.addNodesToList(peers);
+			}
 		}
 
 		return Promise.resolve();

@@ -19,7 +19,7 @@ export class NodeInfo {
 
 		try {
 			const response = await Axios.get(`http://demo.ip-api.com/json/${ip}?fields=33288191&lang=en`);
-            const data = response.data;
+			const data = response.data;
 
 			coordinates = {
 				latitude: data.lat,
@@ -29,40 +29,40 @@ export class NodeInfo {
 
 			return {
 				coordinates,
-                location,
-                ip: data.query,
-                organization: data.org,
-                as: data.as,
-                continent: data.continent,
-                country: data.country,
-                region: data.region,
-                city: data.city,
-                district: data.district,
-                zip: data.zip,
+				location,
+				ip: data.query,
+				organization: data.org,
+				as: data.as,
+				continent: data.continent,
+				country: data.country,
+				region: data.region,
+				city: data.city,
+				district: data.district,
+				zip: data.zip,
 			};
 		} catch (e) {
 			console.error('[NodeInfo] Failed to get host info', e.message);
 			return {};
 		}
-    };
-    
-    static getInfoForListOfNodes = async (nodes: INode[]): Promise<INode[]> => {
-        const nodesWithLocation: INode[] = [];
-        let counter = 0;
+	};
 
-        for(let node of nodes) {
-            counter ++;
-            console.log('[NodeInfo] getting info for: ', counter, node.host);
+	static getInfoForListOfNodes = async (nodes: INode[]): Promise<INode[]> => {
+		const nodesWithLocation: INode[] = [];
+		let counter = 0;
 
-            const nodeWithLocation: INode = {
-                ...node,
-                ...await NodeInfo.getHostInfo(node.host)
-            };
+		for (let node of nodes) {
+			counter++;
+			console.log('[NodeInfo] getting info for: ', counter, node.host);
 
-            nodesWithLocation.push(nodeWithLocation);
-            await sleep(5000);
-        }
+			const nodeWithLocation: INode = {
+				...node,
+				...(await NodeInfo.getHostInfo(node.host)),
+			};
 
-        return nodesWithLocation;
-    }
+			nodesWithLocation.push(nodeWithLocation);
+			await sleep(5000);
+		}
+
+		return nodesWithLocation;
+	};
 }

@@ -1,4 +1,4 @@
-import { INode } from '@src/DataBase/models/Node'
+import { INode } from '@src/DataBase/models/Node';
 
 export const stringToArray = (str: string | undefined): Array<any> => {
 	let result = null;
@@ -18,8 +18,8 @@ export const isAPIRole = (roleType: number): boolean => {
 
 export const getNodeURL = (node: INode, port: number): string => {
 	return `http://${node.host}:${port}`;
-}
+};
 
 export const sleep = (ms: number): Promise<any> => {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
+	return new Promise((resolve) => setTimeout(resolve, ms));
+};
