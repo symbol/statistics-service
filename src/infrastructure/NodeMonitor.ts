@@ -39,22 +39,23 @@ export class NodeMonitor {
 	};
 
 	private main = async (): Promise<any> => {
-		// Init fetch node list from config nodes
-		for (const node of symbol.NODES) {
-			const peers = await this.fetchNodeList(node);
+        // Init fetch node list from config nodes
+        let counter = 0;
+		for (const nodeUrl of symbol.NODES) {
+            counter ++;
+            console.log('[NodeMonitor] Fetching node (initial):', counter, nodeUrl);
+			const peers = await this.fetchNodeList(nodeUrl);
 
 			this.addNodesToList(peers);
 		}
-        
 
 		// Nested fetch node list from current nodeList[]
 		for (const node of this.nodeList) {
 			if (isAPIRole(node.roles)) {
-                console.log('[NodeMonitor] Fetch node:', this.nodeList.length, node.host);
+                counter ++;
+                console.log('[NodeMonitor] Fetching node:', counter, node.host);
                 const peers = await this.fetchNodeList(getNodeURL(node, monitor.API_NODE_PORT));
 
-                if(this.nodeList.length >= 20)
-                    break;
                 this.addNodesToList(peers);
             }
 		}

@@ -20,7 +20,6 @@ export class NodeInfo {
 		try {
 			const response = await Axios.get(`http://demo.ip-api.com/json/${ip}?fields=33288191&lang=en`);
             const data = response.data;
-            console.log(`http://demo.ip-api.com/json/${ip}?fields=33288191&lang=en`, data)
 
 			coordinates = {
 				latitude: data.lat,
@@ -42,19 +41,24 @@ export class NodeInfo {
                 zip: data.zip,
 			};
 		} catch (e) {
-			console.error('Failed to get location', e.message);
+			console.error('[NodeInfo] Failed to get host info', e.message);
 			return {};
 		}
     };
     
     static getInfoForListOfNodes = async (nodes: INode[]): Promise<INode[]> => {
         const nodesWithLocation: INode[] = [];
+        let counter = 0;
+
         for(let node of nodes) {
+            counter ++;
+            console.log('[NodeInfo] getting info for: ', counter, node.host);
+
             const nodeWithLocation: INode = {
                 ...node,
                 ...await NodeInfo.getHostInfo(node.host)
             };
-            console.log('[NodeInfo] location for "', nodeWithLocation.host , '" is', nodeWithLocation.location);
+
             nodesWithLocation.push(nodeWithLocation);
             await sleep(5000);
         }
