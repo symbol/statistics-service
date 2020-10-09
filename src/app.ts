@@ -16,18 +16,19 @@ class App {
 		config.verifyConfig(config);
 		const app = express();
 
-		await DataBase.connect();
-		await Routes.register(app);
-		const nodeMonitor = new NodeMonitor(config.monitor.NODE_MONITOR_SCHEDULE_INTERVAL);
-
-		nodeMonitor.start();
-
 		/**
 		 * -------------- Middleware --------------
 		 */
 		app.use(express.json());
 		app.use(express.urlencoded({ extended: false }));
 		app.use(cors());
+
+		/**
+		 * -------------- Start services --------------
+		 */
+		await DataBase.connect(config.db.MONGODB_ENDPOINT);
+		await Routes.register(app);
+		new NodeMonitor(config.monitor.NODE_MONITOR_SCHEDULE_INTERVAL).start();
 
 		/**
 		 * -------------- Server listen --------------
