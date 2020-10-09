@@ -1,3 +1,5 @@
+import { INode } from '@src/DataBase/models/Node';
+
 export const stringToArray = (str: string | undefined): Array<any> => {
 	let result = null;
 
@@ -12,4 +14,12 @@ export const isAPIRole = (roleType: number): boolean => {
 	const RolesTypeEnum = [2, 3, 6, 7];
 
 	return !!RolesTypeEnum.find((role) => role === roleType);
+};
+
+export const getNodeURL = (node: INode, port: number): string => {
+	return `http://${node.host}:${port}`;
+};
+
+export const sleep = (ms: number): Promise<any> => {
+	return new Promise((resolve) => setTimeout(resolve, ms));
 };
