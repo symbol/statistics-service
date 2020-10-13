@@ -14,8 +14,8 @@ export interface Location {
 }
 
 export interface PeerStatus {
-    isAvailable: boolean;
-    lastStatusCheck: number
+	isAvailable: boolean;
+	lastStatusCheck: number;
 }
 
 export class NodeInfo {
@@ -50,17 +50,16 @@ export class NodeInfo {
 			console.error('[NodeInfo] Failed to get host info', e.message);
 			return {};
 		}
-    };
-    
-    private static TCPprobe = (host: string, port: number): Promise<boolean> => {
-        return new Promise((resolve) => {
-            tcpp.probe(host, port, function(err, result) {
-                if(err)
-                    resolve(false);
-                resolve(result);
-            });
-        })
-    };
+	};
+
+	private static TCPprobe = (host: string, port: number): Promise<boolean> => {
+		return new Promise((resolve) => {
+			tcpp.probe(host, port, function (err, result) {
+				if (err) resolve(false);
+				resolve(result);
+			});
+		});
+	};
 
 	static getInfoForListOfNodes = async (nodes: INode[]): Promise<INode[]> => {
 		const nodesWithLocation: INode[] = [];
@@ -72,18 +71,20 @@ export class NodeInfo {
 
 			let nodeWithLocation: INode = {
 				...node,
-                ...(await NodeInfo.getHostInfo(node.host))
-            };
-            if(isPeerRole(node.roles))
-                nodeWithLocation.peerStatus = {
-                    isAvailable: await NodeInfo.TCPprobe(node.host, node.port),
-                    lastStatusCheck: Date.now()
-                };
+				...(await NodeInfo.getHostInfo(node.host)),
+			};
+
+			if (isPeerRole(node.roles)) {
+				nodeWithLocation.peerStatus = {
+					isAvailable: await NodeInfo.TCPprobe(node.host, node.port),
+					lastStatusCheck: Date.now(),
+				};
+			}
 
 			nodesWithLocation.push(nodeWithLocation);
 			await sleep(5000);
 		}
 
 		return nodesWithLocation;
-    };
+	};
 }

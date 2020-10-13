@@ -56,7 +56,7 @@ const NodeSchema: Schema = new Schema({
 		lastStatusCheck: {
 			type: Number,
 			required: false,
-		}
+		},
 	},
 	publicKey: {
 		type: String,
