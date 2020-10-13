@@ -2,8 +2,8 @@ import { DataBase } from '@src/DataBase';
 import { NodeInfo } from '@src/infrastructure/NodeInfo';
 import { INode } from '@src/DataBase/models/Node';
 import Axios from 'axios';
-import { symbol, monitor } from '../config';
-import { isAPIRole, getNodeURL } from '../utils';
+import { symbol, monitor } from '@src/config';
+import { isAPIRole, getNodeURL } from '@src/utils';
 
 export class NodeMonitor {
 	private visitedNodes: INode[];

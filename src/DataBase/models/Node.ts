@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 import { Schema, Document } from 'mongoose';
-import { Coordinates } from '@src/infrastructure/NodeInfo';
+import { Coordinates, PeerStatus } from '@src/infrastructure/NodeInfo';
 
 export interface INode {
 	friendlyName: string;
@@ -8,6 +8,7 @@ export interface INode {
 	networkGenerationHashSeed: string;
 	networkIdentifier: number;
 	port: number;
+	peerStatus?: PeerStatus;
 	publicKey: string;
 	roles: number;
 	version: number;
@@ -46,6 +47,16 @@ const NodeSchema: Schema = new Schema({
 	port: {
 		type: Number,
 		required: true,
+	},
+	peerStatus: {
+		isAvailable: {
+			type: Boolean,
+			required: false,
+		},
+		lastStatusCheck: {
+			type: Number,
+			required: false,
+		}
 	},
 	publicKey: {
 		type: String,
