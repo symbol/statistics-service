@@ -19,6 +19,7 @@
     },
     "devDependencies": {
         "@types/mongoose": "^5.7.14",
+        "@types/winston": "^2.4.4",
         "@typescript-eslint/eslint-plugin": "^4.4.0",
         "@typescript-eslint/parser": "^4.4.0",
         "eslint": "^7.10.0",
@@ -43,6 +44,7 @@
         "module-alias": "^2.2.2",
         "mongoose": "^5.9.16",
         "tcp-ping": "^0.1.1",
-        "uuid": "^8.0.0"
+        "uuid": "^8.0.0",
+        "winston": "^3.3.3"
     }
 }
