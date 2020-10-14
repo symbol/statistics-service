@@ -1,6 +1,7 @@
 import Axios from 'axios';
 import { INode } from '@src/DataBase/models/Node';
-import { getNodeURL, sleep } from '../utils';
+import { sleep, isPeerRole } from '../utils';
+import * as tcpp from 'tcp-ping';
 
 export interface Coordinates {
 	latitude: number;
@@ -10,6 +11,11 @@ export interface Coordinates {
 export interface Location {
 	coordinates: Coordinates;
 	location: string;
+}
+
+export interface PeerStatus {
+	isAvailable: boolean;
+	lastStatusCheck: number;
 }
 
 export class NodeInfo {
@@ -46,6 +52,15 @@ export class NodeInfo {
 		}
 	};
 
+	private static TCPprobe = (host: string, port: number): Promise<boolean> => {
+		return new Promise((resolve) => {
+			tcpp.probe(host, port, function (err, result) {
+				if (err) resolve(false);
+				resolve(result);
+			});
+		});
+	};
+
 	static getInfoForListOfNodes = async (nodes: INode[]): Promise<INode[]> => {
 		const nodesWithLocation: INode[] = [];
 		let counter = 0;
@@ -54,10 +69,17 @@ export class NodeInfo {
 			counter++;
 			console.log('[NodeInfo] getting info for: ', counter, node.host);
 
-			const nodeWithLocation: INode = {
+			let nodeWithLocation: INode = {
 				...node,
 				...(await NodeInfo.getHostInfo(node.host)),
 			};
+
+			if (isPeerRole(node.roles)) {
+				nodeWithLocation.peerStatus = {
+					isAvailable: await NodeInfo.TCPprobe(node.host, node.port),
+					lastStatusCheck: Date.now(),
+				};
+			}
 
 			nodesWithLocation.push(nodeWithLocation);
 			await sleep(5000);
