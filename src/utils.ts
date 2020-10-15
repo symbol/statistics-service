@@ -1,4 +1,5 @@
 import { INode } from '@src/DataBase/models/Node';
+import * as path from 'path';
 
 export const stringToArray = (str: string | undefined): Array<any> => {
 	let result = null;
@@ -28,4 +29,8 @@ export const getNodeURL = (node: INode, port: number): string => {
 
 export const sleep = (ms: number): Promise<any> => {
 	return new Promise((resolve) => setTimeout(resolve, ms));
+};
+
+export const basename = (filename: string) => {
+	return path.basename(filename, '.js');
 };

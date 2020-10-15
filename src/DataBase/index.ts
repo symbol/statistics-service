@@ -1,15 +1,20 @@
 import * as mongoose from 'mongoose';
 import * as models from './models';
+import * as winston from 'winston';
+import { basename } from '@src/utils';
+import { Logger } from '@src/infrastructure';
+
+const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
 export class DataBase {
 	static connect = async (url: string) => {
 		try {
 			await mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
 		} catch (err) {
-			console.error('[DataBase]: Failed to connect MongoDB');
+			logger.error(`DataBase Failed to connect MongoDB`);
 			throw err;
 		}
-		console.log('[DataBase]: Connected to MongoDB');
+		logger.info(`DataBase Connected to MongoDB`);
 	};
 
 	static getNodeList = (): Promise<models.Node.NodeDocument[]> => {

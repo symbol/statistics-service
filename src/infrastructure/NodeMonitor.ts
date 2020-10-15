@@ -1,9 +1,12 @@
-import { DataBase } from '@src/DataBase';
-import { NodeInfo } from '@src/infrastructure/NodeInfo';
-import { INode } from '@src/DataBase/models/Node';
+import * as winston from 'winston';
 import Axios from 'axios';
+import { DataBase } from '@src/DataBase';
+import { NodeInfo, Logger } from '@src/infrastructure';
+import { INode } from '@src/DataBase/models/Node';
 import { symbol, monitor } from '@src/config';
-import { isAPIRole, getNodeURL } from '@src/utils';
+import { isAPIRole, getNodeURL, basename } from '@src/utils';
+
+const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
 export class NodeMonitor {
 	private visitedNodes: INode[];
@@ -44,7 +47,7 @@ export class NodeMonitor {
 
 		for (const nodeUrl of symbol.NODES) {
 			counter++;
-			console.log('[NodeMonitor] Fetching node (initial):', counter, nodeUrl);
+			logger.info(`Fetching node (initial): ${counter} ${nodeUrl}`);
 			const peers = await this.fetchNodeList(nodeUrl);
 
 			this.addNodesToList(peers);
@@ -54,7 +57,7 @@ export class NodeMonitor {
 		for (const node of this.nodeList) {
 			if (isAPIRole(node.roles)) {
 				counter++;
-				console.log('[NodeMonitor] Fetching node:', counter, node.host);
+				logger.info(`Fetching node: ${counter} ${node.host}`);
 				const peers = await this.fetchNodeList(getNodeURL(node, monitor.API_NODE_PORT));
 
 				this.addNodesToList(peers);

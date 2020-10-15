@@ -3,10 +3,14 @@ import * as express from 'express';
 import * as dotenv from 'dotenv';
 dotenv.config();
 import * as cors from 'cors';
+import * as winston from 'winston';
 import * as config from './config';
 import { DataBase } from './DataBase';
 import { Routes } from './routes';
-import { NodeMonitor } from './infrastructure/NodeMonitor';
+import { NodeMonitor, Logger } from './infrastructure';
+import * as utils from '@src/utils';
+
+const logger: winston.Logger = Logger.getLogger(utils.basename(__filename));
 
 class App {
 	static start = async () => {
@@ -34,7 +38,7 @@ class App {
 		 * -------------- Server listen --------------
 		 */
 		app.listen(config.network.PORT, () => {
-			console.log(`[App]: Server is running on port: ${config.network.PORT}`);
+			logger.info(`Server is running on port: ${config.network.PORT}`);
 		});
 	};
 }

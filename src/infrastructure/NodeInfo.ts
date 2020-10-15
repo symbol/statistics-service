@@ -1,7 +1,9 @@
 import Axios from 'axios';
-import { INode } from '@src/DataBase/models/Node';
-import { sleep, isPeerRole } from '../utils';
 import * as tcpp from 'tcp-ping';
+import * as winston from 'winston';
+import { INode } from '@src/DataBase/models/Node';
+import { sleep, isPeerRole, basename } from '@src/utils';
+import { Logger } from '@src/infrastructure';
 
 export interface Coordinates {
 	latitude: number;
@@ -17,6 +19,8 @@ export interface PeerStatus {
 	isAvailable: boolean;
 	lastStatusCheck: number;
 }
+
+const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
 export class NodeInfo {
 	static getHostInfo = async (ip: string): Promise<Location | object> => {
@@ -47,7 +51,7 @@ export class NodeInfo {
 				zip: data.zip,
 			};
 		} catch (e) {
-			console.error('[NodeInfo] Failed to get host info', e.message);
+			logger.error(`Failed to get host info ${e.message}`);
 			return {};
 		}
 	};
@@ -67,7 +71,7 @@ export class NodeInfo {
 
 		for (let node of nodes) {
 			counter++;
-			console.log('[NodeInfo] getting info for: ', counter, node.host);
+			logger.info(`getting info for: ${counter} ${node.host}`);
 
 			let nodeWithLocation: INode = {
 				...node,
