@@ -127,4 +127,4 @@ const NodeSchema: Schema = new Schema({
 	},
 });
 
-export default mongoose.model<NodeDocument>('Node', NodeSchema);
+export const Node = mongoose.model<NodeDocument>('Node', NodeSchema);

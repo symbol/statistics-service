@@ -17,16 +17,42 @@ export interface SearchCriteria {
 	order: Order;
 }
 
-export class Pagination {
-	public static getPage<T extends Document>(model: Model<T>, req: Request): Promise<T[]> {
-		const searchCriteria = Pagination.reqToSearchCriteria(req);
-		const pageIndex = searchCriteria.pageNumber - 1;
+export interface PaginationResponse<T> {
+	pageSize: number;
+	pageNumber: number;
+	lastPageNumber?: number;
+	data: T[];
+}
 
-		return model.find()
+export class PaginationResponse<T> implements PaginationResponse<T> {
+	data: T[];
+	pageSize: number;
+	pageNumber: number;
+	lastPageNumber?: number;
+
+	constructor(
+		data: T[],
+		searchCriteria: SearchCriteria,
+		recordsCount?: number
+	) {
+		this.data = data;
+		this.pageSize = searchCriteria.pageSize;
+		this.pageNumber = searchCriteria.pageNumber;
+		if(recordsCount)
+			this.lastPageNumber = Math.ceil(recordsCount / searchCriteria.pageSize);
+	}
+}
+
+export class Pagination {
+	public static async getPage<T extends Document>(model: Model<T>, searchCriteria: SearchCriteria): Promise<PaginationResponse<T>> {
+		const pageIndex = searchCriteria.pageNumber - 1;
+		const data = await model.find()
 			.sort(searchCriteria.order == Order.Desc ? { _id: -1 } : { _id: 1 })
 			.limit(searchCriteria.pageSize)
 			.skip(searchCriteria.pageSize * pageIndex)
 			.exec();
+
+		return new PaginationResponse<T>(data, searchCriteria);
 	}
 
 	public static reqToSearchCriteria(req: Request): SearchCriteria {

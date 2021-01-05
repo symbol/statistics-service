@@ -1,11 +1,12 @@
 import { Express, Request, Response } from 'express';
 import { DataBase } from '@src/DataBase';
 import { NotFoundError, InternalServerError } from '@src/infrastructure/Error';
+import { Pagination } from '@src/infrastructure/Pagination';
 
 export class Routes {
 	static register = async (app: Express) => {
 		app.get('/nodes', (req: Request, res: Response) => {
-			return DataBase.getNodeList()
+			return DataBase.getNodeListWithCriteria(Pagination.reqToSearchCriteria(req))
 				.then((nodes) => res.send(nodes))
 				.catch((error) => InternalServerError.send(res, error));
 		});

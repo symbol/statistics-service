@@ -1,1 +1,1 @@
-export * as Node from './Node';
+export * from './Node';
