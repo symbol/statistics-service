@@ -38,4 +38,9 @@ export class DataBase {
 	static updateNode = async (node: models.INode): Promise<void> => {
 		await models.Node.findOneAndUpdate({ publicKey: node.publicKey }, node).exec();
 	};
+
+	static updateNodesStats = async (nodeList: models.INodesStats): Promise<void> => {
+		await models.NodesStats.remove({}).exec();
+		await models.NodesStats.create(nodeList);
+	}
 }
