@@ -1,5 +1,5 @@
 import { Express, Request, Response } from 'express';
-import { DataBase } from '@src/DataBase';
+import { DataBase } from '@src/services/DataBase';
 import { NotFoundError, InternalServerError } from '@src/infrastructure/Error';
 import { Pagination } from '@src/infrastructure/Pagination';
 

@@ -1,4 +1,4 @@
-import { INode } from '@src/DataBase/models/Node';
+import { INode } from '@src/models/Node';
 import * as path from 'path';
 
 export const stringToArray = (str: string | undefined): Array<any> => {

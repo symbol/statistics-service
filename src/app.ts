@@ -5,9 +5,10 @@ dotenv.config();
 import * as cors from 'cors';
 import * as winston from 'winston';
 import * as config from './config';
-import { DataBase } from './DataBase';
+import { DataBase } from './services/DataBase';
+import { NodeMonitor } from './services/NodeMonitor';
 import { Routes } from './routes';
-import { NodeMonitor, Logger } from './infrastructure';
+import { Logger } from './infrastructure';
 import * as utils from '@src/utils';
 
 const logger: winston.Logger = Logger.getLogger(utils.basename(__filename));

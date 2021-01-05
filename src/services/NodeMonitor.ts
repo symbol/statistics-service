@@ -1,24 +1,24 @@
 import * as winston from 'winston';
 import Axios from 'axios';
-import { DataBase } from '@src/DataBase';
-import { NodeInfo, Logger } from '@src/infrastructure';
-import { INode } from '@src/DataBase/models/Node';
+import { DataBase } from '@src/services/DataBase';
+import { HostInfo } from '@src/services/HostInfo';
+import { PeerHealth } from '@src/services/PeerHealth';
+import { NodeRewards } from '@src/services/NodeRewards';
+import { Logger } from '@src/infrastructure';
+
+import { INode } from '@src/models/Node';
 import { symbol, monitor } from '@src/config';
-import { isAPIRole, getNodeURL, basename } from '@src/utils';
+import { isAPIRole, isPeerRole, getNodeURL, basename, sleep } from '@src/utils';
 
 const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
 export class NodeMonitor {
-	private visitedNodes: INode[];
 	private nodeList: INode[];
-	private currentNodeIndex: number;
 	private isRunning: boolean;
 	private interval: number;
 
 	constructor(_interval: number) {
-		this.visitedNodes = [];
 		this.nodeList = [];
-		this.currentNodeIndex = 0;
 		this.isRunning = false;
 		this.interval = _interval || 300000;
 	}
@@ -27,8 +27,8 @@ export class NodeMonitor {
 		this.isRunning = true;
 		this.clear();
 
-		await this.main();
-		this.nodeList = await NodeInfo.getInfoForListOfNodes(this.nodeList);
+		await this.getNodeList();
+		await this.getNodeListInfo(); //HostInfo.getInfoForListOfNodes(this.nodeList);
 
 		if (this.isRunning) {
 			await this.updateCollection();
@@ -36,19 +36,52 @@ export class NodeMonitor {
 		}
 	};
 
+	private getNodeListInfo = async () => {
+		const nodesWithInfo: INode[] = [];
+		const nodes: INode[] = this.nodeList;
+		let counter = 0;
+
+		for (let node of nodes) {
+			let nodeWithInfo: INode = { ...node };
+			counter++;
+			logger.info(`getting info for: ${counter} ${node.host}`);
+
+			try {
+				const hostDetail = await HostInfo.getHostDetail(node.host);
+				const rewardPrograms = await NodeRewards.getInfo(node.publicKey);
+				if (isPeerRole(node.roles))
+					nodeWithInfo.peerStatus = await PeerHealth.getStatus(node.host, node.port);
+				
+				nodeWithInfo = {
+					...nodeWithInfo,
+					...hostDetail,
+					rewardPrograms
+				};
+			}
+			catch(e) {
+				logger.error(`failed to get info. ${e.message}`);
+			}
+
+			nodesWithInfo.push(nodeWithInfo);
+			await sleep(5000);
+		}
+
+		this.nodeList = nodesWithInfo;
+	}
+
 	public stop = () => {
 		this.isRunning = false;
 		this.clear();
 	};
 
-	private main = async (): Promise<any> => {
+	private getNodeList = async (): Promise<any> => {
 		// Init fetch node list from config nodes
 		let counter = 0;
 
 		for (const nodeUrl of symbol.NODES) {
 			counter++;
 			logger.info(`Fetching node (initial): ${counter} ${nodeUrl}`);
-			const peers = await this.fetchNodeList(nodeUrl);
+			const peers = await this.fetchNodesByURL(nodeUrl);
 
 			this.addNodesToList(peers);
 		}
@@ -58,7 +91,7 @@ export class NodeMonitor {
 			if (isAPIRole(node.roles)) {
 				counter++;
 				logger.info(`Fetching node: ${counter} ${node.host}`);
-				const peers = await this.fetchNodeList(getNodeURL(node, monitor.API_NODE_PORT));
+				const peers = await this.fetchNodesByURL(getNodeURL(node, monitor.API_NODE_PORT));
 
 				this.addNodesToList(peers);
 			}
@@ -67,7 +100,7 @@ export class NodeMonitor {
 		return Promise.resolve();
 	};
 
-	private fetchNodeList = async (nodeUrl: string): Promise<Array<INode>> => {
+	private fetchNodesByURL = async (nodeUrl: string): Promise<Array<INode>> => {
 		try {
 			const nodeList = await Axios.get(nodeUrl + '/node/peers', {
 				timeout: monitor.REQUEST_TIMEOUT,
@@ -79,9 +112,7 @@ export class NodeMonitor {
 	};
 
 	private clear = () => {
-		this.visitedNodes = [];
 		this.nodeList = [];
-		this.currentNodeIndex = 0;
 	};
 
 	private updateCollection = async (): Promise<any> => {
