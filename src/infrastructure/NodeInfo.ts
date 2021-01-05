@@ -8,17 +8,22 @@ import { Logger } from '@src/infrastructure';
 export interface Coordinates {
 	latitude: number;
 	longitude: number;
-}
+};
 
 export interface Location {
 	coordinates: Coordinates;
 	location: string;
-}
+};
 
 export interface PeerStatus {
 	isAvailable: boolean;
 	lastStatusCheck: number;
-}
+};
+
+export interface RewardProgram {
+	name: string;
+	passed: boolean;
+};
 
 const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
@@ -58,7 +63,8 @@ export class NodeInfo {
 
 	private static TCPprobe = (host: string, port: number): Promise<boolean> => {
 		return new Promise((resolve) => {
-			tcpp.probe(host, port, function (err, result) {
+			tcpp.probe(host, port, function (err, result, data) {
+				console.log('data', data)
 				if (err) resolve(false);
 				resolve(result);
 			});
@@ -66,29 +72,29 @@ export class NodeInfo {
 	};
 
 	static getInfoForListOfNodes = async (nodes: INode[]): Promise<INode[]> => {
-		const nodesWithLocation: INode[] = [];
+		const nodesWithInfo: INode[] = [];
 		let counter = 0;
 
 		for (let node of nodes) {
 			counter++;
 			logger.info(`getting info for: ${counter} ${node.host}`);
 
-			let nodeWithLocation: INode = {
+			let nodeWithInfo: INode = {
 				...node,
 				...(await NodeInfo.getHostInfo(node.host)),
 			};
 
 			if (isPeerRole(node.roles)) {
-				nodeWithLocation.peerStatus = {
+				nodeWithInfo.peerStatus = {
 					isAvailable: await NodeInfo.TCPprobe(node.host, node.port),
 					lastStatusCheck: Date.now(),
 				};
 			}
 
-			nodesWithLocation.push(nodeWithLocation);
+			nodesWithInfo.push(nodeWithInfo);
 			await sleep(5000);
 		}
 
-		return nodesWithLocation;
+		return nodesWithInfo;
 	};
 }

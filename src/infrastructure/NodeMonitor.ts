@@ -88,24 +88,10 @@ export class NodeMonitor {
 		await DataBase.updateNodeList(this.nodeList);
 	};
 
-	private checkAPINode = (nodeUrl: string): Promise<boolean> => {
-		return Promise.resolve(true);
-	};
-
 	private addNodesToList = (nodes: INode[]) => {
 		nodes.forEach((node: INode) => {
 			if (!!this.nodeList.find((addedNode) => addedNode.publicKey === node.publicKey)) return;
 			this.nodeList.push(node);
 		});
-	};
-
-	private removeNodeFromList = (node: INode) => {};
-
-	private addNodeToVisited = (node: INode) => {
-		this.visitedNodes.push(node);
-	};
-
-	private isNodeVisited = (node: INode): boolean => {
-		return !!this.visitedNodes.find((visitedNode) => visitedNode.publicKey === node.publicKey);
 	};
 }

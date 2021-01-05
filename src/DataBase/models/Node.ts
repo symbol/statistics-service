@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 import { Schema, Document } from 'mongoose';
-import { Coordinates, PeerStatus } from '@src/infrastructure/NodeInfo';
+import { Coordinates, PeerStatus, RewardProgram } from '@src/infrastructure/NodeInfo';
 
 export interface INode {
 	friendlyName: string;
@@ -12,6 +12,7 @@ export interface INode {
 	publicKey: string;
 	roles: number;
 	version: number;
+	rewardProgram: RewardProgram;
 	coordinates?: Coordinates;
 	location?: string;
 	ip?: string;
