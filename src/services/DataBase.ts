@@ -31,6 +31,10 @@ export class DataBase {
 		return Node.findOne({ publicKey }).exec();
 	};
 
+	static getNodeByHost = (host: string): Promise<NodeDocument | null> => {
+		return Node.findOne({ host }).exec();
+	};
+
 	static updateNodeList = async (nodeList: INode[]): Promise<void> => {
 		await Node.remove({}).exec();
 		await Node.insertMany(nodeList);

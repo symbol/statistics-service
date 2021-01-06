@@ -1,7 +1,8 @@
 import Axios from 'axios';
 import * as winston from 'winston';
-import { Coordinates } from '@src/models/Node';
-import { basename } from '@src/utils';
+import { memoryCache } from '@src/services/MemoryCache';
+import { Coordinates, INode } from '@src/models/Node';
+import { basename, sleep } from '@src/utils';
 import { Logger } from '@src/infrastructure';
 
 const logger: winston.Logger = Logger.getLogger(basename(__filename));
@@ -21,12 +22,37 @@ export interface HostDetail {
 };
 
 export class HostInfo {
-	static getHostDetail = async (ip: string): Promise<HostDetail | null> => {
+	static getHostDetail = async (host: string): Promise<HostDetail | object> => {
 		let coordinates: Coordinates;
 		let location = '';
 
+
 		try {
-			const response = await Axios.get(`http://demo.ip-api.com/json/${ip}?fields=33288191&lang=en`);
+			const nodes = await memoryCache.get('nodeList');
+			const cachedData = nodes.find((node: INode) => node.host === host);
+
+			if(cachedData?.coordinates?.latitude) {
+				return {
+					coordinates: cachedData.coordinates,
+					location: cachedData.location,
+					ip: cachedData.ip,
+					organization: cachedData.organization,
+					as: cachedData.as,
+					continent: cachedData.continent,
+					country: cachedData.country,
+					region: cachedData.region,
+					city: cachedData.city,
+					district: cachedData.district,
+					zip: cachedData.zip,
+				};
+			}
+			else throw Error();
+		}
+		catch(e){}
+
+		try {
+			const response = await Axios.get(`http://demo.ip-api.com/json/${host}?fields=33288191&lang=en`);
+			await sleep(5000);
 			const data = response.data;
 
 			coordinates = {
@@ -50,7 +76,7 @@ export class HostInfo {
 			};
 		} catch (e) {
 			logger.error(`Failed to get host info ${e.message}`);
-			return null;
+			return {};
 		}
 	};
 }

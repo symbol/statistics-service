@@ -12,10 +12,12 @@ export class NodeRewards {
 		const rewardPrograms: Array<RewardProgram> = [];
 		
 		const getBool = () => Math.random() < 0.5;
-		if(getBool()) rewardPrograms.push({
-			name:'supernode',
-			passed: getBool()
-		});
+		if(true) {
+			rewardPrograms.push({
+				name: 'supernode',
+				passed: getBool()
+			});
+		}
 
 		return rewardPrograms;
 	}

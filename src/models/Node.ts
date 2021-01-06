@@ -1,6 +1,7 @@
 import * as mongoose from 'mongoose';
 import { Schema, Document } from 'mongoose';
 import { RewardProgram } from '@src/services/NodeRewards';
+import { ApiStatus } from '@src/services/ApiNodeService';
 
 export interface Coordinates {
 	latitude: number;
@@ -23,6 +24,7 @@ export interface INode {
 	roles: number;
 	version: number;
 	rewardPrograms: RewardProgram[];
+	apiStatus?: ApiStatus;
 	coordinates?: Coordinates;
 	location?: string;
 	ip?: string;
@@ -68,6 +70,29 @@ const NodeSchema: Schema = new Schema({
 			type: Number,
 			required: false,
 		},
+	},
+	apiStatus: {
+		isAvailable: {
+			type: Boolean,
+			required: false,
+		},
+		chainHeight: {
+			type: Number,
+			required: false,
+		},
+		finalizationHeight: {
+			type: Number,
+			required: false,
+		},
+		nodePublicKey: {
+			type: String,
+			required: false,
+		},
+		lastStatusCheck: {
+			type: Number,
+			required: false,
+		},
+		required: false
 	},
 	publicKey: {
 		type: String,
@@ -148,6 +173,13 @@ const NodeSchema: Schema = new Schema({
 		type: String,
 		required: false,
 	},
+});
+
+NodeSchema.set('toObject', {
+	transform: (doc, ret) => {
+		delete ret._id
+		delete ret.__v
+	}
 });
 
 export const Node = mongoose.model<NodeDocument>('Node', NodeSchema);

@@ -2,14 +2,16 @@ import * as winston from 'winston';
 import Axios from 'axios';
 import { DataBase } from '@src/services/DataBase';
 import { HostInfo } from '@src/services/HostInfo';
+import { ApiNodeService } from '@src/services/ApiNodeService';
 import { PeerNodeService } from '@src/services/PeerNodeService';
 import { NodeRewards } from '@src/services/NodeRewards';
 import { NodesStats } from '@src/services/NodesStats';
+import { memoryCache } from '@src/services/MemoryCache';
 import { Logger } from '@src/infrastructure';
 
 import { INode } from '@src/models/Node';
 import { symbol, monitor } from '@src/config';
-import { isAPIRole, isPeerRole, getNodeURL, basename, sleep } from '@src/utils';
+import { isAPIRole, isPeerRole, getNodeURL, basename } from '@src/utils';
 
 const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
@@ -65,6 +67,7 @@ export class NodeMonitor {
 
 				this.addNodesToList(peers);
 			}
+			if(counter > 1) break;
 		}
 
 		return Promise.resolve();
@@ -89,19 +92,24 @@ export class NodeMonitor {
 		for (let node of nodes) {
 			let nodeWithInfo: INode = { ...node };
 			counter++;
-			logger.info(`getting info for: ${counter} ${node.host}`);
+			logger.info(`Getting info for: ${counter} ${node.host}`);
 
 			try {
 				const hostDetail = await HostInfo.getHostDetail(node.host);
-				const rewardPrograms = await NodeRewards.getInfo(node.publicKey);
-				if (isPeerRole(node.roles))
-					nodeWithInfo.peerStatus = await PeerNodeService.getStatus(node.host, node.port);
-				
+				nodeWithInfo.rewardPrograms = [];
+
 				nodeWithInfo = {
 					...nodeWithInfo,
 					...hostDetail,
-					rewardPrograms
 				};
+
+				if (isPeerRole(node.roles))
+					nodeWithInfo.peerStatus = await PeerNodeService.getStatus(node.host, node.port);
+				if (isAPIRole(node.roles)) {
+					nodeWithInfo.apiStatus = await ApiNodeService.getStatus(node.host, monitor.API_NODE_PORT);
+					if (nodeWithInfo.apiStatus?.nodePublicKey)
+						nodeWithInfo.rewardPrograms = await NodeRewards.getInfo(nodeWithInfo.apiStatus.nodePublicKey);
+				}
 
 				this.nodesStats.addToStats(nodeWithInfo);
 			}
@@ -110,7 +118,7 @@ export class NodeMonitor {
 			}
 
 			nodesWithInfo.push(nodeWithInfo);
-			await sleep(5000);
+			if(counter == 10) break;
 		}
 
 		this.nodeList = nodesWithInfo;
@@ -124,6 +132,7 @@ export class NodeMonitor {
 	private updateCollection = async (): Promise<any> => {
 		await DataBase.updateNodeList(this.nodeList);
 		await DataBase.updateNodesStats(this.nodesStats);
+		memoryCache.set('nodeList', this.nodeList);
 	};
 
 	private addNodesToList = (nodes: INode[]) => {
