@@ -21,5 +21,11 @@ export class Routes {
 				})
 				.catch((error) => InternalServerError.send(res, error));
 		});
+
+		app.get('/nodestats', (req: Request, res: Response) => {
+			return DataBase.getNodesStats()
+				.then((stats) => res.send(stats))
+				.catch((error) => InternalServerError.send(res, error));
+		});
 	};
 }
