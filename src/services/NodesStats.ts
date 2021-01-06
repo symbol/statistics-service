@@ -1,5 +1,5 @@
 import { INode } from '@src/models/Node';
-import { INodesStats } from '@src/models/NodesStats'
+import { INodesStats } from '@src/models/NodesStats';
 
 export class NodesStats implements INodesStats {
 	nodeTypes!: {
@@ -19,7 +19,8 @@ export class NodesStats implements INodesStats {
 
 	addToStats(node: INode) {
 		this.updateStats(String(node.roles))
-		node.rewardPrograms.forEach(program => this.updateStats(program.name));
+		if(Array.isArray(node.rewardPrograms))
+			node.rewardPrograms.forEach(program => this.updateStats(program.name));
 	}
 
 	clear() {

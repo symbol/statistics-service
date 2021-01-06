@@ -10,6 +10,12 @@ export interface RewardProgram {
 export class NodeRewards {
 	static async getInfo(publicKey: string): Promise<RewardProgram[]> {
 		const rewardPrograms: Array<RewardProgram> = [];
+		
+		const getBool = () => Math.random() < 0.5;
+		if(getBool()) rewardPrograms.push({
+			name:'supernode',
+			passed: getBool()
+		});
 
 		return rewardPrograms;
 	}

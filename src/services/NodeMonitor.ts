@@ -4,6 +4,7 @@ import { DataBase } from '@src/services/DataBase';
 import { HostInfo } from '@src/services/HostInfo';
 import { PeerHealth } from '@src/services/PeerHealth';
 import { NodeRewards } from '@src/services/NodeRewards';
+import { NodesStats } from '@src/services/NodesStats';
 import { Logger } from '@src/infrastructure';
 
 import { INode } from '@src/models/Node';
@@ -13,11 +14,13 @@ import { isAPIRole, isPeerRole, getNodeURL, basename, sleep } from '@src/utils';
 const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
 export class NodeMonitor {
+	private nodesStats: NodesStats;
 	private nodeList: INode[];
 	private isRunning: boolean;
 	private interval: number;
 
 	constructor(_interval: number) {
+		this.nodesStats = new NodesStats();
 		this.nodeList = [];
 		this.isRunning = false;
 		this.interval = _interval || 300000;
@@ -35,39 +38,6 @@ export class NodeMonitor {
 			setTimeout(() => this.start(), this.interval);
 		}
 	};
-
-	private getNodeListInfo = async () => {
-		const nodesWithInfo: INode[] = [];
-		const nodes: INode[] = this.nodeList;
-		let counter = 0;
-
-		for (let node of nodes) {
-			let nodeWithInfo: INode = { ...node };
-			counter++;
-			logger.info(`getting info for: ${counter} ${node.host}`);
-
-			try {
-				const hostDetail = await HostInfo.getHostDetail(node.host);
-				const rewardPrograms = await NodeRewards.getInfo(node.publicKey);
-				if (isPeerRole(node.roles))
-					nodeWithInfo.peerStatus = await PeerHealth.getStatus(node.host, node.port);
-				
-				nodeWithInfo = {
-					...nodeWithInfo,
-					...hostDetail,
-					rewardPrograms
-				};
-			}
-			catch(e) {
-				logger.error(`failed to get info. ${e.message}`);
-			}
-
-			nodesWithInfo.push(nodeWithInfo);
-			await sleep(5000);
-		}
-
-		this.nodeList = nodesWithInfo;
-	}
 
 	public stop = () => {
 		this.isRunning = false;
@@ -111,12 +81,49 @@ export class NodeMonitor {
 		return [];
 	};
 
+	private getNodeListInfo = async () => {
+		const nodesWithInfo: INode[] = [];
+		const nodes: INode[] = this.nodeList;
+		let counter = 0;
+
+		for (let node of nodes) {
+			let nodeWithInfo: INode = { ...node };
+			counter++;
+			logger.info(`getting info for: ${counter} ${node.host}`);
+
+			try {
+				const hostDetail = await HostInfo.getHostDetail(node.host);
+				const rewardPrograms = await NodeRewards.getInfo(node.publicKey);
+				if (isPeerRole(node.roles))
+					nodeWithInfo.peerStatus = await PeerHealth.getStatus(node.host, node.port);
+				
+				nodeWithInfo = {
+					...nodeWithInfo,
+					...hostDetail,
+					rewardPrograms
+				};
+
+				this.nodesStats.addToStats(nodeWithInfo);
+			}
+			catch(e) {
+				logger.error(`failed to get info. ${e.message}`);
+			}
+
+			nodesWithInfo.push(nodeWithInfo);
+			await sleep(5000);
+		}
+
+		this.nodeList = nodesWithInfo;
+	}
+
 	private clear = () => {
 		this.nodeList = [];
+		this.nodesStats.clear();
 	};
 
 	private updateCollection = async (): Promise<any> => {
 		await DataBase.updateNodeList(this.nodeList);
+		await DataBase.updateNodesStats(this.nodesStats);
 	};
 
 	private addNodesToList = (nodes: INode[]) => {
