@@ -2,7 +2,7 @@ import * as winston from 'winston';
 import Axios from 'axios';
 import { DataBase } from '@src/services/DataBase';
 import { HostInfo } from '@src/services/HostInfo';
-import { PeerHealth } from '@src/services/PeerHealth';
+import { PeerNodeService } from '@src/services/PeerNodeService';
 import { NodeRewards } from '@src/services/NodeRewards';
 import { NodesStats } from '@src/services/NodesStats';
 import { Logger } from '@src/infrastructure';
@@ -95,7 +95,7 @@ export class NodeMonitor {
 				const hostDetail = await HostInfo.getHostDetail(node.host);
 				const rewardPrograms = await NodeRewards.getInfo(node.publicKey);
 				if (isPeerRole(node.roles))
-					nodeWithInfo.peerStatus = await PeerHealth.getStatus(node.host, node.port);
+					nodeWithInfo.peerStatus = await PeerNodeService.getStatus(node.host, node.port);
 				
 				nodeWithInfo = {
 					...nodeWithInfo,

@@ -6,7 +6,7 @@ export interface PeerStatus {
 	lastStatusCheck: number;
 }
 
-export class PeerHealth {
+export class PeerNodeService {
 	private static tcpProbe = (host: string, port: number): Promise<boolean> => {
 		return new Promise((resolve) => {
 			tcpp.probe(host, port, function (err, result) {
@@ -18,7 +18,7 @@ export class PeerHealth {
 
 	public static getStatus = async (host: string, port: number): Promise<PeerStatus> => {
 		return {
-			isAvailable: await PeerHealth.tcpProbe(host, port),
+			isAvailable: await PeerNodeService.tcpProbe(host, port),
 			lastStatusCheck: Date.now(),
 		};
 	};

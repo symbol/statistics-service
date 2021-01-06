@@ -6,7 +6,8 @@ import { Pagination } from '@src/infrastructure/Pagination';
 export class Routes {
 	static register = async (app: Express) => {
 		app.get('/nodes', (req: Request, res: Response) => {
-			return DataBase.getNodeListWithCriteria(Pagination.reqToSearchCriteria(req))
+			//return DataBase.getNodeListWithCriteria(Pagination.reqToSearchCriteria(req))
+			return DataBase.getNodeList()
 				.then((nodes) => res.send(nodes))
 				.catch((error) => InternalServerError.send(res, error));
 		});

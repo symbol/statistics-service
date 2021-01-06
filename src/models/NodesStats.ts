@@ -17,4 +17,12 @@ const NodesStatsSchema: Schema = new Schema({
 	}
 });
 
+NodesStatsSchema.set('toObject', {
+	transform: (doc, ret) => {
+		delete ret._id
+		delete ret.__v
+	}
+})
+
 export const NodesStats = mongoose.model<NodesStatsDocument>('NodesStats', NodesStatsSchema);
+

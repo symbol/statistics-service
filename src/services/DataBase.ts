@@ -41,7 +41,7 @@ export class DataBase {
 	};
 
 	static getNodesStats = async (): Promise<NodesStatsDocument | null> => {
-		return NodesStats.findOne({}).exec();
+		return (await NodesStats.findOne({}).exec())?.toObject()
 	}
 
 	static updateNodesStats = async (nodeList: INodesStats): Promise<void> => {
