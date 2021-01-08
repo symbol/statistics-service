@@ -20,11 +20,17 @@ interface Monitor {
 	REQUEST_TIMEOUT: number;
 }
 
+interface NodeRewardsConfig {
+	CONTROLLER_ENDPOINT: string;
+}
+
+
 export interface Config {
 	network: Network;
 	db: Db;
 	symbol: Symbol;
 	monitor: Monitor;
+	nodeRewards: NodeRewardsConfig
 }
 
 export const network: Network = {
@@ -44,6 +50,10 @@ export const monitor: Monitor = {
 	API_NODE_PORT: Number(process.env.API_NODE_PORT) || config.API_NODE_PORT,
 	PEER_NODE_PORT: Number(process.env.PEER_NODE_PORT) || config.PEER_NODE_PORT,
 	REQUEST_TIMEOUT: Number(process.env.REQUEST_TIMEOUT) || config.REQUEST_TIMEOUT,
+};
+
+export const nodeRewards: NodeRewardsConfig = {
+	CONTROLLER_ENDPOINT: process.env.CONTROLLER_ENDPOINT || config.CONTROLLER_ENDPOINT
 };
 
 export const verifyConfig = (cfg: Config): boolean => {

@@ -34,3 +34,22 @@ export const sleep = (ms: number): Promise<any> => {
 export const basename = (filename: string) => {
 	return path.basename(filename, '.js');
 };
+
+export const parseArray = (array: any): Array<any> | null => {
+	if(Array.isArray(array))
+		return array;
+
+	if(typeof array === 'string') {
+		try {
+			const json = JSON.parse(array);
+			if(Array.isArray(json))
+				return json;
+		}
+		catch(e) {
+			return null;
+		}
+	}
+	
+	return null;
+
+}

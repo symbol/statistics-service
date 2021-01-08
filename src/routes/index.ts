@@ -2,6 +2,8 @@ import { Express, Request, Response } from 'express';
 import { DataBase } from '@src/services/DataBase';
 import { NotFoundError, InternalServerError } from '@src/infrastructure/Error';
 import { Pagination } from '@src/infrastructure/Pagination';
+import { nodeRewards } from '@src/config';
+import axios from 'axios';
 
 export class Routes {
 	static register = async (app: Express) => {
@@ -27,6 +29,16 @@ export class Routes {
 			return DataBase.getNodesStats()
 				.then((stats) => res.send(stats))
 				.catch((error) => InternalServerError.send(res, error));
+		});
+
+		app.get('/nodereward/:publicKey', async (req: Request, res: Response) => {
+			try {
+				const nodeInfo = await axios.get(`${nodeRewards.CONTROLLER_ENDPOINT}/nodes/nodepublickey/${req.params.publicKey}`);
+				res.send(nodeInfo);
+			}
+			catch(error) {
+				InternalServerError.send(res, error)
+			}
 		});
 	};
 }

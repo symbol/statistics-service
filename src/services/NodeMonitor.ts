@@ -67,7 +67,7 @@ export class NodeMonitor {
 
 				this.addNodesToList(peers);
 			}
-			if(counter > 1) break;
+			//if(counter > 1) break;
 		}
 
 		return Promise.resolve();
@@ -118,7 +118,7 @@ export class NodeMonitor {
 			}
 
 			nodesWithInfo.push(nodeWithInfo);
-			if(counter == 10) break;
+			//if(counter == 10) break;
 		}
 
 		this.nodeList = nodesWithInfo;

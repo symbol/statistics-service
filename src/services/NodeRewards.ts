@@ -1,4 +1,5 @@
-import { symbol, monitor } from '@src/config';
+import { nodeRewards } from '@src/config';
+import axios from 'axios';
 
 type RewardProgramName = 'supernode';
 
@@ -11,14 +12,17 @@ export class NodeRewards {
 	static async getInfo(publicKey: string): Promise<RewardProgram[]> {
 		const rewardPrograms: Array<RewardProgram> = [];
 		
-		const getBool = () => Math.random() < 0.5;
-		if(true) {
+		try {
+			const nodeInfo = await axios.get(`${nodeRewards.CONTROLLER_ENDPOINT}/nodes/nodepublickey/${publicKey}`);
+			const resultInfo = await axios.get(`${nodeRewards.CONTROLLER_ENDPOINT}/nodes/nodepublickey/${publicKey}`);
+			
 			rewardPrograms.push({
-				name: 'supernode',
-				passed: getBool()
+				name: nodeInfo.data.rewardProgram,
+				passed: !resultInfo.data.passed
 			});
 		}
-
+		catch(e){}
+		
 		return rewardPrograms;
 	}
 }
