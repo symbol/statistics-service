@@ -1,6 +1,7 @@
 import { Express, Request, Response } from 'express';
 import { DataBase } from '@src/services/DataBase';
-import { NotFoundError, InternalServerError } from '@src/infrastructure/Error';
+import { NodeRewards } from '@src/services/NodeRewards';
+import { NotFoundError, InternalServerError, MissingParamError } from '@src/infrastructure/Error';
 import { Pagination } from '@src/infrastructure/Pagination';
 import { nodeRewards } from '@src/config';
 import axios from 'axios';
@@ -25,19 +26,44 @@ export class Routes {
 				.catch((error) => InternalServerError.send(res, error));
 		});
 
-		app.get('/nodestats', (req: Request, res: Response) => {
+		app.get('/nodeStats', (req: Request, res: Response) => {
 			return DataBase.getNodesStats()
 				.then((stats) => res.send(stats))
 				.catch((error) => InternalServerError.send(res, error));
 		});
 
-		app.get('/nodereward/:publicKey', async (req: Request, res: Response) => {
+		app.get('/nodeRewards/nodes/nodePublicKey/:nodePublicKey', async (req: Request, res: Response) => {
 			try {
-				const nodeInfo = await axios.get(`${nodeRewards.CONTROLLER_ENDPOINT}/nodes/nodepublickey/${req.params.publicKey}`);
-				res.send(nodeInfo);
+				const nodePublicKey = req.params.nodePublicKey;
+				
+				if(!nodePublicKey)
+					return MissingParamError.send(res, 'nodePublicKey');
+				
+				const nodeInfo = await NodeRewards.getNodeInfo(nodePublicKey);
+				const nodeId = nodeInfo.id;
+				const testResults = await NodeRewards.getTestResults(nodeId);
+				let testResultInfo;
+				if(testResults.length) {
+					const latestRound = testResults[0].round;
+					testResultInfo = await NodeRewards.getTestResultInfo(nodeId, latestRound);
+				}
+				const nodeRewardsInfo = {
+					nodeInfo,
+					testResults,
+					testResultInfo
+				};
+
+				res.send(nodeRewardsInfo);
 			}
-			catch(error) {
-				InternalServerError.send(res, error)
+			catch(e) {
+				const status = e.response
+					? e.response.status
+					: 502;
+				const message = e.response
+					? e.response.data
+					: e.message;
+
+				res.status(status).send(message);
 			}
 		});
 	};
