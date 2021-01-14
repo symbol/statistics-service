@@ -26,18 +26,26 @@ export class NodeMonitor {
 		this.nodeList = [];
 		this.isRunning = false;
 		this.interval = _interval || 300000;
+		this.cacheCollection();
 	}
 
 	public start = async () => {
-		this.isRunning = true;
-		this.clear();
+		try {
+			this.isRunning = true;
+			this.clear();
 
-		await this.getNodeList();
-		await this.getNodeListInfo(); //HostInfo.getInfoForListOfNodes(this.nodeList);
+			await this.getNodeList();
+			await this.getNodeListInfo(); //HostInfo.getInfoForListOfNodes(this.nodeList);
 
-		if (this.isRunning) {
-			await this.updateCollection();
-			setTimeout(() => this.start(), this.interval);
+			if (this.isRunning) {
+				await this.updateCollection();
+				setTimeout(() => this.start(), this.interval);
+			}
+		}
+		catch(e) {
+			logger.error(`Unhandled error during a loop. ${e.message}. Restarting NodeMonitor..`);
+			this.stop();
+			this.start();
 		}
 	};
 
@@ -78,7 +86,6 @@ export class NodeMonitor {
 			const nodeList = await Axios.get(nodeUrl + '/node/peers', {
 				timeout: monitor.REQUEST_TIMEOUT,
 			});
-
 			if (Array.isArray(nodeList.data)) return nodeList.data;
 		} catch (e) {}
 		return [];
@@ -134,6 +141,16 @@ export class NodeMonitor {
 		await DataBase.updateNodesStats(this.nodesStats);
 		memoryCache.set('nodeList', this.nodeList);
 	};
+
+	private cacheCollection = async (): Promise<any> => {
+		try {
+			const nodeList = await DataBase.getNodeList();
+			memoryCache.set('nodeList', nodeList);
+		}
+		catch(e) {
+			logger.error('Failed to cache Node collection to memory. ' + e.message);
+		}
+	}
 
 	private addNodesToList = (nodes: INode[]) => {
 		nodes.forEach((node: INode) => {

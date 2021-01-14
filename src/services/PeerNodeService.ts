@@ -1,5 +1,9 @@
 import * as tcpp from 'tcp-ping';
+import * as winston from 'winston';
+import { basename } from '@src/utils';
+import { Logger } from '@src/infrastructure';
 
+const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
 export interface PeerStatus {
 	isAvailable: boolean;
@@ -10,7 +14,10 @@ export class PeerNodeService {
 	private static tcpProbe = (host: string, port: number): Promise<boolean> => {
 		return new Promise((resolve) => {
 			tcpp.probe(host, port, function (err, result) {
-				if (err) resolve(false);
+				if (err) {
+					logger.error(`TCP probe failed for: ${host}`);
+					resolve(false);
+				};
 				resolve(result);
 			});
 		});

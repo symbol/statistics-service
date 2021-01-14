@@ -15,6 +15,8 @@ export interface ApiStatus {
 
 export class ApiNodeService {
 	static getStatus = async (host: string, port: number): Promise<ApiStatus> => {
+		// logger.info(`Getting api status for: ${host}`);
+
 		try {
 			const nodeInfo = (await Axios.get(`http://${host}:${port}/node/info`)).data;
 			const chainInfo = (await Axios.get(`http://${host}:${port}/chain/info`)).data;

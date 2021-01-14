@@ -25,7 +25,7 @@ export class HostInfo {
 	static getHostDetail = async (host: string): Promise<HostDetail | object> => {
 		let coordinates: Coordinates;
 		let location = '';
-
+		// logger.info(`Getting host detail for: ${host}`);
 
 		try {
 			const nodes = await memoryCache.get('nodeList');
@@ -51,6 +51,7 @@ export class HostInfo {
 		catch(e){}
 
 		try {
+			logger.info(`Cannot find cached host info for: ${host}. Fetching info..`);
 			const response = await Axios.get(`http://demo.ip-api.com/json/${host}?fields=33288191&lang=en`);
 			await sleep(5000);
 			const data = response.data;

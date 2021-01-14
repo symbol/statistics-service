@@ -39,13 +39,13 @@ export class Routes {
 				if(!nodePublicKey)
 					return MissingParamError.send(res, 'nodePublicKey');
 				
-				const nodeInfo = await NodeRewards.getNodeInfo(nodePublicKey);
+				const nodeInfo = await NodeRewards.getNodeInfoMock(nodePublicKey);
 				const nodeId = nodeInfo.id;
-				const testResults = await NodeRewards.getTestResults(nodeId);
+				const testResults = await NodeRewards.getTestResultsMock(nodeId);
 				let testResultInfo;
 				if(testResults.length) {
 					const latestRound = testResults[0].round;
-					testResultInfo = await NodeRewards.getTestResultInfo(nodeId, latestRound);
+					testResultInfo = await NodeRewards.getTestResultInfoMock(nodeId, latestRound);
 				}
 				const nodeRewardsInfo = {
 					nodeInfo,
