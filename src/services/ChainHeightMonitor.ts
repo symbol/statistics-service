@@ -6,7 +6,7 @@ import { Logger } from '@src/infrastructure';
 import { INode } from '@src/models/Node';
 import { INodeHeightStats } from '@src/models/NodeHeightStats';
 import { symbol, monitor } from '@src/config';
-import { isAPIRole, isPeerRole, getNodeURL, basename } from '@src/utils';
+import { isAPIRole, isPeerRole, getNodeURL, basename, sleep } from '@src/utils';
 
 const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
@@ -36,15 +36,21 @@ export class ChainHeightMonitor {;
 			this.clear();
 
 			await this.getNodeList();
+			console.log('===============start===============')
+			console.time('someFunction')
 			await this.getNodeChainHeight();
+			console.log('===============end===============')
+			console.timeEnd('someFunction')
 
 			if (this.isRunning) {
 				await this.updateCollection();
-				setTimeout(() => this.start(), this.interval);
+				await sleep(this.interval);
+				this.start();
 			}
 		}
 		catch(e) {
 			logger.error(`Unhandled error during a loop. ${e.message}. Restarting Monitor..`);
+			await sleep(this.interval);
 			this.stop();
 			this.start();
 		}
@@ -60,7 +66,8 @@ export class ChainHeightMonitor {;
 		try {
 			this.nodeList = (await DataBase
 				.getNodeList())
-				.filter(node => isAPIRole(node.roles) && node.apiStatus?.isAvailable);
+				.filter(node => isAPIRole(node.roles) && node.apiStatus?.isAvailable)
+				.slice(0, 99);
 		}
 		catch(e){
 			for(const nodeUrl of symbol.NODES) {
@@ -82,18 +89,19 @@ export class ChainHeightMonitor {;
 	private getNodeChainHeight = async () => {
 		logger.info(`Getting height stats for ${this.nodeList.length} nodes`);
 		const nodes: INode[] = this.nodeList;
+		const nodeChainInfoPromises = nodes.map(node => ApiNodeService.getNodeChainInfo(node.host, monitor.API_NODE_PORT));
+		const nodeChainInfoList = await Promise.all(nodeChainInfoPromises);
 
-		for (let node of nodes) {
+		for (let chainInfo of nodeChainInfoList) {
 			try {
-				const chainInfo = await ApiNodeService.getNodeChainInfo(node.host, monitor.API_NODE_PORT);
 				if(chainInfo) {
 					if(this.heights[chainInfo.height])
-						this.heights[chainInfo.height] = this.heights[chainInfo.height] ++;
+						this.heights[chainInfo.height] ++;
 					else
 						this.heights[chainInfo.height] = 1;
 
 					if(this.finalizedHeights[chainInfo.latestFinalizedBlock.height])
-						this.finalizedHeights[chainInfo.latestFinalizedBlock.height] = this.heights[chainInfo.latestFinalizedBlock.height] ++;
+						this.finalizedHeights[chainInfo.latestFinalizedBlock.height] ++;
 					else
 						this.finalizedHeights[chainInfo.latestFinalizedBlock.height] = 1;
 				}
@@ -123,7 +131,7 @@ export class ChainHeightMonitor {;
 				count: this.finalizedHeights[height]
 			})),
 			date: new Date()
-		}
+		};
 		await DataBase.updateNodeHeightStats(nodeHeightStats);
 	};
 }

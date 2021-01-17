@@ -32,6 +32,12 @@ export class Routes {
 				.catch((error) => InternalServerError.send(res, error));
 		});
 
+		app.get('/nodeHeightStats', (req: Request, res: Response) => {
+			return DataBase.getNodeHeightStats()
+				.then((stats) => res.send(stats))
+				.catch((error) => InternalServerError.send(res, error));
+		});
+
 		app.get('/nodeRewards/nodes/nodePublicKey/:nodePublicKey', async (req: Request, res: Response) => {
 			try {
 				const nodePublicKey = req.params.nodePublicKey;

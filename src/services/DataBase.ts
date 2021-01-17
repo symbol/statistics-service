@@ -49,6 +49,10 @@ export class DataBase {
 		return (await NodesStats.findOne({}).exec())?.toObject() || null;
 	}
 
+	static getNodeHeightStats = async (): Promise<INodeHeightStats | null> => {
+		return (await NodeHeightStats.findOne({}).exec())?.toObject() || null;
+	}
+
 	static updateNodesStats = async (nodeList: INodesStats): Promise<void> => {
 		await NodesStats.remove({}).exec();
 		await NodesStats.create(nodeList);

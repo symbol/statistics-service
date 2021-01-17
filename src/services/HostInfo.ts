@@ -53,7 +53,7 @@ export class HostInfo {
 		try {
 			logger.info(`Cannot find cached host info for: ${host}. Fetching info..`);
 			const response = await HTTP.get(`http://ip-api.com/json/${host}?fields=33288191&lang=en`);
-			//await sleep(5000);
+			await sleep(5000);
 			const data = response.data;
 
 			coordinates = {
