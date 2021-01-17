@@ -6,7 +6,7 @@ import {
 	RewardProgramDTO,
 	NodeStatusDTO
 } from '@src/models/NodeRewards/gen-src'
-import axios from 'axios';
+import { HTTP } from '@src/services/HTTP';
 
 export interface RewardProgram {
 	name: RewardProgramDTO;
@@ -28,7 +28,7 @@ export class NodeRewards {
 		const rewardPrograms: Array<RewardProgram> = [];
 		
 		try {
-			const nodeInfo = await NodeRewards.getNodeInfo(nodePublicKey);
+			const nodeInfo = await NodeRewards.getNodeInfoMock(nodePublicKey);
 					
 			rewardPrograms.push({
 				name: nodeInfo.rewardProgram,
@@ -41,20 +41,20 @@ export class NodeRewards {
 	}
 
 	static async getNodeInfo(nodePublicKey: string): Promise<NodeInfoDTO> {
-		const nodeInfo: NodeInfoDTO = await axios
-			.get(`${nodeRewards.CONTROLLER_ENDPOINT}/nodes/nodePublicKey/${nodePublicKey}`);
+		const nodeInfo: NodeInfoDTO = (await HTTP
+			.get(`${nodeRewards.CONTROLLER_ENDPOINT}/nodes/nodePublicKey/${nodePublicKey}`)).data;
 		return nodeInfo;
 	}
 
 	static async getTestResults(nodeId: string): Promise<TestResultDTO[]> {
-		const testResults: TestResultDTO[] = await axios
-			.get(`${nodeRewards.CONTROLLER_ENDPOINT}/testResults/nodeId/${nodeId}`);
+		const testResults: TestResultDTO[] = (await HTTP
+			.get(`${nodeRewards.CONTROLLER_ENDPOINT}/testResults/nodeId/${nodeId}`)).data;
 		return testResults;
 	}
 
 	static async getTestResultInfo(nodeId: string, round: number): Promise<TestResultInfoDTO> {
-		const testResultInfo: TestResultInfoDTO = await axios
-			.get(`${nodeRewards.CONTROLLER_ENDPOINT}/testResultInfo/nodeId/${nodeId}/round/${round}`);
+		const testResultInfo: TestResultInfoDTO = (await HTTP
+			.get(`${nodeRewards.CONTROLLER_ENDPOINT}/testResultInfo/nodeId/${nodeId}/round/${round}`)).data;
 		return testResultInfo;
 	}
 
@@ -62,6 +62,12 @@ export class NodeRewards {
 	// mocks
 
 	static getNodeInfoMock = async (nodePublicKey: string): Promise<NodeInfoDTO> => {
+		if(
+			nodePublicKey !== 'DB82B0E82B5C61200184EDE335D0DE12D24BD87F49E29E8A56E9BE61396F8233'
+			&& nodePublicKey !== 'CB079A9608C542C507419645EF59A32B34AEA4D03B2E9F21F98C1D7A7693260F'
+		)
+			throw Error('Not found');
+
 		return {
 			"id":"5ffd5f0984dc770379e2e2bb",
 			"name":"supernode-fernando",

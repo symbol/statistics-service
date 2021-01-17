@@ -1,4 +1,4 @@
-import Axios from 'axios';
+import { HTTP } from '@src/services/HTTP';
 import * as winston from 'winston';
 import { memoryCache } from '@src/services/MemoryCache';
 import { Coordinates, INode } from '@src/models/Node';
@@ -52,8 +52,8 @@ export class HostInfo {
 
 		try {
 			logger.info(`Cannot find cached host info for: ${host}. Fetching info..`);
-			const response = await Axios.get(`http://demo.ip-api.com/json/${host}?fields=33288191&lang=en`);
-			await sleep(5000);
+			const response = await HTTP.get(`http://ip-api.com/json/${host}?fields=33288191&lang=en`);
+			//await sleep(5000);
 			const data = response.data;
 
 			coordinates = {

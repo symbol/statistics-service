@@ -176,7 +176,7 @@ const NodeSchema: Schema = new Schema({
 });
 
 NodeSchema.set('toObject', {
-	transform: (doc, ret) => {
+	transform: (doc: Document, ret: Document) => {
 		delete ret._id
 		delete ret.__v
 	}

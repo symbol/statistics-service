@@ -1,5 +1,5 @@
 import * as winston from 'winston';
-import Axios from 'axios';
+import { HTTP } from '@src/services/HTTP';
 import { DataBase } from '@src/services/DataBase';
 import { HostInfo } from '@src/services/HostInfo';
 import { ApiNodeService } from '@src/services/ApiNodeService';
@@ -83,7 +83,7 @@ export class NodeMonitor {
 
 	private fetchNodesByURL = async (nodeUrl: string): Promise<Array<INode>> => {
 		try {
-			const nodeList = await Axios.get(nodeUrl + '/node/peers', {
+			const nodeList = await HTTP.get(nodeUrl + '/node/peers', {
 				timeout: monitor.REQUEST_TIMEOUT,
 			});
 			if (Array.isArray(nodeList.data)) return nodeList.data;

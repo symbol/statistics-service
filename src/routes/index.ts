@@ -4,7 +4,7 @@ import { NodeRewards } from '@src/services/NodeRewards';
 import { NotFoundError, InternalServerError, MissingParamError } from '@src/infrastructure/Error';
 import { Pagination } from '@src/infrastructure/Pagination';
 import { nodeRewards } from '@src/config';
-import axios from 'axios';
+import { HTTP } from '@src/services/HTTP';
 
 export class Routes {
 	static register = async (app: Express) => {

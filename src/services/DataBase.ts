@@ -44,8 +44,8 @@ export class DataBase {
 		await Node.findOneAndUpdate({ publicKey: node.publicKey }, node).exec();
 	};
 
-	static getNodesStats = async (): Promise<NodesStatsDocument | null> => {
-		return (await NodesStats.findOne({}).exec())?.toObject()
+	static getNodesStats = async (): Promise<INodesStats | null> => {
+		return (await NodesStats.findOne({}).exec())?.toObject() || null;
 	}
 
 	static updateNodesStats = async (nodeList: INodesStats): Promise<void> => {
