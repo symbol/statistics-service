@@ -30,6 +30,7 @@ export class NodeMonitor {
 	}
 
 	public start = async () => {
+		logger.info(`Start`);
 		try {
 			this.isRunning = true;
 			this.clear();
@@ -50,6 +51,7 @@ export class NodeMonitor {
 	};
 
 	public stop = () => {
+		logger.info(`Stop`);
 		this.isRunning = false;
 		this.clear();
 	};
@@ -132,11 +134,13 @@ export class NodeMonitor {
 	}
 
 	private clear = () => {
+		logger.info(`Clear`);
 		this.nodeList = [];
 		this.nodesStats.clear();
 	};
 
 	private updateCollection = async (): Promise<any> => {
+		logger.info(`Update collection`);
 		await DataBase.updateNodeList(this.nodeList);
 		await DataBase.updateNodesStats(this.nodesStats);
 		memoryCache.set('nodeList', this.nodeList);

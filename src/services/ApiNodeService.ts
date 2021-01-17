@@ -13,6 +13,30 @@ export interface ApiStatus {
 	lastStatusCheck: number;
 };
 
+export interface NodeInfo {
+	version: number;
+	publicKey: string;
+	networkGenerationHashSeed: string;
+	roles: number;
+	port: number;
+	networkIdentifier: number;
+	host: string;
+	friendlyName: string;
+	nodePublicKey: string;
+};
+
+export interface ChainInfo {
+	scoreHigh: string;
+	scoreLow: string;
+	height: string;
+	latestFinalizedBlock: {
+		finalizationEpoch: number;
+		finalizationPoint: number;
+		height: string;
+		hash: string;
+	};
+};
+
 export class ApiNodeService {
 	static getStatus = async (host: string, port: number): Promise<ApiStatus> => {
 		// logger.info(`Getting api status for: ${host}`);
@@ -36,4 +60,22 @@ export class ApiNodeService {
 			};
 		}
 	};
+
+	static getNodeInfo = async (host: string, port: number): Promise<NodeInfo | null> => {
+		try {
+			return (await HTTP.get(`http://${host}:${port}/node/info`)).data;
+		}
+		catch(e) {
+			return null;
+		}
+	}
+
+	static getNodeChainInfo = async (host: string, port: number): Promise<ChainInfo | null> => {
+		try {
+			return (await HTTP.get(`http://${host}:${port}/chain/info`)).data;
+		}
+		catch(e) {
+			return null;
+		}
+	}
 }

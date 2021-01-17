@@ -4,6 +4,7 @@ import { basename } from '@src/utils';
 import { Logger } from '@src/infrastructure';
 import { INode, NodeDocument, Node } from '@src/models/Node';
 import { INodesStats, NodesStatsDocument, NodesStats } from '@src/models/NodesStats';
+import { INodeHeightStats, NodeHeightStatsDocument, NodeHeightStats } from '@src/models/NodeHeightStats';
 import { SearchCriteria, Pagination, PaginationResponse } from '@src/infrastructure/Pagination';
 
 const logger: winston.Logger = Logger.getLogger(basename(__filename));
@@ -51,5 +52,10 @@ export class DataBase {
 	static updateNodesStats = async (nodeList: INodesStats): Promise<void> => {
 		await NodesStats.remove({}).exec();
 		await NodesStats.create(nodeList);
+	}
+
+	static updateNodeHeightStats = async (nodeHeightStats: INodeHeightStats): Promise<void> => {
+		await NodeHeightStats.remove({}).exec();
+		await NodeHeightStats.create(nodeHeightStats);
 	}
 }
