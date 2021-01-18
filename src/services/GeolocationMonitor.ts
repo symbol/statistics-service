@@ -1,10 +1,12 @@
 import * as winston from 'winston';
 import { DataBase } from '@src/services/DataBase';
 import { ApiNodeService } from '@src/services/ApiNodeService';
+import { HostInfo } from '@src/services/HostInfo';
+import { memoryCache } from '@src/services/MemoryCache';
 import { Logger } from '@src/infrastructure';
 
 import { INode } from '@src/models/Node';
-import { INodeHeightStats } from '@src/models/NodeHeightStats';
+import { IHostDetail } from '@src/models/HostDetail';
 import { symbol, monitor } from '@src/config';
 import { isAPIRole, isPeerRole, getNodeURL, basename, sleep } from '@src/utils';
 
@@ -14,19 +16,13 @@ export class ChainHeightMonitor {;
 	private nodeList: INode[];
 	private isRunning: boolean;
 	private interval: number;
-	private heights: {
-		[key: string]: number;
-	};
-	private finalizedHeights: {
-		[key: string]: number;
-	};
+	private nodesHostDetail: IHostDetail[];
 
 	constructor(_interval: number) {
 		this.nodeList = [];
 		this.isRunning = false;
 		this.interval = _interval || 300000;
-		this.heights = {};
-		this.finalizedHeights = {};
+		this.nodesHostDetail = [];
 	}
 
 	public start = async () => {
@@ -36,10 +32,11 @@ export class ChainHeightMonitor {;
 			this.clear();
 
 			await this.getNodeList();
-			await this.getNodeChainHeight();
+			await this.getNodesHostDetail();
 
 			if (this.isRunning) {
 				await this.updateCollection();
+				await this.cacheCollection();
 				await sleep(this.interval);
 				this.start();
 			}
@@ -81,25 +78,14 @@ export class ChainHeightMonitor {;
 		return Promise.resolve();
 	};
 
-	private getNodeChainHeight = async () => {
+	private getNodesHostDetail = async () => {
 		logger.info(`Getting height stats for ${this.nodeList.length} nodes`);
-		const nodes: INode[] = this.nodeList;
-		const nodeChainInfoPromises = nodes.map(node => ApiNodeService.getNodeChainInfo(node.host, monitor.API_NODE_PORT));
-		const nodeChainInfoList = await Promise.all(nodeChainInfoPromises);
-
-		for (let chainInfo of nodeChainInfoList) {
+		for (const node of this.nodeList) {
 			try {
-				if(chainInfo) {
-					if(this.heights[chainInfo.height])
-						this.heights[chainInfo.height] ++;
-					else
-						this.heights[chainInfo.height] = 1;
-
-					if(this.finalizedHeights[chainInfo.latestFinalizedBlock.height])
-						this.finalizedHeights[chainInfo.latestFinalizedBlock.height] ++;
-					else
-						this.finalizedHeights[chainInfo.latestFinalizedBlock.height] = 1;
-				}
+				const hostDetail = await HostInfo.getHostDetail(node.host);
+				
+				if(hostDetail)
+					this.nodesHostDetail.push(hostDetail);
 			}
 			catch(e) {
 				logger.error(`Node chain height monitor failed. ${e.message}`);
@@ -109,23 +95,21 @@ export class ChainHeightMonitor {;
 
 	private clear = () => {
 		this.nodeList = [];
-		this.heights = {};
-		this.finalizedHeights = {};
+		this.nodesHostDetail = [];
 	};
 
 	private updateCollection = async (): Promise<any> => {
 		logger.info(`Update collection`);
-		const nodeHeightStats: INodeHeightStats = {
-			height: Object.keys(this.heights).map(height => ({
-				value: height,
-				count: this.heights[height]
-			})),
-			finalizedHeight: Object.keys(this.finalizedHeights).map(height => ({
-				value: height,
-				count: this.finalizedHeights[height]
-			})),
-			date: new Date()
-		};
-		await DataBase.updateNodeHeightStats(nodeHeightStats);
+		await DataBase.updateNodesHostDetail(this.nodesHostDetail);
 	};
+
+	private cacheCollection = async (): Promise<any> => {
+		try {
+			const nodeList = await DataBase.getNodeList();
+			memoryCache.setArray('nodesHostDetail', this.nodesHostDetail, ['host']);
+		}
+		catch(e) {
+			logger.error('Failed to cache "nodesHostDetail" collection to memory. ' + e.message);
+		}
+	}
 }

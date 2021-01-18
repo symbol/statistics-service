@@ -2,16 +2,8 @@ import * as mongoose from 'mongoose';
 import { Schema, Document } from 'mongoose';
 import { RewardProgram } from '@src/services/NodeRewards';
 import { ApiStatus } from '@src/services/ApiNodeService';
-
-export interface Coordinates {
-	latitude: number;
-	longitude: number;
-};
-
-export interface PeerStatus {
-	isAvailable: boolean;
-	lastStatusCheck: number;
-};
+import { PeerStatus } from '@src/models/PeerStatus';
+import { IHostDetail } from './HostDetail';
 
 export interface INode {
 	friendlyName: string;
@@ -19,23 +11,13 @@ export interface INode {
 	networkGenerationHashSeed: string;
 	networkIdentifier: number;
 	port: number;
-	peerStatus?: PeerStatus;
 	publicKey: string;
 	roles: number;
 	version: number;
 	rewardPrograms: RewardProgram[];
+	peerStatus?: PeerStatus;
 	apiStatus?: ApiStatus;
-	coordinates?: Coordinates;
-	location?: string;
-	ip?: string;
-	organization?: string;
-	as?: string;
-	continent?: string;
-	country?: string;
-	region?: string;
-	city?: string;
-	district?: string;
-	zip?: string;
+	hostDetail?: IHostDetail;
 }
 
 export interface NodeDocument extends INode, Document {}
@@ -120,59 +102,68 @@ const NodeSchema: Schema = new Schema({
 		}],
 		required: true
 	},
-	coordinates: {
+	hostDetail: {
 		type: {
-			latitude: {
-				type: Number,
+			host: {
+				type: String,
 				required: true,
 			},
-			longitude: {
-				type: Number,
+			coordinates: {
+				type: {
+					latitude: {
+						type: Number,
+						required: true,
+					},
+					longitude: {
+						type: Number,
+						required: true,
+					},
+				},
+				required: false,
+			},
+			location: {
+				type: String,
 				required: true,
 			},
+			ip: {
+				type: String,
+				required: true,
+			},
+			organization: {
+				type: String,
+				required: true,
+			},
+			as: {
+				type: String,
+				required: true,
+			},
+			continent: {
+				type: String,
+				required: false,
+			},
+			country: {
+				type: String,
+				required: true,
+			},
+			region: {
+				type: String,
+				required: true,
+			},
+			city: {
+				type: String,
+				required: true,
+			},
+			district: {
+				type: String,
+				required: true,
+			},
+			zip: {
+				type: String,
+				required: true,
+			}
 		},
-		required: false,
-	},
-	location: {
-		type: String,
-		required: false,
-	},
-	ip: {
-		type: String,
-		required: false,
-	},
-	organization: {
-		type: String,
-		required: false,
-	},
-	as: {
-		type: String,
-		required: false,
-	},
-	continent: {
-		type: String,
-		required: false,
-	},
-	country: {
-		type: String,
-		required: false,
-	},
-	region: {
-		type: String,
-		required: false,
-	},
-	city: {
-		type: String,
-		required: false,
-	},
-	district: {
-		type: String,
-		required: false,
-	},
-	zip: {
-		type: String,
-		required: false,
-	},
+		required: false
+	}
 });
 
 NodeSchema.set('toObject', {

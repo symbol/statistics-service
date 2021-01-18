@@ -2,13 +2,9 @@ import * as tcpp from 'tcp-ping';
 import * as winston from 'winston';
 import { basename } from '@src/utils';
 import { Logger } from '@src/infrastructure';
+import { PeerStatus } from '@src/models/PeerStatus';
 
 const logger: winston.Logger = Logger.getLogger(basename(__filename));
-
-export interface PeerStatus {
-	isAvailable: boolean;
-	lastStatusCheck: number;
-}
 
 export class PeerNodeService {
 	private static tcpProbe = (host: string, port: number): Promise<boolean> => {

@@ -58,6 +58,7 @@ export class NodeMonitor {
 
 	private getNodeList = async (): Promise<any> => {
 		// Init fetch node list from config nodes
+		logger.info(`Getting node list`);
 		let counter = 0;
 
 		for (const nodeUrl of symbol.NODES) {
@@ -69,16 +70,26 @@ export class NodeMonitor {
 		}
 
 		// Nested fetch node list from current nodeList[]
-		for (const node of this.nodeList) {
-			if (isAPIRole(node.roles)) {
-				counter++;
-				logger.info(`Fetching node: ${counter} ${node.host}`);
-				const peers = await this.fetchNodesByURL(getNodeURL(node, monitor.API_NODE_PORT));
-
-				this.addNodesToList(peers);
+		const nodeListPromises = this.nodeList.map(async node => {
+			if(isAPIRole(node.roles)) {
+				return this.fetchNodesByURL(getNodeURL(node, monitor.API_NODE_PORT));
 			}
-			//if(counter > 1) break;
-		}
+			return [];
+		});
+
+		const arrayOfNodeList = await Promise.all(nodeListPromises);
+		const nodeList: INode[] = arrayOfNodeList.reduce((accumulator, value) => accumulator.concat(value), []);
+		this.addNodesToList(nodeList);
+		// for (const node of this.nodeList) {
+		// 	if (isAPIRole(node.roles)) {
+		// 		counter++;
+		// 		logger.info(`Fetching node: ${counter} ${node.host}`);
+		// 		// const peers = await this.fetchNodesByURL(getNodeURL(node, monitor.API_NODE_PORT));
+
+		// 		// this.addNodesToList(peers);
+		// 	}
+		// 	//if(counter > 1) break;
+		// }
 
 		return Promise.resolve();
 	};
@@ -96,41 +107,45 @@ export class NodeMonitor {
 	private getNodeListInfo = async () => {
 		const nodesWithInfo: INode[] = [];
 		const nodes: INode[] = this.nodeList;
-		let counter = 0;
+		// let counter = 0;
 
-		for (let node of nodes) {
-			let nodeWithInfo: INode = { ...node };
-			counter++;
-			logger.info(`Getting info for: ${counter} ${node.host}`);
+		// for (let node of nodes) {
+			
 
-			try {
-				const hostDetail = await HostInfo.getHostDetail(node.host);
-				nodeWithInfo.rewardPrograms = [];
+		// 	nodesWithInfo.push(nodeWithInfo);
+		// 	//if(counter == 10) break;
+		// }
+		logger.info(`Getting node info for ${this.nodeList.length} nodes`);
+		const nodeInfoPromises = this.nodeList.map(this.getNodeInfo);
+		this.nodeList = await Promise.all(nodeInfoPromises);
+		this.nodeList.forEach(node => this.nodesStats.addToStats(node));
+	}
 
-				nodeWithInfo = {
-					...nodeWithInfo,
-					...hostDetail,
-				};
+	private async getNodeInfo(node: INode): Promise<INode> {
+		let nodeWithInfo: INode = { ...node };
 
-				if (isPeerRole(node.roles))
-					nodeWithInfo.peerStatus = await PeerNodeService.getStatus(node.host, node.port);
-				if (isAPIRole(node.roles)) {
-					nodeWithInfo.apiStatus = await ApiNodeService.getStatus(node.host, monitor.API_NODE_PORT);
-					if (nodeWithInfo.apiStatus?.nodePublicKey)
-						nodeWithInfo.rewardPrograms = await NodeRewards.getNodeRewardPrograms(nodeWithInfo.apiStatus.nodePublicKey);
-				}
+		try {
+			nodeWithInfo.rewardPrograms = [];
 
-				this.nodesStats.addToStats(nodeWithInfo);
+			const hostDetail = await HostInfo.getHostDetailCached(node.host);
+			if(hostDetail)
+				nodeWithInfo.hostDetail = hostDetail;
+
+			if (isPeerRole(node.roles))
+				nodeWithInfo.peerStatus = await PeerNodeService.getStatus(node.host, node.port);
+
+			if (isAPIRole(node.roles)) {
+				nodeWithInfo.apiStatus = await ApiNodeService.getStatus(node.host, monitor.API_NODE_PORT);
+
+				if (nodeWithInfo.apiStatus?.nodePublicKey)
+					nodeWithInfo.rewardPrograms = await NodeRewards.getNodeRewardPrograms(nodeWithInfo.apiStatus.nodePublicKey);
 			}
-			catch(e) {
-				logger.error(`failed to get info. ${e.message}`);
-			}
-
-			nodesWithInfo.push(nodeWithInfo);
-			//if(counter == 10) break;
+		}
+		catch(e) {
+			logger.error(`failed to get info. ${e.message}`);
 		}
 
-		this.nodeList = nodesWithInfo;
+		return nodeWithInfo;
 	}
 
 	private clear = () => {
