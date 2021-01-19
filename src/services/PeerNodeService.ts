@@ -11,7 +11,7 @@ export class PeerNodeService {
 		return new Promise((resolve) => {
 			tcpp.probe(host, port, function (err, result) {
 				if (err) {
-					logger.error(`TCP probe failed for: ${host}`);
+					//logger.error(`TCP probe failed for: ${host}`);
 					resolve(false);
 				};
 				resolve(result);

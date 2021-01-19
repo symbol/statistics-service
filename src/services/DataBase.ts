@@ -68,8 +68,12 @@ export class DataBase {
 		return HostDetail.find().exec();
 	} 
 	
+	static insertNodeHostDetail = async (hostDetail: IHostDetail): Promise<void> => {
+		await HostDetail.insertMany([hostDetail]);
+	} 
+
 	static updateNodesHostDetail = async (hostDetail: IHostDetail[]): Promise<void> => {
 		await HostDetail.remove({}).exec();
-		await HostDetail.create(hostDetail);
+		await HostDetail.insertMany(hostDetail);
 	} 
 }

@@ -53,7 +53,6 @@ export class ApiNodeService {
 				lastStatusCheck: Date.now(),
 			};
 		} catch (e) {
-			logger.error(`Failed to get api status ${e.message}`);
 			return {
 				isAvailable: false,
 				lastStatusCheck: Date.now()

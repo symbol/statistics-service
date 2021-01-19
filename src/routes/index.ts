@@ -15,6 +15,13 @@ export class Routes {
 				.catch((error) => InternalServerError.send(res, error));
 		});
 
+		app.get('/nodesHostDetail', (req: Request, res: Response) => {
+			//return DataBase.getNodeListWithCriteria(Pagination.reqToSearchCriteria(req))
+			return DataBase.getNodesHostDetail()
+				.then((nodes) => res.send(nodes))
+				.catch((error) => InternalServerError.send(res, error));
+		});
+
 		app.get('/nodes/:publicKey', (req: Request, res: Response) => {
 			const publicKey = req.params.publicKey;
 
@@ -45,7 +52,7 @@ export class Routes {
 				if(!nodePublicKey)
 					return MissingParamError.send(res, 'nodePublicKey');
 				
-				const nodeInfo = await NodeRewards.getNodeInfoMock(nodePublicKey);
+				const nodeInfo = await NodeRewards.getNodeInfo(nodePublicKey);
 				const nodeId = nodeInfo.id;
 				const testResults = await NodeRewards.getTestResultsMock(nodeId);
 				let testResultInfo;

@@ -28,7 +28,7 @@ export class NodeRewards {
 		const rewardPrograms: Array<RewardProgram> = [];
 		
 		try {
-			const nodeInfo = await NodeRewards.getNodeInfoMock(nodePublicKey);
+			const nodeInfo = await NodeRewards.getNodeInfo(nodePublicKey);
 					
 			rewardPrograms.push({
 				name: nodeInfo.rewardProgram,

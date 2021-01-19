@@ -40,6 +40,7 @@ export class NodeMonitor {
 
 			if (this.isRunning) {
 				await this.updateCollection();
+				await this.cacheCollection();
 				setTimeout(() => this.start(), this.interval);
 			}
 		}
@@ -63,7 +64,6 @@ export class NodeMonitor {
 
 		for (const nodeUrl of symbol.NODES) {
 			counter++;
-			logger.info(`Fetching node (initial): ${counter} ${nodeUrl}`);
 			const peers = await this.fetchNodesByURL(nodeUrl);
 
 			this.addNodesToList(peers);
@@ -80,17 +80,7 @@ export class NodeMonitor {
 		const arrayOfNodeList = await Promise.all(nodeListPromises);
 		const nodeList: INode[] = arrayOfNodeList.reduce((accumulator, value) => accumulator.concat(value), []);
 		this.addNodesToList(nodeList);
-		// for (const node of this.nodeList) {
-		// 	if (isAPIRole(node.roles)) {
-		// 		counter++;
-		// 		logger.info(`Fetching node: ${counter} ${node.host}`);
-		// 		// const peers = await this.fetchNodesByURL(getNodeURL(node, monitor.API_NODE_PORT));
-
-		// 		// this.addNodesToList(peers);
-		// 	}
-		// 	//if(counter > 1) break;
-		// }
-
+	
 		return Promise.resolve();
 	};
 
@@ -105,16 +95,6 @@ export class NodeMonitor {
 	};
 
 	private getNodeListInfo = async () => {
-		const nodesWithInfo: INode[] = [];
-		const nodes: INode[] = this.nodeList;
-		// let counter = 0;
-
-		// for (let node of nodes) {
-			
-
-		// 	nodesWithInfo.push(nodeWithInfo);
-		// 	//if(counter == 10) break;
-		// }
 		logger.info(`Getting node info for ${this.nodeList.length} nodes`);
 		const nodeInfoPromises = this.nodeList.map(this.getNodeInfo);
 		this.nodeList = await Promise.all(nodeInfoPromises);
@@ -155,10 +135,20 @@ export class NodeMonitor {
 	};
 
 	private updateCollection = async (): Promise<any> => {
-		logger.info(`Update collection`);
-		await DataBase.updateNodeList(this.nodeList);
-		await DataBase.updateNodesStats(this.nodesStats);
-		memoryCache.set('nodeList', this.nodeList);
+		if(this.nodeList.length > 0) {
+			logger.info(`Update collection`);
+			const prevNodeList = await DataBase.getNodeList();
+			try {
+				await DataBase.updateNodeList(this.nodeList);
+				await DataBase.updateNodesStats(this.nodesStats);
+			}
+			catch(e) {
+				logger.error(`Failed to update collection. ${e.message}`);
+				await DataBase.updateNodeList(prevNodeList);
+			}
+		}
+		else
+			logger.error(`Failed to update collection. Collection length = ${this.nodeList.length}`);
 	};
 
 	private cacheCollection = async (): Promise<any> => {

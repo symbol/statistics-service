@@ -58,35 +58,35 @@ const HostDetailSchema: Schema = new Schema({
 	},
 	organization: {
 		type: String,
-		required: true,
+		required: false,
 	},
 	as: {
 		type: String,
-		required: true,
+		required: false,
 	},
 	continent: {
 		type: String,
-		required: true,
+		required: false,
 	},
 	country: {
 		type: String,
-		required: true,
+		required: false,
 	},
 	region: {
 		type: String,
-		required: true,
+		required: false,
 	},
 	city: {
 		type: String,
-		required: true,
+		required: false,
 	},
 	district: {
 		type: String,
-		required: true,
+		required: false,
 	},
 	zip: {
 		type: String,
-		required: true
+		required: false
 	}
 });
 

@@ -10,6 +10,7 @@ class MemoryCache {
 
 	setArray = (key: string, value: Array<any>, indexes?: Array<string>) => {
 		this.store[key] = value;
+		this.store[key + 'Indexes'] = {};
 		indexes?.forEach(index => {
 			this.store[key + 'Indexes'][index] = {};
 			value.forEach(item => 
