@@ -54,11 +54,11 @@ export class Routes {
 				
 				const nodeInfo = await NodeRewards.getNodeInfo(nodePublicKey);
 				const nodeId = nodeInfo.id;
-				const testResults = await NodeRewards.getTestResultsMock(nodeId);
+				const testResults = await NodeRewards.getTestResults(nodeId);
 				let testResultInfo;
 				if(testResults.length) {
 					const latestRound = testResults[0].round;
-					testResultInfo = await NodeRewards.getTestResultInfoMock(nodeId, latestRound);
+					testResultInfo = await NodeRewards.getTestResultInfo(nodeId, latestRound);
 				}
 				const nodeRewardsInfo = {
 					nodeInfo,

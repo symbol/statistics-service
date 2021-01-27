@@ -146,18 +146,18 @@ export class NodeRewards {
 	static getTestResultInfoMock = async (nodeId: string, round: number): Promise<TestResultInfoDTO> => {
 		return {
 			'bandwidthResult': {
-				'createdAt': new Date().toISOString(),
+				"createdAt": new Date().toISOString(),
 				"id": "5ff6edb9354d0b2348dba81f",
-				"fromNodeId":"DB82B0E82B5C61200184EDE335D0DE12D24BD87F49E29E8A56E9BE61396F8233",
-				"toNodeId":"DB82B0E82B5C61200184EDE335D0DE12D24BD87F49E29E8A56E9BE61396F8233",
+				"fromNodeId":"5ffd5f0984dc770379e2e2bb",
+				"toNodeId":"5ffd5f0984dc770379e2e2bb",
 				"entitySeed":"3F757F8D34BE670DB50DF4B440C79533FB855E0C7D338FD1C7DBA2736BC8BD94",
 				"entityHash":"18C1006E0A09EF05D8A2DA2836CD4BF4050F3103E3B046C9FA7FFE2EEA0A54F3",
 				"reportedHash":"18C1006E0A09EF05D8A2DA2836CD4BF4050F3103E3B046C9FA7FFE2EEA0A54F3",
 				"iterations": 1000,
 				"downloadTime": 111,
 				"entityValid":false,
-				"round": 10,
-				speed: 4833.72972972973
+				"round": 1,
+				"speed": 4833.72972972973
 			},
 			'chainHeightResult': {
 				'createdAt': new Date().toISOString(),
@@ -195,7 +195,7 @@ export class NodeRewards {
 				'createdAt': new Date().toISOString(),
 				"id": "5ffdb36984dc770379e2e2bd",
 				"nodeId":"5ffd5f0984dc770379e2e2bb",
-				"expectedMinBalance":1000000,
+				"expectedMinBalance":11000,
 				"reportedBalance":8712496329.0,
 				"round":10,
 				"resultValid":true
