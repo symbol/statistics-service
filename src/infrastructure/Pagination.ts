@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import { Document, Model } from 'mongoose'
+import { Document, Model } from 'mongoose';
 
 export enum SortType {
 	ASC = 1,
@@ -30,23 +30,19 @@ export class PaginationResponse<T> implements PaginationResponse<T> {
 	pageNumber: number;
 	lastPageNumber?: number;
 
-	constructor(
-		data: T[],
-		searchCriteria: SearchCriteria,
-		recordsCount?: number
-	) {
+	constructor(data: T[], searchCriteria: SearchCriteria, recordsCount?: number) {
 		this.data = data;
 		this.pageSize = searchCriteria.pageSize;
 		this.pageNumber = searchCriteria.pageNumber;
-		if(recordsCount)
-			this.lastPageNumber = Math.ceil(recordsCount / searchCriteria.pageSize);
+		if (recordsCount) this.lastPageNumber = Math.ceil(recordsCount / searchCriteria.pageSize);
 	}
 }
 
 export class Pagination {
 	public static async getPage<T extends Document>(model: Model<T>, searchCriteria: SearchCriteria): Promise<PaginationResponse<T>> {
 		const pageIndex = searchCriteria.pageNumber - 1;
-		const data = await model.find()
+		const data = await model
+			.find()
 			.sort(searchCriteria.order == Order.Desc ? { _id: -1 } : { _id: 1 })
 			.limit(searchCriteria.pageSize)
 			.skip(searchCriteria.pageSize * pageIndex)
@@ -56,16 +52,14 @@ export class Pagination {
 	}
 
 	public static reqToSearchCriteria(req: Request): SearchCriteria {
-		const pageNumber =
-			parseInt(req.query.pageNumber as string) || 1;
-		const pageSize =
-			parseInt(req.query.pageSize as string) || 10;
+		const pageNumber = parseInt(req.query.pageNumber as string) || 1;
+		const pageSize = parseInt(req.query.pageSize as string) || 10;
 		const order = (req.query.order as Order) || Order.Desc;
 
 		return {
 			pageNumber,
 			pageSize,
-			order
+			order,
 		};
 	}
 }

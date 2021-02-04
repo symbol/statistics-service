@@ -12,7 +12,7 @@ import { isAPIRole, isPeerRole, getNodeURL, basename, sleep } from '@src/utils';
 
 const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
-export class GeolocationMonitor {;
+export class GeolocationMonitor {
 	private nodeList: INode[];
 	private isRunning: boolean;
 	private interval: number;
@@ -41,8 +41,7 @@ export class GeolocationMonitor {;
 				await sleep(this.interval);
 				this.start();
 			}
-		}
-		catch(e) {
+		} catch (e) {
 			logger.error(`Unhandled error during a loop. ${e.message}. Restarting Monitor..`);
 			await sleep(this.interval);
 			this.stop();
@@ -58,20 +57,16 @@ export class GeolocationMonitor {;
 
 	private getNodeList = async (): Promise<any> => {
 		try {
-			this.nodeList = (await DataBase
-				.getNodeList());
-		}
-		catch(e){
-			for(const nodeUrl of symbol.NODES) {
-				const node = await ApiNodeService.getNodeInfo(
-					new URL(nodeUrl).host,
-					Number(monitor.API_NODE_PORT)
-				);
-				if(node) {
+			this.nodeList = await DataBase.getNodeList();
+		} catch (e) {
+			for (const nodeUrl of symbol.NODES) {
+				const node = await ApiNodeService.getNodeInfo(new URL(nodeUrl).host, Number(monitor.API_NODE_PORT));
+
+				if (node) {
 					const status = await ApiNodeService.getStatus(node.host, monitor.API_NODE_PORT);
-					if(status.isAvailable)
-						this.nodeList.push({...node, rewardPrograms: []});
-				}		
+
+					if (status.isAvailable) this.nodeList.push({ ...node, rewardPrograms: [] });
+				}
 			}
 		}
 
@@ -81,30 +76,28 @@ export class GeolocationMonitor {;
 	private getNodesHostDetail = async () => {
 		logger.info(`Getting host detail for ${this.nodeList.length} nodes`);
 		let counter = 0;
+
 		for (const node of this.nodeList) {
 			counter++;
 			//logger.info(`Getting host detail for [${counter}] ${node.host}`);
 
 			try {
 				const hostDetail = await HostInfo.getHostDetail(node.host);
-				
-				if(hostDetail) {
+
+				if (hostDetail) {
 					this.addHostDetail(hostDetail);
 					await this.addToCollection(hostDetail);
 				}
-				
+
 				// await this.updateCollection();
-			}
-			catch(e) {
+			} catch (e) {
 				logger.error(`Error getting host info. ${e.message}`);
 			}
 		}
-	}
+	};
 
 	private addHostDetail(hostDetail: IHostDetail) {
-		if(!this.nodesHostDetail.find(el => el.host === hostDetail.host)) {
-			this.nodesHostDetail.push(hostDetail);
-		}	
+		if (!this.nodesHostDetail.find((el) => el.host === hostDetail.host)) this.nodesHostDetail.push(hostDetail);
 	}
 
 	private clear = () => {
@@ -115,32 +108,30 @@ export class GeolocationMonitor {;
 	private addToCollection = async (hostDetail: IHostDetail): Promise<any> => {
 		try {
 			const nodesHostDetailIndexes = await memoryCache.get('nodesHostDetailIndexes');
-			if(!nodesHostDetailIndexes?.host?.[hostDetail.host]) {
+
+			if (!nodesHostDetailIndexes?.host?.[hostDetail.host]) {
 				await DataBase.insertNodeHostDetail(hostDetail);
 				logger.info(`New host info added to collection`);
 			}
-		}
-		catch(e) {
+		} catch (e) {
 			logger.error(`Failed to add new host info to collection`, e.message);
 		}
 	};
 
 	private updateCollection = async (): Promise<any> => {
-		if(this.nodesHostDetail.length > 0) {
+		if (this.nodesHostDetail.length > 0) {
 			logger.info(`Update collection`);
 			await DataBase.updateNodesHostDetail(this.nodesHostDetail);
-		}
-		else
-			logger.error(`Failed to update collection. Collection length = ${this.nodesHostDetail.length}`);
+		} else logger.error(`Failed to update collection. Collection length = ${this.nodesHostDetail.length}`);
 	};
 
 	private cacheCollection = async (): Promise<any> => {
 		try {
 			const nodesHostDetail = await DataBase.getNodesHostDetail();
+
 			memoryCache.setArray('nodesHostDetail', nodesHostDetail, ['host']);
-		}
-		catch(e) {
+		} catch (e) {
 			logger.error('Failed to cache "nodesHostDetail" collection to memory. ' + e.message);
 		}
-	}
+	};
 }

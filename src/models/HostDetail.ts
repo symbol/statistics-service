@@ -4,12 +4,12 @@ import { Schema, Document } from 'mongoose';
 export interface Coordinates {
 	latitude: number;
 	longitude: number;
-};
+}
 
 export interface PeerStatus {
 	isAvailable: boolean;
 	lastStatusCheck: number;
-};
+}
 
 export interface IHostDetail {
 	host: string;
@@ -24,7 +24,7 @@ export interface IHostDetail {
 	city: string;
 	district: string;
 	zip: string;
-};
+}
 
 export interface HostDetailDocument extends IHostDetail, Document {}
 
@@ -33,7 +33,7 @@ const HostDetailSchema: Schema = new Schema({
 		type: String,
 		required: true,
 		unique: true,
-		index: true
+		index: true,
 	},
 	coordinates: {
 		type: {
@@ -86,15 +86,15 @@ const HostDetailSchema: Schema = new Schema({
 	},
 	zip: {
 		type: String,
-		required: false
-	}
+		required: false,
+	},
 });
 
 HostDetailSchema.set('toObject', {
 	transform: (doc: Document, ret: Document) => {
-		delete ret._id
-		delete ret.__v
-	}
+		delete ret._id;
+		delete ret.__v;
+	},
 });
 
 export const HostDetail = mongoose.model<HostDetailDocument>('HostDetail', HostDetailSchema);

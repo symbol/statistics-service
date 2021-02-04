@@ -13,7 +13,7 @@ export class PeerNodeService {
 				if (err) {
 					//logger.error(`TCP probe failed for: ${host}`);
 					resolve(false);
-				};
+				}
 				resolve(result);
 			});
 		});

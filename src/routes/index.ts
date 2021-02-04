@@ -12,9 +12,9 @@ export class Routes {
 		app.get('/nodes', (req: Request, res: Response) => {
 			//return DataBase.getNodeListWithCriteria(Pagination.reqToSearchCriteria(req))
 			const nodeList = memoryCache.get('nodeList');
-			if(nodeList?.length)
-				return res.send(nodeList);
-				
+
+			if (nodeList?.length) return res.send(nodeList);
+
 			return DataBase.getNodeList()
 				.then((nodes) => res.send(nodes))
 				.catch((error) => InternalServerError.send(res, error));
@@ -53,10 +53,10 @@ export class Routes {
 		// app.get('/nodeRewards/nodes/nodePublicKey/:nodePublicKey', async (req: Request, res: Response) => {
 		// 	try {
 		// 		const nodePublicKey = req.params.nodePublicKey;
-				
+
 		// 		if(!nodePublicKey)
 		// 			return MissingParamError.send(res, 'nodePublicKey');
-				
+
 		// 		const nodeInfo = await NodeRewards.getNodeInfo(nodePublicKey);
 		// 		const nodeId = nodeInfo.id;
 		// 		const testResults = await NodeRewards.getTestResults(nodeId);

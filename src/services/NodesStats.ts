@@ -11,14 +11,12 @@ export class NodesStats implements INodesStats {
 	}
 
 	private updateStats(nodeType: string) {
-		if(this.nodeTypes[nodeType] === undefined)
-			this.nodeTypes[nodeType] = 1;
-		else
-			this.nodeTypes[nodeType] ++;
+		if (this.nodeTypes[nodeType] === undefined) this.nodeTypes[nodeType] = 1;
+		else this.nodeTypes[nodeType]++;
 	}
 
 	addToStats(node: INode) {
-		this.updateStats(String(node.roles))
+		this.updateStats(String(node.roles));
 		// if(Array.isArray(node.rewardPrograms))
 		// 	node.rewardPrograms.forEach(program => this.updateStats(program.name));
 	}

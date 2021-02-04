@@ -11,7 +11,7 @@ export interface ApiStatus {
 	finalizationHeight?: number;
 	nodePublicKey?: string;
 	lastStatusCheck: number;
-};
+}
 
 export interface NodeInfo {
 	version: number;
@@ -23,7 +23,7 @@ export interface NodeInfo {
 	host: string;
 	friendlyName: string;
 	nodePublicKey: string;
-};
+}
 
 export interface ChainInfo {
 	scoreHigh: string;
@@ -35,7 +35,7 @@ export interface ChainInfo {
 		height: string;
 		hash: string;
 	};
-};
+}
 
 export class ApiNodeService {
 	static getStatus = async (host: string, port: number): Promise<ApiStatus> => {
@@ -44,7 +44,7 @@ export class ApiNodeService {
 		try {
 			const nodeInfo = (await HTTP.get(`http://${host}:${port}/node/info`)).data;
 			const chainInfo = (await HTTP.get(`http://${host}:${port}/chain/info`)).data;
-			
+
 			return {
 				isAvailable: true,
 				chainHeight: chainInfo.height,
@@ -55,7 +55,7 @@ export class ApiNodeService {
 		} catch (e) {
 			return {
 				isAvailable: false,
-				lastStatusCheck: Date.now()
+				lastStatusCheck: Date.now(),
 			};
 		}
 	};
@@ -63,18 +63,16 @@ export class ApiNodeService {
 	static getNodeInfo = async (host: string, port: number): Promise<NodeInfo | null> => {
 		try {
 			return (await HTTP.get(`http://${host}:${port}/node/info`)).data;
-		}
-		catch(e) {
+		} catch (e) {
 			return null;
 		}
-	}
+	};
 
 	static getNodeChainInfo = async (host: string, port: number): Promise<ChainInfo | null> => {
 		try {
 			return (await HTTP.get(`http://${host}:${port}/chain/info`)).data;
-		}
-		catch(e) {
+		} catch (e) {
 			return null;
 		}
-	}
+	};
 }

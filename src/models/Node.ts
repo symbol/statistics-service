@@ -74,7 +74,7 @@ const NodeSchema: Schema = new Schema({
 			type: Number,
 			required: false,
 		},
-		required: false
+		required: false,
 	},
 	publicKey: {
 		type: String,
@@ -160,17 +160,17 @@ const NodeSchema: Schema = new Schema({
 			zip: {
 				type: String,
 				required: true,
-			}
+			},
 		},
-		required: false
-	}
+		required: false,
+	},
 });
 
 NodeSchema.set('toObject', {
 	transform: (doc: Document, ret: Document) => {
-		delete ret._id
-		delete ret.__v
-	}
+		delete ret._id;
+		delete ret.__v;
+	},
 });
 
 export const Node = mongoose.model<NodeDocument>('Node', NodeSchema);

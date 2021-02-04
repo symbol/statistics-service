@@ -7,7 +7,7 @@ export class HTTP {
 			setTimeout(() => {
 				reject(Error(`HTTP get request failed. Timeout error`));
 			}, REQEST_TIMEOUT + REQEST_TIMEOUT * 0.1);
-			
+
 			axios
 				.get(url, { timeout: REQEST_TIMEOUT, ...config })
 				.then(resolve)

@@ -14,9 +14,8 @@ export class HostInfo {
 		let location = '';
 
 		const cachedHostdetail = await HostInfo.getHostDetailCached(host);
-		
-		if(cachedHostdetail)
-			return cachedHostdetail;
+
+		if (cachedHostdetail) return cachedHostdetail;
 
 		try {
 			await sleep(5000);
@@ -52,11 +51,11 @@ export class HostInfo {
 	static getHostDetailCached = async (host: string): Promise<IHostDetail | null> => {
 		try {
 			const nodesHostDetailIndexes = await memoryCache.get('nodesHostDetailIndexes');
-			if(!nodesHostDetailIndexes?.host)
-				throw Error();
+
+			if (!nodesHostDetailIndexes?.host) throw Error();
 			const cachedData = nodesHostDetailIndexes.host[host];
 
-			if(cachedData?.coordinates?.latitude) {
+			if (cachedData?.coordinates?.latitude) {
 				return {
 					host: cachedData.host,
 					coordinates: cachedData.coordinates,
@@ -71,10 +70,8 @@ export class HostInfo {
 					district: cachedData.district,
 					zip: cachedData.zip,
 				};
-			}
-			else throw Error();
-		}
-		catch(e){
+			} else throw Error();
+		} catch (e) {
 			return null;
 		}
 	};

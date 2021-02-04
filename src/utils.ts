@@ -36,20 +36,17 @@ export const basename = (filename: string) => {
 };
 
 export const parseArray = (array: any): Array<any> | null => {
-	if(Array.isArray(array))
-		return array;
+	if (Array.isArray(array)) return array;
 
-	if(typeof array === 'string') {
+	if (typeof array === 'string') {
 		try {
 			const json = JSON.parse(array);
-			if(Array.isArray(json))
-				return json;
-		}
-		catch(e) {
+
+			if (Array.isArray(json)) return json;
+		} catch (e) {
 			return null;
 		}
 	}
-	
-	return null;
 
-}
+	return null;
+};

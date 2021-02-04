@@ -25,7 +25,7 @@ export class DataBase {
 		return Node.find().exec();
 	};
 
-	static getNodeListWithCriteria = async(searchCriteria: SearchCriteria): Promise<PaginationResponse<NodeDocument>> => {
+	static getNodeListWithCriteria = async (searchCriteria: SearchCriteria): Promise<PaginationResponse<NodeDocument>> => {
 		return Pagination.getPage<NodeDocument>(Node, searchCriteria);
 	};
 
@@ -40,11 +40,12 @@ export class DataBase {
 	static updateNodeList = async (nodeList: INode[]): Promise<void> => {
 		// Replace this part with mongo transactions
 		const prevNodeList = await DataBase.getNodeList();
+
 		await Node.remove({}).exec();
 		await Node.insertMany(nodeList);
 		const currentNodeList = await DataBase.getNodeList();
 
-		if(currentNodeList.length !== nodeList.length) {
+		if (currentNodeList.length !== nodeList.length) {
 			await Node.remove({}).exec();
 			await Node.insertMany(prevNodeList);
 		}
@@ -56,32 +57,32 @@ export class DataBase {
 
 	static getNodesStats = async (): Promise<INodesStats | null> => {
 		return (await NodesStats.findOne({}).exec())?.toObject() || null;
-	}
+	};
 
 	static getNodeHeightStats = async (): Promise<INodeHeightStats | null> => {
 		return (await NodeHeightStats.findOne({}).exec())?.toObject() || null;
-	}
+	};
 
 	static updateNodesStats = async (nodeList: INodesStats): Promise<void> => {
 		await NodesStats.remove({}).exec();
 		await NodesStats.create(nodeList);
-	}
+	};
 
 	static updateNodeHeightStats = async (nodeHeightStats: INodeHeightStats): Promise<void> => {
 		await NodeHeightStats.remove({}).exec();
 		await NodeHeightStats.create(nodeHeightStats);
-	}
+	};
 
 	static getNodesHostDetail = async (): Promise<IHostDetail[]> => {
 		return HostDetail.find().exec();
-	} 
-	
+	};
+
 	static insertNodeHostDetail = async (hostDetail: IHostDetail): Promise<void> => {
 		await HostDetail.insertMany([hostDetail]);
-	} 
+	};
 
 	static updateNodesHostDetail = async (hostDetail: IHostDetail[]): Promise<void> => {
 		await HostDetail.remove({}).exec();
 		await HostDetail.insertMany(hostDetail);
-	} 
+	};
 }

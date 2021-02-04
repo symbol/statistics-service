@@ -26,13 +26,12 @@ interface NodeRewardsConfig {
 	CONTROLLER_ENDPOINT: string;
 }
 
-
 export interface Config {
 	network: Network;
 	db: Db;
 	symbol: Symbol;
 	monitor: Monitor;
-	nodeRewards: NodeRewardsConfig
+	nodeRewards: NodeRewardsConfig;
 }
 
 export const network: Network = {
@@ -49,15 +48,17 @@ export const symbol: Symbol = {
 
 export const monitor: Monitor = {
 	NODE_MONITOR_SCHEDULE_INTERVAL: Number(process.env.NODE_MONITOR_SCHEDULE_INTERVAL) || config.NODE_MONITOR_SCHEDULE_INTERVAL,
-	CHAIN_HEIGHT_MONITOR_SCHEDULE_INTERVAL: Number(process.env.CHAIN_HEIGHT_MONITOR_SCHEDULE_INTERVAL) || config.CHAIN_HEIGHT_MONITOR_SCHEDULE_INTERVAL,
-	GEOLOCATION_MONITOR_SCHEDULE_INTERVAL: Number(process.env.GEOLOCATION_MONITOR_SCHEDULE_INTERVAL) || config.GEOLOCATION_MONITOR_SCHEDULE_INTERVAL,
+	CHAIN_HEIGHT_MONITOR_SCHEDULE_INTERVAL:
+		Number(process.env.CHAIN_HEIGHT_MONITOR_SCHEDULE_INTERVAL) || config.CHAIN_HEIGHT_MONITOR_SCHEDULE_INTERVAL,
+	GEOLOCATION_MONITOR_SCHEDULE_INTERVAL:
+		Number(process.env.GEOLOCATION_MONITOR_SCHEDULE_INTERVAL) || config.GEOLOCATION_MONITOR_SCHEDULE_INTERVAL,
 	API_NODE_PORT: Number(process.env.API_NODE_PORT) || config.API_NODE_PORT,
 	PEER_NODE_PORT: Number(process.env.PEER_NODE_PORT) || config.PEER_NODE_PORT,
 	REQUEST_TIMEOUT: Number(process.env.REQUEST_TIMEOUT) || config.REQUEST_TIMEOUT,
 };
 
 export const nodeRewards: NodeRewardsConfig = {
-	CONTROLLER_ENDPOINT: process.env.CONTROLLER_ENDPOINT || config.CONTROLLER_ENDPOINT
+	CONTROLLER_ENDPOINT: process.env.CONTROLLER_ENDPOINT || config.CONTROLLER_ENDPOINT,
 };
 
 export const verifyConfig = (cfg: Config): boolean => {

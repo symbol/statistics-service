@@ -43,8 +43,7 @@ export class NodeMonitor {
 				await this.cacheCollection();
 				setTimeout(() => this.start(), this.interval);
 			}
-		}
-		catch(e) {
+		} catch (e) {
 			logger.error(`Unhandled error during a loop. ${e.message}. Restarting NodeMonitor..`);
 			this.stop();
 			this.start();
@@ -70,17 +69,17 @@ export class NodeMonitor {
 		}
 
 		// Nested fetch node list from current nodeList[]
-		const nodeListPromises = this.nodeList.map(async node => {
-			if(isAPIRole(node.roles)) {
-				return this.fetchNodesByURL(getNodeURL(node, monitor.API_NODE_PORT));
-			}
+		const nodeListPromises = this.nodeList.map(async (node) => {
+			if (isAPIRole(node.roles)) return this.fetchNodesByURL(getNodeURL(node, monitor.API_NODE_PORT));
+
 			return [];
 		});
 
 		const arrayOfNodeList = await Promise.all(nodeListPromises);
 		const nodeList: INode[] = arrayOfNodeList.reduce((accumulator, value) => accumulator.concat(value), []);
+
 		this.addNodesToList(nodeList);
-	
+
 		return Promise.resolve();
 	};
 
@@ -89,6 +88,7 @@ export class NodeMonitor {
 			const nodeList = await HTTP.get(nodeUrl + '/node/peers', {
 				timeout: monitor.REQUEST_TIMEOUT,
 			});
+
 			if (Array.isArray(nodeList.data)) return nodeList.data;
 		} catch (e) {}
 		return [];
@@ -97,9 +97,10 @@ export class NodeMonitor {
 	private getNodeListInfo = async () => {
 		logger.info(`Getting node info for ${this.nodeList.length} nodes`);
 		const nodeInfoPromises = this.nodeList.map(this.getNodeInfo);
+
 		this.nodeList = await Promise.all(nodeInfoPromises);
-		this.nodeList.forEach(node => this.nodesStats.addToStats(node));
-	}
+		this.nodeList.forEach((node) => this.nodesStats.addToStats(node));
+	};
 
 	private async getNodeInfo(node: INode): Promise<INode> {
 		let nodeWithInfo: INode = { ...node };
@@ -108,11 +109,10 @@ export class NodeMonitor {
 			nodeWithInfo.rewardPrograms = [];
 
 			const hostDetail = await HostInfo.getHostDetailCached(node.host);
-			if(hostDetail)
-				nodeWithInfo.hostDetail = hostDetail;
 
-			if (isPeerRole(node.roles))
-				nodeWithInfo.peerStatus = await PeerNodeService.getStatus(node.host, node.port);
+			if (hostDetail) nodeWithInfo.hostDetail = hostDetail;
+
+			if (isPeerRole(node.roles)) nodeWithInfo.peerStatus = await PeerNodeService.getStatus(node.host, node.port);
 
 			if (isAPIRole(node.roles)) {
 				nodeWithInfo.apiStatus = await ApiNodeService.getStatus(node.host, monitor.API_NODE_PORT);
@@ -120,8 +120,7 @@ export class NodeMonitor {
 				if (nodeWithInfo.apiStatus?.nodePublicKey)
 					nodeWithInfo.rewardPrograms = await NodeRewards.getNodeRewardPrograms(nodeWithInfo.apiStatus.nodePublicKey);
 			}
-		}
-		catch(e) {
+		} catch (e) {
 			logger.error(`failed to get info. ${e.message}`);
 		}
 
@@ -135,31 +134,29 @@ export class NodeMonitor {
 	};
 
 	private updateCollection = async (): Promise<any> => {
-		if(this.nodeList.length > 0) {
+		if (this.nodeList.length > 0) {
 			logger.info(`Update collection`);
 			const prevNodeList = await DataBase.getNodeList();
+
 			try {
 				await DataBase.updateNodeList(this.nodeList);
 				await DataBase.updateNodesStats(this.nodesStats);
-			}
-			catch(e) {
+			} catch (e) {
 				logger.error(`Failed to update collection. ${e.message}`);
 				await DataBase.updateNodeList(prevNodeList);
 			}
-		}
-		else
-			logger.error(`Failed to update collection. Collection length = ${this.nodeList.length}`);
+		} else logger.error(`Failed to update collection. Collection length = ${this.nodeList.length}`);
 	};
 
 	private cacheCollection = async (): Promise<any> => {
 		try {
 			const nodeList = await DataBase.getNodeList();
+
 			memoryCache.set('nodeList', nodeList);
-		}
-		catch(e) {
+		} catch (e) {
 			logger.error('Failed to cache Node collection to memory. ' + e.message);
 		}
-	}
+	};
 
 	private addNodesToList = (nodes: INode[]) => {
 		nodes.forEach((node: INode) => {

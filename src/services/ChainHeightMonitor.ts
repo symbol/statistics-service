@@ -10,7 +10,7 @@ import { isAPIRole, isPeerRole, getNodeURL, basename, sleep } from '@src/utils';
 
 const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
-export class ChainHeightMonitor {;
+export class ChainHeightMonitor {
 	private nodeList: INode[];
 	private isRunning: boolean;
 	private interval: number;
@@ -43,8 +43,7 @@ export class ChainHeightMonitor {;
 				await sleep(this.interval);
 				this.start();
 			}
-		}
-		catch(e) {
+		} catch (e) {
 			logger.error(`Unhandled error during a loop. ${e.message}. Restarting Monitor..`);
 			await sleep(this.interval);
 			this.stop();
@@ -60,22 +59,17 @@ export class ChainHeightMonitor {;
 
 	private getNodeList = async (): Promise<any> => {
 		try {
-			this.nodeList = (await DataBase
-				.getNodeList())
-				.filter(node => isAPIRole(node.roles));
-		}
-		catch(e){
-			logger.error('Failed to get node list. Use nodes from config')
-			for(const nodeUrl of symbol.NODES) {
-				const node = await ApiNodeService.getNodeInfo(
-					new URL(nodeUrl).host,
-					Number(monitor.API_NODE_PORT)
-				);
-				if(node) {
+			this.nodeList = (await DataBase.getNodeList()).filter((node) => isAPIRole(node.roles));
+		} catch (e) {
+			logger.error('Failed to get node list. Use nodes from config');
+			for (const nodeUrl of symbol.NODES) {
+				const node = await ApiNodeService.getNodeInfo(new URL(nodeUrl).host, Number(monitor.API_NODE_PORT));
+
+				if (node) {
 					const status = await ApiNodeService.getStatus(node.host, monitor.API_NODE_PORT);
-					if(status.isAvailable)
-						this.nodeList.push({...node, rewardPrograms: []});
-				}		
+
+					if (status.isAvailable) this.nodeList.push({ ...node, rewardPrograms: [] });
+				}
 			}
 		}
 
@@ -85,28 +79,24 @@ export class ChainHeightMonitor {;
 	private getNodeChainHeight = async () => {
 		logger.info(`Getting height stats for ${this.nodeList.length} nodes`);
 		const nodes: INode[] = this.nodeList;
-		const nodeChainInfoPromises = nodes.map(node => ApiNodeService.getNodeChainInfo(node.host, monitor.API_NODE_PORT));
+		const nodeChainInfoPromises = nodes.map((node) => ApiNodeService.getNodeChainInfo(node.host, monitor.API_NODE_PORT));
 		const nodeChainInfoList = await Promise.all(nodeChainInfoPromises);
 
 		for (let chainInfo of nodeChainInfoList) {
 			try {
-				if(chainInfo) {
-					if(this.heights[chainInfo.height])
-						this.heights[chainInfo.height] ++;
-					else
-						this.heights[chainInfo.height] = 1;
+				if (chainInfo) {
+					if (this.heights[chainInfo.height]) this.heights[chainInfo.height]++;
+					else this.heights[chainInfo.height] = 1;
 
-					if(this.finalizedHeights[chainInfo.latestFinalizedBlock.height])
-						this.finalizedHeights[chainInfo.latestFinalizedBlock.height] ++;
-					else
-						this.finalizedHeights[chainInfo.latestFinalizedBlock.height] = 1;
+					if (this.finalizedHeights[chainInfo.latestFinalizedBlock.height])
+						this.finalizedHeights[chainInfo.latestFinalizedBlock.height]++;
+					else this.finalizedHeights[chainInfo.latestFinalizedBlock.height] = 1;
 				}
-			}
-			catch(e) {
+			} catch (e) {
 				logger.error(`Node chain height monitor failed. ${e.message}`);
 			}
 		}
-	}
+	};
 
 	private clear = () => {
 		this.nodeList = [];
@@ -117,16 +107,17 @@ export class ChainHeightMonitor {;
 	private updateCollection = async (): Promise<any> => {
 		logger.info(`Update collection`);
 		const nodeHeightStats: INodeHeightStats = {
-			height: Object.keys(this.heights).map(height => ({
+			height: Object.keys(this.heights).map((height) => ({
 				value: height,
-				count: this.heights[height]
+				count: this.heights[height],
 			})),
-			finalizedHeight: Object.keys(this.finalizedHeights).map(height => ({
+			finalizedHeight: Object.keys(this.finalizedHeights).map((height) => ({
 				value: height,
-				count: this.finalizedHeights[height]
+				count: this.finalizedHeights[height],
 			})),
-			date: new Date()
+			date: new Date(),
 		};
+
 		await DataBase.updateNodeHeightStats(nodeHeightStats);
 	};
 }
