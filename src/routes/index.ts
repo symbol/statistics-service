@@ -50,62 +50,62 @@ export class Routes {
 				.catch((error) => InternalServerError.send(res, error));
 		});
 
-		app.get('/nodeRewards/nodes/nodePublicKey/:nodePublicKey', async (req: Request, res: Response) => {
-			try {
-				const nodePublicKey = req.params.nodePublicKey;
+		// app.get('/nodeRewards/nodes/nodePublicKey/:nodePublicKey', async (req: Request, res: Response) => {
+		// 	try {
+		// 		const nodePublicKey = req.params.nodePublicKey;
 				
-				if(!nodePublicKey)
-					return MissingParamError.send(res, 'nodePublicKey');
+		// 		if(!nodePublicKey)
+		// 			return MissingParamError.send(res, 'nodePublicKey');
 				
-				const nodeInfo = await NodeRewards.getNodeInfo(nodePublicKey);
-				const nodeId = nodeInfo.id;
-				const testResults = await NodeRewards.getTestResults(nodeId);
-				let testResultInfo;
-				if(testResults.length) {
-					const latestRound = 5;//testResults[0].round;
-					testResultInfo = await NodeRewards.getTestResultInfo(nodeId, latestRound);
-				}
-				const nodeRewardsInfo = {
-					nodeInfo,
-					testResults,
-					testResultInfo
-				};
+		// 		const nodeInfo = await NodeRewards.getNodeInfo(nodePublicKey);
+		// 		const nodeId = nodeInfo.id;
+		// 		const testResults = await NodeRewards.getTestResults(nodeId);
+		// 		let testResultInfo;
+		// 		if(testResults.length) {
+		// 			const latestRound = testResults[0].round;
+		// 			testResultInfo = await NodeRewards.getTestResultInfo(nodeId, latestRound);
+		// 		}
+		// 		const nodeRewardsInfo = {
+		// 			nodeInfo,
+		// 			testResults,
+		// 			testResultInfo
+		// 		};
 
-				res.send(nodeRewardsInfo);
-			}
-			catch(e) {
-				const status = e.response
-					? e.response.status
-					: 502;
-				const message = e.response
-					? e.response.data
-					: e.message;
+		// 		res.send(nodeRewardsInfo);
+		// 	}
+		// 	catch(e) {
+		// 		const status = e.response
+		// 			? e.response.status
+		// 			: 502;
+		// 		const message = e.response
+		// 			? e.response.data
+		// 			: e.message;
 
-				res.status(status).send(message);
-			}
-		});
+		// 		res.status(status).send(message);
+		// 	}
+		// });
 
-		app.get('/nodeRewards/payouts', async (req: Request, res: Response) => {
-			try {
-				const payouts = await NodeRewards.getPayouts({
-					nodeId: req.query.nodeId as string,
-					pageSize: req.query.pageSize as string,
-					pageNumber: req.query.pageNumber as string,
-					order: req.query.order as string,
-				});
+		// app.get('/nodeRewards/payouts', async (req: Request, res: Response) => {
+		// 	try {
+		// 		const payouts = await NodeRewards.getPayouts({
+		// 			nodeId: req.query.nodeId as string,
+		// 			pageSize: req.query.pageSize as string,
+		// 			pageNumber: req.query.pageNumber as string,
+		// 			order: req.query.order as string,
+		// 		});
 
-				res.send(payouts);
-			}
-			catch(e) {
-				const status = e.response
-					? e.response.status
-					: 502;
-				const message = e.response
-					? e.response.data
-					: e.message;
+		// 		res.send(payouts);
+		// 	}
+		// 	catch(e) {
+		// 		const status = e.response
+		// 			? e.response.status
+		// 			: 502;
+		// 		const message = e.response
+		// 			? e.response.data
+		// 			: e.message;
 
-				res.status(status).send(message);
-			}
-		});
+		// 		res.status(status).send(message);
+		// 	}
+		// });
 	};
 }
