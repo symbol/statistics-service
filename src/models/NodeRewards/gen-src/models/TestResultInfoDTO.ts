@@ -14,10 +14,6 @@
 
 import { exists, mapValues } from '../runtime';
 import {
-    BandwidthResultDTO,
-    BandwidthResultDTOFromJSON,
-    BandwidthResultDTOFromJSONTyped,
-    BandwidthResultDTOToJSON,
     ChainHeightResultDTO,
     ChainHeightResultDTOFromJSON,
     ChainHeightResultDTOFromJSONTyped,
@@ -34,14 +30,18 @@ import {
     NodeBalanceResultDTOFromJSON,
     NodeBalanceResultDTOFromJSONTyped,
     NodeBalanceResultDTOToJSON,
+    NodeBandwidthResultDTO,
+    NodeBandwidthResultDTOFromJSON,
+    NodeBandwidthResultDTOFromJSONTyped,
+    NodeBandwidthResultDTOToJSON,
+    NodePingResultDTO,
+    NodePingResultDTOFromJSON,
+    NodePingResultDTOFromJSONTyped,
+    NodePingResultDTOToJSON,
     NodeVersionResultDTO,
     NodeVersionResultDTOFromJSON,
     NodeVersionResultDTOFromJSONTyped,
     NodeVersionResultDTOToJSON,
-    PingResultDTO,
-    PingResultDTOFromJSON,
-    PingResultDTOFromJSONTyped,
-    PingResultDTOToJSON,
     ResponsivenessResultDTO,
     ResponsivenessResultDTOFromJSON,
     ResponsivenessResultDTOFromJSONTyped,
@@ -56,52 +56,52 @@ import {
 export interface TestResultInfoDTO {
     /**
      * 
-     * @type {BandwidthResultDTO}
+     * @type {NodeBandwidthResultDTO}
      * @memberof TestResultInfoDTO
      */
-    bandwidthResult: BandwidthResultDTO;
+    nodeBandwidthResult?: NodeBandwidthResultDTO;
     /**
      * 
      * @type {ChainHeightResultDTO}
      * @memberof TestResultInfoDTO
      */
-    chainHeightResult: ChainHeightResultDTO;
+    chainHeightResult?: ChainHeightResultDTO;
     /**
      * 
      * @type {ChainPartResultDTO}
      * @memberof TestResultInfoDTO
      */
-    chainPartResult: ChainPartResultDTO;
+    chainPartResult?: ChainPartResultDTO;
     /**
      * 
      * @type {ComputingPowerResultDTO}
      * @memberof TestResultInfoDTO
      */
-    computingPowerResult: ComputingPowerResultDTO;
+    computingPowerResult?: ComputingPowerResultDTO;
     /**
      * 
      * @type {NodeBalanceResultDTO}
      * @memberof TestResultInfoDTO
      */
-    nodeBalanceResult: NodeBalanceResultDTO;
+    nodeBalanceResult?: NodeBalanceResultDTO;
     /**
      * 
      * @type {NodeVersionResultDTO}
      * @memberof TestResultInfoDTO
      */
-    nodeVersionResult: NodeVersionResultDTO;
+    nodeVersionResult?: NodeVersionResultDTO;
     /**
      * 
-     * @type {PingResultDTO}
+     * @type {NodePingResultDTO}
      * @memberof TestResultInfoDTO
      */
-    pingResult: PingResultDTO;
+    nodePingResult?: NodePingResultDTO;
     /**
      * 
      * @type {ResponsivenessResultDTO}
      * @memberof TestResultInfoDTO
      */
-    responsivenessResult: ResponsivenessResultDTO;
+    responsivenessResult?: ResponsivenessResultDTO;
 }
 
 export function TestResultInfoDTOFromJSON(json: any): TestResultInfoDTO {
@@ -114,14 +114,14 @@ export function TestResultInfoDTOFromJSONTyped(json: any, ignoreDiscriminator: b
     }
     return {
         
-        'bandwidthResult': BandwidthResultDTOFromJSON(json['bandwidthResult']),
-        'chainHeightResult': ChainHeightResultDTOFromJSON(json['chainHeightResult']),
-        'chainPartResult': ChainPartResultDTOFromJSON(json['chainPartResult']),
-        'computingPowerResult': ComputingPowerResultDTOFromJSON(json['computingPowerResult']),
-        'nodeBalanceResult': NodeBalanceResultDTOFromJSON(json['nodeBalanceResult']),
-        'nodeVersionResult': NodeVersionResultDTOFromJSON(json['nodeVersionResult']),
-        'pingResult': PingResultDTOFromJSON(json['pingResult']),
-        'responsivenessResult': ResponsivenessResultDTOFromJSON(json['responsivenessResult']),
+        'nodeBandwidthResult': !exists(json, 'nodeBandwidthResult') ? undefined : NodeBandwidthResultDTOFromJSON(json['nodeBandwidthResult']),
+        'chainHeightResult': !exists(json, 'chainHeightResult') ? undefined : ChainHeightResultDTOFromJSON(json['chainHeightResult']),
+        'chainPartResult': !exists(json, 'chainPartResult') ? undefined : ChainPartResultDTOFromJSON(json['chainPartResult']),
+        'computingPowerResult': !exists(json, 'computingPowerResult') ? undefined : ComputingPowerResultDTOFromJSON(json['computingPowerResult']),
+        'nodeBalanceResult': !exists(json, 'nodeBalanceResult') ? undefined : NodeBalanceResultDTOFromJSON(json['nodeBalanceResult']),
+        'nodeVersionResult': !exists(json, 'nodeVersionResult') ? undefined : NodeVersionResultDTOFromJSON(json['nodeVersionResult']),
+        'nodePingResult': !exists(json, 'nodePingResult') ? undefined : NodePingResultDTOFromJSON(json['nodePingResult']),
+        'responsivenessResult': !exists(json, 'responsivenessResult') ? undefined : ResponsivenessResultDTOFromJSON(json['responsivenessResult']),
     };
 }
 
@@ -134,13 +134,13 @@ export function TestResultInfoDTOToJSON(value?: TestResultInfoDTO | null): any {
     }
     return {
         
-        'bandwidthResult': BandwidthResultDTOToJSON(value.bandwidthResult),
+        'nodeBandwidthResult': NodeBandwidthResultDTOToJSON(value.nodeBandwidthResult),
         'chainHeightResult': ChainHeightResultDTOToJSON(value.chainHeightResult),
         'chainPartResult': ChainPartResultDTOToJSON(value.chainPartResult),
         'computingPowerResult': ComputingPowerResultDTOToJSON(value.computingPowerResult),
         'nodeBalanceResult': NodeBalanceResultDTOToJSON(value.nodeBalanceResult),
         'nodeVersionResult': NodeVersionResultDTOToJSON(value.nodeVersionResult),
-        'pingResult': PingResultDTOToJSON(value.pingResult),
+        'nodePingResult': NodePingResultDTOToJSON(value.nodePingResult),
         'responsivenessResult': ResponsivenessResultDTOToJSON(value.responsivenessResult),
     };
 }

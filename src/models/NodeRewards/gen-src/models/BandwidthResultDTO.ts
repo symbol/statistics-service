@@ -20,18 +20,6 @@ import { exists, mapValues } from '../runtime';
  */
 export interface BandwidthResultDTO {
     /**
-     * ID of the test result
-     * @type {string}
-     * @memberof BandwidthResultDTO
-     */
-    id: string;
-    /**
-     * ID of the tested node
-     * @type {string}
-     * @memberof BandwidthResultDTO
-     */
-    fromNodeId: string;
-    /**
      * ID of the node
      * @type {string}
      * @memberof BandwidthResultDTO
@@ -72,25 +60,13 @@ export interface BandwidthResultDTO {
      * @type {boolean}
      * @memberof BandwidthResultDTO
      */
-    entityValid: boolean;
-    /**
-     * 
-     * @type {number}
-     * @memberof BandwidthResultDTO
-     */
-    round: number;
+    resultValid: boolean;
     /**
      * 
      * @type {number}
      * @memberof BandwidthResultDTO
      */
     speed: number;
-    /**
-     * 
-     * @type {string}
-     * @memberof BandwidthResultDTO
-     */
-    createdAt: string;
 }
 
 export function BandwidthResultDTOFromJSON(json: any): BandwidthResultDTO {
@@ -103,18 +79,14 @@ export function BandwidthResultDTOFromJSONTyped(json: any, ignoreDiscriminator: 
     }
     return {
         
-        'id': json['id'],
-        'fromNodeId': json['fromNodeId'],
         'toNodeId': json['toNodeId'],
         'entitySeed': json['entitySeed'],
         'entityHash': json['entityHash'],
         'reportedHash': json['reportedHash'],
         'iterations': json['iterations'],
         'downloadTime': json['downloadTime'],
-        'entityValid': json['entityValid'],
-        'round': json['round'],
+        'resultValid': json['resultValid'],
         'speed': json['speed'],
-        'createdAt': json['createdAt'],
     };
 }
 
@@ -127,18 +99,14 @@ export function BandwidthResultDTOToJSON(value?: BandwidthResultDTO | null): any
     }
     return {
         
-        'id': value.id,
-        'fromNodeId': value.fromNodeId,
         'toNodeId': value.toNodeId,
         'entitySeed': value.entitySeed,
         'entityHash': value.entityHash,
         'reportedHash': value.reportedHash,
         'iterations': value.iterations,
         'downloadTime': value.downloadTime,
-        'entityValid': value.entityValid,
-        'round': value.round,
+        'resultValid': value.resultValid,
         'speed': value.speed,
-        'createdAt': value.createdAt,
     };
 }
 

@@ -14,6 +14,10 @@
 
 import { exists, mapValues } from '../runtime';
 import {
+    GeoLocationDTO,
+    GeoLocationDTOFromJSON,
+    GeoLocationDTOFromJSONTyped,
+    GeoLocationDTOToJSON,
     NodeStatusDTO,
     NodeStatusDTOFromJSON,
     NodeStatusDTOFromJSONTyped,
@@ -90,6 +94,12 @@ export interface NodeInfoDTO {
      * @memberof NodeInfoDTO
      */
     rewardProgram: RewardProgramDTO;
+    /**
+     * 
+     * @type {GeoLocationDTO}
+     * @memberof NodeInfoDTO
+     */
+    geoLocation?: GeoLocationDTO;
 }
 
 export function NodeInfoDTOFromJSON(json: any): NodeInfoDTO {
@@ -112,6 +122,7 @@ export function NodeInfoDTOFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'mainPublicKey': json['mainPublicKey'],
         'status': NodeStatusDTOFromJSON(json['status']),
         'rewardProgram': RewardProgramDTOFromJSON(json['rewardProgram']),
+        'geoLocation': !exists(json, 'geoLocation') ? undefined : GeoLocationDTOFromJSON(json['geoLocation']),
     };
 }
 
@@ -134,6 +145,7 @@ export function NodeInfoDTOToJSON(value?: NodeInfoDTO | null): any {
         'mainPublicKey': value.mainPublicKey,
         'status': NodeStatusDTOToJSON(value.status),
         'rewardProgram': RewardProgramDTOToJSON(value.rewardProgram),
+        'geoLocation': GeoLocationDTOToJSON(value.geoLocation),
     };
 }
 

@@ -13,61 +13,68 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import {
+    PingResultDTO,
+    PingResultDTOFromJSON,
+    PingResultDTOFromJSONTyped,
+    PingResultDTOToJSON,
+} from './';
+
 /**
  * 
  * @export
- * @interface ChainHeightResultDTO
+ * @interface NodePingResultDTO
  */
-export interface ChainHeightResultDTO {
+export interface NodePingResultDTO {
     /**
      * ID of the test result
      * @type {string}
-     * @memberof ChainHeightResultDTO
+     * @memberof NodePingResultDTO
      */
     id: string;
     /**
      * ID of the tested node
      * @type {string}
-     * @memberof ChainHeightResultDTO
+     * @memberof NodePingResultDTO
      */
     nodeId: string;
     /**
      * 
-     * @type {number}
-     * @memberof ChainHeightResultDTO
+     * @type {Array<PingResultDTO>}
+     * @memberof NodePingResultDTO
      */
-    expectedHeight: number;
+    pingResults: Array<PingResultDTO>;
     /**
      * 
      * @type {number}
-     * @memberof ChainHeightResultDTO
+     * @memberof NodePingResultDTO
      */
-    reportedHeight: number;
+    averageTime: number;
     /**
      * 
      * @type {number}
-     * @memberof ChainHeightResultDTO
+     * @memberof NodePingResultDTO
      */
     round: number;
     /**
      * 
      * @type {boolean}
-     * @memberof ChainHeightResultDTO
+     * @memberof NodePingResultDTO
      */
     resultValid: boolean;
     /**
      * 
      * @type {Date}
-     * @memberof ChainHeightResultDTO
+     * @memberof NodePingResultDTO
      */
     createdAt: Date;
 }
 
-export function ChainHeightResultDTOFromJSON(json: any): ChainHeightResultDTO {
-    return ChainHeightResultDTOFromJSONTyped(json, false);
+export function NodePingResultDTOFromJSON(json: any): NodePingResultDTO {
+    return NodePingResultDTOFromJSONTyped(json, false);
 }
 
-export function ChainHeightResultDTOFromJSONTyped(json: any, ignoreDiscriminator: boolean): ChainHeightResultDTO {
+export function NodePingResultDTOFromJSONTyped(json: any, ignoreDiscriminator: boolean): NodePingResultDTO {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -75,15 +82,15 @@ export function ChainHeightResultDTOFromJSONTyped(json: any, ignoreDiscriminator
         
         'id': json['id'],
         'nodeId': json['nodeId'],
-        'expectedHeight': json['expectedHeight'],
-        'reportedHeight': json['reportedHeight'],
+        'pingResults': ((json['pingResults'] as Array<any>).map(PingResultDTOFromJSON)),
+        'averageTime': json['averageTime'],
         'round': json['round'],
         'resultValid': json['resultValid'],
         'createdAt': (new Date(json['createdAt'])),
     };
 }
 
-export function ChainHeightResultDTOToJSON(value?: ChainHeightResultDTO | null): any {
+export function NodePingResultDTOToJSON(value?: NodePingResultDTO | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -94,8 +101,8 @@ export function ChainHeightResultDTOToJSON(value?: ChainHeightResultDTO | null):
         
         'id': value.id,
         'nodeId': value.nodeId,
-        'expectedHeight': value.expectedHeight,
-        'reportedHeight': value.reportedHeight,
+        'pingResults': ((value.pingResults as Array<any>).map(PingResultDTOToJSON)),
+        'averageTime': value.averageTime,
         'round': value.round,
         'resultValid': value.resultValid,
         'createdAt': (value.createdAt.toISOString()),

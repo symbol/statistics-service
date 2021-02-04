@@ -75,10 +75,10 @@ export interface ComputingPowerResultDTO {
     resultValid: boolean;
     /**
      * 
-     * @type {string}
+     * @type {Date}
      * @memberof ComputingPowerResultDTO
      */
-    createdAt: string;
+    createdAt: Date;
 }
 
 export function ComputingPowerResultDTOFromJSON(json: any): ComputingPowerResultDTO {
@@ -100,7 +100,7 @@ export function ComputingPowerResultDTOFromJSONTyped(json: any, ignoreDiscrimina
         'iterations': json['iterations'],
         'round': json['round'],
         'resultValid': json['resultValid'],
-        'createdAt': json['createdAt'],
+        'createdAt': (new Date(json['createdAt'])),
     };
 }
 
@@ -122,7 +122,7 @@ export function ComputingPowerResultDTOToJSON(value?: ComputingPowerResultDTO | 
         'iterations': value.iterations,
         'round': value.round,
         'resultValid': value.resultValid,
-        'createdAt': value.createdAt,
+        'createdAt': (value.createdAt.toISOString()),
     };
 }
 

@@ -63,10 +63,10 @@ export interface ResponsivenessResultDTO {
     resultValid: boolean;
     /**
      * 
-     * @type {string}
+     * @type {Date}
      * @memberof ResponsivenessResultDTO
      */
-    createdAt: string;
+    createdAt: Date;
 }
 
 export function ResponsivenessResultDTOFromJSON(json: any): ResponsivenessResultDTO {
@@ -86,7 +86,7 @@ export function ResponsivenessResultDTOFromJSONTyped(json: any, ignoreDiscrimina
         'totalTime': json['totalTime'],
         'round': json['round'],
         'resultValid': json['resultValid'],
-        'createdAt': json['createdAt'],
+        'createdAt': (new Date(json['createdAt'])),
     };
 }
 
@@ -106,7 +106,7 @@ export function ResponsivenessResultDTOToJSON(value?: ResponsivenessResultDTO | 
         'totalTime': value.totalTime,
         'round': value.round,
         'resultValid': value.resultValid,
-        'createdAt': value.createdAt,
+        'createdAt': (value.createdAt.toISOString()),
     };
 }
 

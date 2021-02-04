@@ -13,6 +13,13 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import {
+    TestResultStatusDTO,
+    TestResultStatusDTOFromJSON,
+    TestResultStatusDTOFromJSONTyped,
+    TestResultStatusDTOToJSON,
+} from './';
+
 /**
  * 
  * @export
@@ -33,52 +40,58 @@ export interface TestResultDTO {
     nodeId: string;
     /**
      * 
-     * @type {boolean}
+     * @type {TestResultStatusDTO}
      * @memberof TestResultDTO
      */
-    nodeVersionTestOk: boolean;
+    nodeVersionTestStatus: TestResultStatusDTO;
+    /**
+     * 
+     * @type {TestResultStatusDTO}
+     * @memberof TestResultDTO
+     */
+    chainHeightTestStatus: TestResultStatusDTO;
+    /**
+     * 
+     * @type {TestResultStatusDTO}
+     * @memberof TestResultDTO
+     */
+    chainPartTestStatus: TestResultStatusDTO;
+    /**
+     * 
+     * @type {TestResultStatusDTO}
+     * @memberof TestResultDTO
+     */
+    responsivenessTestStatus: TestResultStatusDTO;
+    /**
+     * 
+     * @type {TestResultStatusDTO}
+     * @memberof TestResultDTO
+     */
+    nodeBandwidthTestStatus: TestResultStatusDTO;
+    /**
+     * 
+     * @type {TestResultStatusDTO}
+     * @memberof TestResultDTO
+     */
+    computingPowerTestStatus: TestResultStatusDTO;
+    /**
+     * 
+     * @type {TestResultStatusDTO}
+     * @memberof TestResultDTO
+     */
+    nodePingTestStatus: TestResultStatusDTO;
+    /**
+     * 
+     * @type {TestResultStatusDTO}
+     * @memberof TestResultDTO
+     */
+    nodeBalanceTestStatus: TestResultStatusDTO;
     /**
      * 
      * @type {boolean}
      * @memberof TestResultDTO
      */
-    chainHeightTestOk: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof TestResultDTO
-     */
-    chainPartTestOk: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof TestResultDTO
-     */
-    responsivenessTestOk: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof TestResultDTO
-     */
-    bandwidthTestOk?: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof TestResultDTO
-     */
-    computingPowerTestOk: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof TestResultDTO
-     */
-    pingTestOk: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof TestResultDTO
-     */
-    nodeBalanceTestOk: boolean;
+    roundOk?: boolean;
     /**
      * 
      * @type {number}
@@ -87,10 +100,16 @@ export interface TestResultDTO {
     round: number;
     /**
      * 
-     * @type {string}
+     * @type {Date}
      * @memberof TestResultDTO
      */
-    createdAt: string;
+    createdAt: Date;
+    /**
+     * 
+     * @type {Date}
+     * @memberof TestResultDTO
+     */
+    finishedAt?: Date;
 }
 
 export function TestResultDTOFromJSON(json: any): TestResultDTO {
@@ -105,16 +124,18 @@ export function TestResultDTOFromJSONTyped(json: any, ignoreDiscriminator: boole
         
         'id': json['id'],
         'nodeId': json['nodeId'],
-        'nodeVersionTestOk': json['nodeVersionTestOk'],
-        'chainHeightTestOk': json['chainHeightTestOk'],
-        'chainPartTestOk': json['chainPartTestOk'],
-        'responsivenessTestOk': json['responsivenessTestOk'],
-        'bandwidthTestOk': !exists(json, 'bandwidthTestOk') ? undefined : json['bandwidthTestOk'],
-        'computingPowerTestOk': json['computingPowerTestOk'],
-        'pingTestOk': json['pingTestOk'],
-        'nodeBalanceTestOk': json['nodeBalanceTestOk'],
+        'nodeVersionTestStatus': TestResultStatusDTOFromJSON(json['nodeVersionTestStatus']),
+        'chainHeightTestStatus': TestResultStatusDTOFromJSON(json['chainHeightTestStatus']),
+        'chainPartTestStatus': TestResultStatusDTOFromJSON(json['chainPartTestStatus']),
+        'responsivenessTestStatus': TestResultStatusDTOFromJSON(json['responsivenessTestStatus']),
+        'nodeBandwidthTestStatus': TestResultStatusDTOFromJSON(json['nodeBandwidthTestStatus']),
+        'computingPowerTestStatus': TestResultStatusDTOFromJSON(json['computingPowerTestStatus']),
+        'nodePingTestStatus': TestResultStatusDTOFromJSON(json['nodePingTestStatus']),
+        'nodeBalanceTestStatus': TestResultStatusDTOFromJSON(json['nodeBalanceTestStatus']),
+        'roundOk': !exists(json, 'roundOk') ? undefined : json['roundOk'],
         'round': json['round'],
-        'createdAt': json['createdAt'],
+        'createdAt': (new Date(json['createdAt'])),
+        'finishedAt': !exists(json, 'finishedAt') ? undefined : (new Date(json['finishedAt'])),
     };
 }
 
@@ -129,16 +150,18 @@ export function TestResultDTOToJSON(value?: TestResultDTO | null): any {
         
         'id': value.id,
         'nodeId': value.nodeId,
-        'nodeVersionTestOk': value.nodeVersionTestOk,
-        'chainHeightTestOk': value.chainHeightTestOk,
-        'chainPartTestOk': value.chainPartTestOk,
-        'responsivenessTestOk': value.responsivenessTestOk,
-        'bandwidthTestOk': value.bandwidthTestOk,
-        'computingPowerTestOk': value.computingPowerTestOk,
-        'pingTestOk': value.pingTestOk,
-        'nodeBalanceTestOk': value.nodeBalanceTestOk,
+        'nodeVersionTestStatus': TestResultStatusDTOToJSON(value.nodeVersionTestStatus),
+        'chainHeightTestStatus': TestResultStatusDTOToJSON(value.chainHeightTestStatus),
+        'chainPartTestStatus': TestResultStatusDTOToJSON(value.chainPartTestStatus),
+        'responsivenessTestStatus': TestResultStatusDTOToJSON(value.responsivenessTestStatus),
+        'nodeBandwidthTestStatus': TestResultStatusDTOToJSON(value.nodeBandwidthTestStatus),
+        'computingPowerTestStatus': TestResultStatusDTOToJSON(value.computingPowerTestStatus),
+        'nodePingTestStatus': TestResultStatusDTOToJSON(value.nodePingTestStatus),
+        'nodeBalanceTestStatus': TestResultStatusDTOToJSON(value.nodeBalanceTestStatus),
+        'roundOk': value.roundOk,
         'round': value.round,
-        'createdAt': value.createdAt,
+        'createdAt': (value.createdAt.toISOString()),
+        'finishedAt': value.finishedAt === undefined ? undefined : (value.finishedAt.toISOString()),
     };
 }
 

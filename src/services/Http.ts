@@ -1,5 +1,5 @@
 import axios, { AxiosResponse, AxiosRequestConfig } from 'axios';
-const REQEST_TIMEOUT = 5000;
+const REQEST_TIMEOUT = 10000;
 
 export class HTTP {
 	static get(url: string, config?: AxiosRequestConfig | undefined): Promise<AxiosResponse<any>> {

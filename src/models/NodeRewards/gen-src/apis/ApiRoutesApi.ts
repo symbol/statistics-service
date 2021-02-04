@@ -30,6 +30,9 @@ import {
     OrderDTO,
     OrderDTOFromJSON,
     OrderDTOToJSON,
+    PayoutPageDTO,
+    PayoutPageDTOFromJSON,
+    PayoutPageDTOToJSON,
     TestResultDTO,
     TestResultDTOFromJSON,
     TestResultDTOToJSON,
@@ -65,6 +68,13 @@ export interface SearchNodeInfosRequest {
     pageNumber?: number;
     order?: OrderDTO;
     pageSize?: number;
+}
+
+export interface SearchPayoutsRequest {
+    pageNumber?: number;
+    order?: OrderDTO;
+    pageSize?: number;
+    nodeId?: string;
 }
 
 /**
@@ -196,6 +206,24 @@ export interface ApiRoutesApiInterface {
      * Returns a page of node information.
      */
     searchNodeInfos(pageNumber?: number, order?: OrderDTO, pageSize?: number): Promise<NodeInfoPageDTO>;
+
+    /**
+     * 
+     * @summary Returns a page of node payout.
+     * @param {number} [pageNumber] Filter by page number.
+     * @param {OrderDTO} [order] Sort responses in ascending or descending order based on the collection property set on the param &#x60;&#x60;orderBy&#x60;&#x60;. If the request does not specify &#x60;&#x60;orderBy&#x60;&#x60;, REST returns the collection ordered by id. 
+     * @param {number} [pageSize] Select the number of entries to return.
+     * @param {string} [nodeId] Node ID
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ApiRoutesApiInterface
+     */
+    searchPayoutsRaw(requestParameters: SearchPayoutsRequest): Promise<runtime.ApiResponse<PayoutPageDTO>>;
+
+    /**
+     * Returns a page of node payout.
+     */
+    searchPayouts(pageNumber?: number, order?: OrderDTO, pageSize?: number, nodeId?: string): Promise<PayoutPageDTO>;
 
 }
 
@@ -452,6 +480,48 @@ export class ApiRoutesApi extends runtime.BaseAPI implements ApiRoutesApiInterfa
      */
     async searchNodeInfos(pageNumber?: number, order?: OrderDTO, pageSize?: number): Promise<NodeInfoPageDTO> {
         const response = await this.searchNodeInfosRaw({ pageNumber: pageNumber, order: order, pageSize: pageSize });
+        return await response.value();
+    }
+
+    /**
+     * Returns a page of node payout.
+     */
+    async searchPayoutsRaw(requestParameters: SearchPayoutsRequest): Promise<runtime.ApiResponse<PayoutPageDTO>> {
+        const queryParameters: runtime.HTTPQuery = {};
+
+        if (requestParameters.pageNumber !== undefined) {
+            queryParameters['pageNumber'] = requestParameters.pageNumber;
+        }
+
+        if (requestParameters.order !== undefined) {
+            queryParameters['order'] = requestParameters.order;
+        }
+
+        if (requestParameters.pageSize !== undefined) {
+            queryParameters['pageSize'] = requestParameters.pageSize;
+        }
+
+        if (requestParameters.nodeId !== undefined) {
+            queryParameters['nodeId'] = requestParameters.nodeId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/payouts`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        });
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PayoutPageDTOFromJSON(jsonValue));
+    }
+
+    /**
+     * Returns a page of node payout.
+     */
+    async searchPayouts(pageNumber?: number, order?: OrderDTO, pageSize?: number, nodeId?: string): Promise<PayoutPageDTO> {
+        const response = await this.searchPayoutsRaw({ pageNumber: pageNumber, order: order, pageSize: pageSize, nodeId: nodeId });
         return await response.value();
     }
 

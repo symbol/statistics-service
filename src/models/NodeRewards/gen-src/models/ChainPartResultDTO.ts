@@ -69,10 +69,10 @@ export interface ChainPartResultDTO {
     resultValid: boolean;
     /**
      * 
-     * @type {string}
+     * @type {Date}
      * @memberof ChainPartResultDTO
      */
-    createdAt: string;
+    createdAt: Date;
 }
 
 export function ChainPartResultDTOFromJSON(json: any): ChainPartResultDTO {
@@ -93,7 +93,7 @@ export function ChainPartResultDTOFromJSONTyped(json: any, ignoreDiscriminator: 
         'reportedHash': json['reportedHash'],
         'round': json['round'],
         'resultValid': json['resultValid'],
-        'createdAt': json['createdAt'],
+        'createdAt': (new Date(json['createdAt'])),
     };
 }
 
@@ -114,7 +114,7 @@ export function ChainPartResultDTOToJSON(value?: ChainPartResultDTO | null): any
         'reportedHash': value.reportedHash,
         'round': value.round,
         'resultValid': value.resultValid,
-        'createdAt': value.createdAt,
+        'createdAt': (value.createdAt.toISOString()),
     };
 }
 

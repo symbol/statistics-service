@@ -57,10 +57,10 @@ export interface NodeBalanceResultDTO {
     resultValid: boolean;
     /**
      * 
-     * @type {string}
+     * @type {Date}
      * @memberof NodeBalanceResultDTO
      */
-    createdAt: string;
+    createdAt: Date;
 }
 
 export function NodeBalanceResultDTOFromJSON(json: any): NodeBalanceResultDTO {
@@ -79,7 +79,7 @@ export function NodeBalanceResultDTOFromJSONTyped(json: any, ignoreDiscriminator
         'reportedBalance': json['reportedBalance'],
         'round': json['round'],
         'resultValid': json['resultValid'],
-        'createdAt': json['createdAt'],
+        'createdAt': (new Date(json['createdAt'])),
     };
 }
 
@@ -98,7 +98,7 @@ export function NodeBalanceResultDTOToJSON(value?: NodeBalanceResultDTO | null):
         'reportedBalance': value.reportedBalance,
         'round': value.round,
         'resultValid': value.resultValid,
-        'createdAt': value.createdAt,
+        'createdAt': (value.createdAt.toISOString()),
     };
 }
 

@@ -38,8 +38,16 @@ export class DataBase {
 	};
 
 	static updateNodeList = async (nodeList: INode[]): Promise<void> => {
+		// Replace this part with mongo transactions
+		const prevNodeList = await DataBase.getNodeList();
 		await Node.remove({}).exec();
 		await Node.insertMany(nodeList);
+		const currentNodeList = await DataBase.getNodeList();
+
+		if(currentNodeList.length !== nodeList.length) {
+			await Node.remove({}).exec();
+			await Node.insertMany(prevNodeList);
+		}
 	};
 
 	static updateNode = async (node: INode): Promise<void> => {
