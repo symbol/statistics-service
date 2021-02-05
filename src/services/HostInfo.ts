@@ -1,4 +1,4 @@
-import { HTTP } from '@src/services/HTTP';
+import { HTTP } from '@src/services/Http';
 import * as winston from 'winston';
 import { memoryCache } from '@src/services/MemoryCache';
 import { INode } from '@src/models/Node';

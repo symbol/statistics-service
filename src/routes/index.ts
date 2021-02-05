@@ -5,7 +5,7 @@ import { NotFoundError, InternalServerError, MissingParamError } from '@src/infr
 import { memoryCache } from '@src/services/MemoryCache';
 import { Pagination } from '@src/infrastructure/Pagination';
 import { nodeRewards } from '@src/config';
-import { HTTP } from '@src/services/HTTP';
+import { HTTP } from '@src/services/Http';
 
 export class Routes {
 	static register = async (app: Express) => {

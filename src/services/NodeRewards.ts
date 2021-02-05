@@ -1,6 +1,6 @@
 import { nodeRewards } from '@src/config';
 import { NodeInfoDTO, TestResultDTO, TestResultInfoDTO, RewardProgramDTO, PayoutPageDTO } from '@src/models/NodeRewards/gen-src';
-import { HTTP } from '@src/services/HTTP';
+import { HTTP } from '@src/services/Http';
 
 export interface RewardProgram {
 	name: RewardProgramDTO;

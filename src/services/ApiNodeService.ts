@@ -1,4 +1,4 @@
-import { HTTP } from '@src/services/HTTP';
+import { HTTP } from '@src/services/Http';
 import * as winston from 'winston';
 import { basename } from '@src/utils';
 import { Logger } from '@src/infrastructure';

@@ -1,5 +1,5 @@
 import * as winston from 'winston';
-import { HTTP } from '@src/services/HTTP';
+import { HTTP } from '@src/services/Http';
 import { DataBase } from '@src/services/DataBase';
 import { HostInfo } from '@src/services/HostInfo';
 import { ApiNodeService } from '@src/services/ApiNodeService';
