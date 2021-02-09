@@ -41,12 +41,12 @@ export class DataBase {
 		// Replace this part with mongo transactions
 		const prevNodeList = await DataBase.getNodeList();
 
-		await Node.remove({}).exec();
+		await Node.deleteMany();
 		await Node.insertMany(nodeList);
 		const currentNodeList = await DataBase.getNodeList();
 
 		if (currentNodeList.length !== nodeList.length) {
-			await Node.remove({}).exec();
+			await Node.deleteMany();
 			await Node.insertMany(prevNodeList);
 		}
 	};
@@ -64,12 +64,12 @@ export class DataBase {
 	};
 
 	static updateNodesStats = async (nodeList: INodesStats): Promise<void> => {
-		await NodesStats.remove({}).exec();
+		await NodesStats.deleteMany();
 		await NodesStats.create(nodeList);
 	};
 
 	static updateNodeHeightStats = async (nodeHeightStats: INodeHeightStats): Promise<void> => {
-		await NodeHeightStats.remove({}).exec();
+		await NodeHeightStats.deleteMany();
 		await NodeHeightStats.create(nodeHeightStats);
 	};
 
@@ -82,7 +82,7 @@ export class DataBase {
 	};
 
 	static updateNodesHostDetail = async (hostDetail: IHostDetail[]): Promise<void> => {
-		await HostDetail.remove({}).exec();
+		await HostDetail.deleteMany();
 		await HostDetail.insertMany(hostDetail);
 	};
 }
