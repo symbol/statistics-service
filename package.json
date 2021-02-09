@@ -44,7 +44,7 @@
         "express": "^4.17.1",
         "module-alias": "^2.2.2",
         "mongoose": "^5.9.16",
-        "symbol-node-rewards": "https://github.com/nemgrouplimited/symbol-node-rewards.git",
+        "symbol-node-rewards": "git+ssh://git@github.com:nemgrouplimited/symbol-node-rewards.git",
         "tcp-ping": "^0.1.1",
         "uuid": "^8.0.0",
         "winston": "^3.3.3"
