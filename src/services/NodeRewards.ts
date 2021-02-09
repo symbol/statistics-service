@@ -1,5 +1,5 @@
 import { nodeRewards } from '@src/config';
-import { NodeInfoDTO, TestResultDTO, TestResultInfoDTO, RewardProgramDTO, PayoutPageDTO } from '@src/models/NodeRewards/gen-src';
+import { NodeInfoDTO, TestResultDTO, TestResultInfoDTO, RewardProgramDTO, PayoutPageDTO } from 'symbol-node-rewards/packages/api-spec';
 import { HTTP } from '@src/services/Http';
 
 export interface RewardProgram {

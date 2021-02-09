@@ -10,7 +10,8 @@
         "prettier": "prettier --write ./src",
         "lint": "eslint --cache src/ --ext .ts",
         "lint:fix": "eslint src/ --ext .ts --fix",
-        "style:fix": "npm run prettier && npm run lint:fix"
+        "style:fix": "npm run prettier && npm run lint:fix",
+        "postinstall": "bash scripts/post-install.sh"
     },
     "main": "dist/app.js",
     "typings": "dist/index.d.ts",
@@ -43,6 +44,7 @@
         "express": "^4.17.1",
         "module-alias": "^2.2.2",
         "mongoose": "^5.9.16",
+        "symbol-node-rewards": "https://github.com/nemgrouplimited/symbol-node-rewards.git",
         "tcp-ping": "^0.1.1",
         "uuid": "^8.0.0",
         "winston": "^3.3.3"
