@@ -1,9 +1,11 @@
-.idea
-docs/build
+
 node_modules
 dist
+docs/build
+**/gen-src/
+.idea
 .vscode
 .env
 .eslintcache
+openapitools.json
 *.log
-**/gen-src/
