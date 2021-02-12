@@ -4,8 +4,6 @@ WORKDIR /app
 
 COPY . .
 
-RUN apk update && apk add bash
-
 RUN npm install pm2 -g && npm install && npm run build
 
 EXPOSE 4001
