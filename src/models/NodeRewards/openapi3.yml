@@ -1,0 +1,820 @@
+openapi: 3.0.3
+info:
+  title: Symbol Node Rewards API
+  description: The API is the rest gateway to the symbol rewards controller.
+  version: 0.1.0
+servers:
+  - url: 'http://localhost:7890'
+    description: Localhost server for testing
+tags:
+  - name: Api routes
+paths:
+  /spec:
+    get:
+      tags:
+        - Api routes
+      summary: Returns the Open Api specification
+      operationId: getSpec
+      responses:
+        '200':
+          description: the Open API yaml file.
+        default:
+          $ref: '#/components/responses/Default'
+  /health:
+    get:
+      tags:
+        - Api routes
+      summary: Returns if the rest api is healthy
+      operationId: health
+      responses:
+        '200':
+          description: The health status.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthDTO'
+        default:
+          $ref: '#/components/responses/Default'
+  /nodes:
+    get:
+      tags:
+        - Api routes
+      summary: Returns a page of node information.
+      operationId: searchNodeInfos
+      parameters:
+        - $ref: '#/components/parameters/pageNumberQuery'
+        - $ref: '#/components/parameters/orderQuery'
+        - $ref: '#/components/parameters/pageSizeQuery'
+      responses:
+        '200':
+          description: A page with nodes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodeInfoPageDTO'
+        default:
+          $ref: '#/components/responses/Default'
+  '/nodes/{id}':
+    get:
+      tags:
+        - Api routes
+      summary: Returns a single node with given id
+      operationId: findNodeById
+      parameters:
+        - name: id
+          in: path
+          description: Node ID
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-fA-F]{24}$'
+      responses:
+        '200':
+          description: A node
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodeInfoDTO'
+        default:
+          $ref: '#/components/responses/Default'
+  '/nodes/nodePublicKey/{nodePublicKey}':
+    get:
+      tags:
+        - Api routes
+      summary: Returns a single node with given nodePublicKey
+      operationId: findNodeByNodePublicKey
+      parameters:
+        - name: nodePublicKey
+          in: path
+          description: Node linked account public key
+          required: true
+          schema:
+            type: string
+            pattern: '^([0-9A-Fa-f]){64}$'
+      responses:
+        '200':
+          description: A node
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodeInfoDTO'
+        default:
+          $ref: '#/components/responses/Default'
+  '/nodes/mainPublicKey/{mainPublicKey}':
+    get:
+      tags:
+        - Api routes
+      summary: Returns a single node with given mainPublicKey
+      operationId: findNodeByMainPublicKey
+      parameters:
+        - name: mainPublicKey
+          in: path
+          description: Node linked account public key
+          required: true
+          schema:
+            type: string
+            pattern: '^([0-9A-Fa-f]){64}$'
+      responses:
+        '200':
+          description: A node
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NodeInfoDTO'
+        default:
+          $ref: '#/components/responses/Default'
+  '/testResultInfo/nodeId/{nodeId}/round/{round}':
+    get:
+      tags:
+        - Api routes
+      summary: Returns a test rusult info by given nodeId and round
+      operationId: getTestResultInfo
+      parameters:
+        - name: nodeId
+          in: path
+          description: Node ID
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-fA-F]{24}$'
+        - name: round
+          in: path
+          description: The round number of the test result
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: The node test result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestResultInfoDTO'
+        default:
+          $ref: '#/components/responses/Default'
+  '/testResults/nodeId/{nodeId}':
+    get:
+      tags:
+        - Api routes
+      summary: Returns a test rusult list by given nodeId
+      operationId: getTestResults
+      parameters:
+        - name: nodeId
+          in: path
+          description: Node ID
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-fA-F]{24}$'
+        - name: fromRound
+          in: query
+          description: Only results with round number equal and less than this one are returned
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+        - name: count
+          in: query
+          description: The number of records
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: The node test result list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestResultsDTO'
+        default:
+          $ref: '#/components/responses/Default'
+  /payouts:
+    get:
+      tags:
+        - Api routes
+      summary: Returns a page of node payout.
+      operationId: searchPayouts
+      parameters:
+        - $ref: '#/components/parameters/pageNumberQuery'
+        - $ref: '#/components/parameters/orderQuery'
+        - $ref: '#/components/parameters/pageSizeQuery'
+        - name: nodeId
+          in: query
+          description: Node ID
+          required: false
+          schema:
+            type: string
+            pattern: '^[0-9a-fA-F]{24}$'
+      responses:
+        '200':
+          description: The node test result list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayoutPageDTO'
+        default:
+          $ref: '#/components/responses/Default'
+components:
+  parameters:
+    orderQuery:
+      name: order
+      in: query
+      description: |
+        Sort responses in ascending or descending order based on the collection property set on the param ``orderBy``.
+        If the request does not specify ``orderBy``, REST returns the collection ordered by id.
+      schema:
+        $ref: '#/components/schemas/OrderDTO'
+    pageNumberQuery:
+      name: pageNumber
+      in: query
+      description: Filter by page number.
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    pageSizeQuery:
+      name: pageSize
+      in: query
+      description: Select the number of entries to return.
+      schema:
+        type: integer
+        minimum: 10
+        maximum: 100
+        default: 10
+  responses:
+    Default:
+      description: unexpected error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorDTO'
+  schemas:
+    PublicKey:
+      type: string
+      description: Public key. A 32 bytes / 64 HEX string.
+      pattern: '^([0-9A-Fa-f]){64}$'
+      example: AC1A6E1D8DE5B17D2C6B1293F1CAD3829EEACF38D09311BB3C8E5A880092DE26
+    Pagination:
+      type: object
+      required:
+        - pageNumber
+        - pageSize
+      properties:
+        pageNumber:
+          type: integer
+        pageSize:
+          type: integer
+    NodeInfoDTO:
+      type: object
+      required:
+        - id
+        - name
+        - host
+        - serverPort
+        - agentPort
+        - restGatewayUrl
+        - nodePublicKey
+        - mainPublicKey
+        - status
+        - rewardProgram
+      properties:
+        id:
+          type: string
+          description: ID of the node.
+        name:
+          type: string
+          description: A friendly name of the node.
+        host:
+          type: string
+          description: The host of the server and agent
+        serverPort:
+          type: integer
+          description: The server port
+          example: 7900
+        agentPort:
+          type: integer
+          description: The agent port
+          example: 7880
+        restGatewayUrl:
+          type: string
+          description: The symbol rest url
+          example: 'http://myhost:3000'
+        nodePublicKey:
+          $ref: '#/components/schemas/PublicKey'
+        mainPublicKey:
+          $ref: '#/components/schemas/PublicKey'
+        status:
+          $ref: '#/components/schemas/NodeStatusDTO'
+        rewardProgram:
+          $ref: '#/components/schemas/RewardProgramDTO'
+        geoLocation:
+          $ref: '#/components/schemas/GeoLocationDTO'
+    NodeInfoPageDTO:
+      type: object
+      required:
+        - data
+        - pagination
+      properties:
+        data:
+          type: array
+          description: Array of nodes.
+          items:
+            $ref: '#/components/schemas/NodeInfoDTO'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    ErrorDTO:
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+    HealthDTO:
+      required:
+        - status
+      properties:
+        status:
+          type: string
+    OrderDTO:
+      type: string
+      description: |
+        Indicates how to sort the results:
+        * ``asc`` - ascending
+        * ``desc`` - descending
+      enum:
+        - asc
+        - desc
+      default: desc
+    NodeStatusDTO:
+      type: string
+      description: |
+        Indicates the status of the current host.
+        * ``OK`` - node is going well
+        * ``FAIL`` - node has failed last test.
+        * ``INITIAL`` - node hasn't run any test yet.
+      enum:
+        - OK
+        - FAIL
+        - INITIAL
+    RewardProgramDTO:
+      type: string
+      enum:
+        - SuperNode
+        - EarlyAdoption
+        - Ecosystem
+    TestResultInfoDTO:
+      type: object
+      properties:
+        nodeBandwidthResult:
+          $ref: '#/components/schemas/NodeBandwidthResultDTO'
+        chainHeightResult:
+          $ref: '#/components/schemas/ChainHeightResultDTO'
+        chainPartResult:
+          $ref: '#/components/schemas/ChainPartResultDTO'
+        computingPowerResult:
+          $ref: '#/components/schemas/ComputingPowerResultDTO'
+        nodeBalanceResult:
+          $ref: '#/components/schemas/NodeBalanceResultDTO'
+        nodeVersionResult:
+          $ref: '#/components/schemas/NodeVersionResultDTO'
+        nodePingResult:
+          $ref: '#/components/schemas/NodePingResultDTO'
+        responsivenessResult:
+          $ref: '#/components/schemas/ResponsivenessResultDTO'
+    TestResultsDTO:
+      type: array
+      description: Array of test results.
+      items:
+        $ref: '#/components/schemas/TestResultDTO'
+    TestResultDTO:
+      type: object
+      required:
+        - id
+        - nodeId
+        - nodeVersionTestStatus
+        - chainHeightTestStatus
+        - chainPartTestStatus
+        - responsivenessTestStatus
+        - nodeBandwidthTestStatus
+        - computingPowerTestStatus
+        - nodePingTestStatus
+        - nodeBalanceTestStatus
+        - round
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: ID of the test result
+        nodeId:
+          type: string
+          description: ID of the tested node
+        nodeVersionTestStatus:
+          $ref: '#/components/schemas/TestResultStatusDTO'
+        chainHeightTestStatus:
+          $ref: '#/components/schemas/TestResultStatusDTO'
+        chainPartTestStatus:
+          $ref: '#/components/schemas/TestResultStatusDTO'
+        responsivenessTestStatus:
+          $ref: '#/components/schemas/TestResultStatusDTO'
+        nodeBandwidthTestStatus:
+          $ref: '#/components/schemas/TestResultStatusDTO'
+        computingPowerTestStatus:
+          $ref: '#/components/schemas/TestResultStatusDTO'
+        nodePingTestStatus:
+          $ref: '#/components/schemas/TestResultStatusDTO'
+        nodeBalanceTestStatus:
+          $ref: '#/components/schemas/TestResultStatusDTO'
+        roundOk:
+          type: boolean
+        round:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        finishedAt:
+          type: string
+          format: date-time
+    TestResultStatusDTO:
+      type: string
+      description: |
+        Indicates the status a test
+        * ``INITIAL`` - Hasn't run yet
+        * ``DISABLED`` - Test is disabled.
+        * ``SUCCEEDED`` - Test has succesed
+        * ``FAILED`` - Test has failed
+        * ``ERROR`` - Test has been an error running the test.
+      enum:
+        - INITIAL
+        - DISABLED
+        - SUCCEEDED
+        - FAILED
+        - ERROR
+    BandwidthResultDTO:
+      type: object
+      required:
+        - toNodeId
+        - entitySeed
+        - entityHash
+        - reportedHash
+        - iterations
+        - downloadTime
+        - resultValid
+        - speed
+      properties:
+        toNodeId:
+          type: string
+          description: ID of the node
+        entitySeed:
+          type: string
+        entityHash:
+          type: string
+        reportedHash:
+          type: string
+        iterations:
+          type: integer
+        downloadTime:
+          type: integer
+        resultValid:
+          type: boolean
+        speed:
+          type: number
+    NodeBandwidthResultDTO:
+      type: object
+      required:
+        - id
+        - nodeId
+        - entitySeed
+        - entityHash
+        - iterations
+        - resultValid
+        - round
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: ID of the test result
+        nodeId:
+          type: string
+          description: ID of the tested node
+        entitySeed:
+          type: string
+        entityHash:
+          type: string
+        bandwidthResults:
+          type: array
+          items:
+            $ref: '#/components/schemas/BandwidthResultDTO'
+        iterations:
+          type: integer
+        resultValid:
+          type: boolean
+        round:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+    ChainHeightResultDTO:
+      type: object
+      required:
+        - id
+        - nodeId
+        - expectedHeight
+        - reportedHeight
+        - round
+        - resultValid
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: ID of the test result
+        nodeId:
+          type: string
+          description: ID of the tested node
+        expectedHeight:
+          type: integer
+        reportedHeight:
+          type: integer
+        round:
+          type: integer
+        resultValid:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+    ChainPartResultDTO:
+      type: object
+      required:
+        - id
+        - nodeId
+        - fromHeight
+        - numBlocks
+        - expectedHash
+        - reportedHash
+        - round
+        - resultValid
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: ID of the test result
+        nodeId:
+          type: string
+          description: ID of the tested node
+        fromHeight:
+          type: integer
+        numBlocks:
+          type: integer
+        expectedHash:
+          type: string
+        reportedHash:
+          type: string
+        round:
+          type: integer
+        resultValid:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+    ComputingPowerResultDTO:
+      type: object
+      required:
+        - id
+        - nodeId
+        - seed
+        - reportedResult
+        - expectedResult
+        - timeNeeded
+        - iterations
+        - round
+        - resultValid
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: ID of the test result
+        nodeId:
+          type: string
+          description: ID of the tested node
+        seed:
+          type: string
+        reportedResult:
+          type: string
+        expectedResult:
+          type: string
+        timeNeeded:
+          type: integer
+        iterations:
+          type: integer
+        round:
+          type: integer
+        resultValid:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+    NodeBalanceResultDTO:
+      type: object
+      required:
+        - id
+        - nodeId
+        - expectedMinBalance
+        - reportedBalance
+        - round
+        - resultValid
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: ID of the test result
+        nodeId:
+          type: string
+          description: ID of the tested node
+        expectedMinBalance:
+          type: number
+        reportedBalance:
+          type: number
+        round:
+          type: integer
+        resultValid:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+    NodeVersionResultDTO:
+      type: object
+      required:
+        - id
+        - nodeId
+        - expectedNodeVersion
+        - reportedNodeVersion
+        - round
+        - resultValid
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: ID of the test result
+        nodeId:
+          type: string
+          description: ID of the tested node
+        expectedNodeVersion:
+          type: integer
+        reportedNodeVersion:
+          type: integer
+        round:
+          type: integer
+        resultValid:
+          type: boolean
+        createdAt:
+          type: string
+    PingResultDTO:
+      type: object
+      required:
+        - toNodeId
+        - samples
+        - averageTime
+        - resultValid
+      properties:
+        toNodeId:
+          type: string
+          description: ID of the tested node
+        samples:
+          type: array
+          items:
+            type: integer
+        averageTime:
+          type: number
+        resultValid:
+          type: boolean
+    NodePingResultDTO:
+      type: object
+      required:
+        - id
+        - nodeId
+        - pingResults
+        - averageTime
+        - round
+        - resultValid
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: ID of the test result
+        nodeId:
+          type: string
+          description: ID of the tested node
+        pingResults:
+          $ref: '#/components/schemas/PingResultDTO'
+        averageTime:
+          type: number
+        round:
+          type: integer
+        resultValid:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+    ResponsivenessResultDTO:
+      type: object
+      required:
+        - id
+        - nodeId
+        - numRequests
+        - numResponses
+        - totalTime
+        - round
+        - resultValid
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: ID of the test result
+        nodeId:
+          type: string
+          description: ID of the tested node
+        numRequests:
+          type: integer
+        numResponses:
+          type: integer
+        totalTime:
+          type: integer
+        round:
+          type: integer
+        resultValid:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+    GeoLocationDTO:
+      type: object
+      required:
+        - latitude
+        - longitude
+      properties:
+        latitude:
+          type: number
+          description: latitude of the node's location
+          example: 45.5808
+        longitude:
+          type: number
+          description: longitude of the node's location
+          example: -73.5825
+    PayoutDTO:
+      type: object
+      required:
+        - id
+        - nodeId
+        - fromRound
+        - toRound
+        - transactionHash
+        - status
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: ID of the payout.
+        nodeId:
+          type: string
+          description: ID of the node.
+        fromRound:
+          type: number
+        toRound:
+          type: number
+        transactionHash:
+          type: string
+        status:
+          type: string
+          description: |
+            Indicates the status of the payout transaction.
+            * ``ToBeProcess`` - waiting for process the transaction.
+            * ``Processing`` - waiting the transaction get into block.
+            * ``Completed`` - transaction comfrimed into the block.
+            * ``ManualReview`` - transaction need manual review by admin.
+            * ``Fail`` - no qualify payout process.
+          enum:
+            - ToBeProcess
+            - Processing
+            - Completed
+            - ManualReview
+            - Fail
+        createdAt:
+          type: string
+          format: date-time
+    PayoutPageDTO:
+      type: object
+      required:
+        - data
+        - pagination
+      properties:
+        data:
+          type: array
+          description: Array of payouts.
+          items:
+            $ref: '#/components/schemas/PayoutDTO'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
