@@ -1,10 +1,11 @@
 {
     "name": "symbol-statistics-service",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "",
     "scripts": {
         "dev": "nodemon",
         "build": "rimraf ./dist/ && tsc",
+        "build:clients": "bash scripts/build-clients.sh",
         "start": "node dist/app.js",
         "version": "echo $npm_package_version",
         "prettier": "prettier --write ./src",
@@ -18,7 +19,9 @@
         "@src": "dist"
     },
     "devDependencies": {
+        "@openapitools/openapi-generator-cli": "^2.1.12",
         "@types/mongoose": "^5.7.14",
+        "@types/node": "^14.14.10",
         "@types/winston": "^2.4.4",
         "@typescript-eslint/eslint-plugin": "^4.4.0",
         "@typescript-eslint/parser": "^4.4.0",
@@ -26,8 +29,10 @@
         "eslint-config-prettier": "^6.12.0",
         "eslint-plugin-prettier": "^3.1.4",
         "nodemon": "^2.0.3",
+        "openapi-to-postmanv2": "^2.0.0",
         "prettier": "^2.1.2",
         "rimraf": "^3.0.2",
+        "swagger-cli": "^4.0.4",
         "ts-node": "^8.10.1",
         "tslint": "^6.1.2",
         "typescript": "^3.8.3"
@@ -37,7 +42,7 @@
         "@types/express": "^4.17.6",
         "@types/tcp-ping": "^0.1.1",
         "@types/uuid": "^7.0.3",
-        "axios": "^0.20.0",
+        "axios": "^0.21.1",
         "cors": "^2.8.5",
         "dotenv": "^8.2.0",
         "express": "^4.17.1",
