@@ -63,13 +63,11 @@ export class NodeRewards {
 	static async getPayouts(filter: PayoutFilter): Promise<PayoutPageDTO> {
 		const payoutPageDTO = (
 			await HTTP.get(
-				// `http://api-01.ap-southeast-1.0.10.0.x.symboldev.network:3000/transactions/confirmed?type=16724&pageSize=10&pageNumber=${filter.pageNumber}&order=desc`,
 				`${nodeRewards.CONTROLLER_ENDPOINT}/payouts`,
 				{ params: filter },
 			)
 		).data;
 
-		payoutPageDTO.data = payoutPageDTO.data.map((e: any) => e.transaction);
 		return payoutPageDTO;
 	}
 }
