@@ -90,17 +90,19 @@ const NodeSchema: Schema = new Schema({
 		required: true,
 	},
 	rewardPrograms: {
-		type: [{
-			name: {
-				type: String,
-				required: true
+		type: [
+			{
+				name: {
+					type: String,
+					required: true,
+				},
+				passed: {
+					type: Boolean,
+					required: true,
+				},
 			},
-			passed: {
-				type: Boolean,
-				required: true
-			}
-		}],
-		required: true
+		],
+		required: true,
 	},
 	hostDetail: {
 		type: {

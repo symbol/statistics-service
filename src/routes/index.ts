@@ -49,32 +49,28 @@ export class Routes {
 			try {
 				const nodePublicKey = req.params.nodePublicKey;
 
-				if(!nodePublicKey)
-					return MissingParamError.send(res, 'nodePublicKey');
+				if (!nodePublicKey) return MissingParamError.send(res, 'nodePublicKey');
 
 				const nodeInfo = await NodeRewards.getNodeInfo(nodePublicKey);
 				const nodeId = nodeInfo.id;
 				const testResults = await NodeRewards.getTestResults(nodeId);
 				let testResultInfo;
-				if(testResults.length) {
+
+				if (testResults.length) {
 					const latestRound = testResults[0].round;
+
 					testResultInfo = await NodeRewards.getTestResultInfo(nodeId, latestRound);
 				}
 				const nodeRewardsInfo = {
 					nodeInfo,
 					testResults,
-					testResultInfo
+					testResultInfo,
 				};
 
 				res.send(nodeRewardsInfo);
-			}
-			catch(e) {
-				const status = e.response
-					? e.response.status
-					: 502;
-				const message = e.response
-					? e.response.data
-					: e.message;
+			} catch (e) {
+				const status = e.response ? e.response.status : 502;
+				const message = e.response ? e.response.data : e.message;
 
 				res.status(status).send(message);
 			}
@@ -90,14 +86,9 @@ export class Routes {
 				});
 
 				res.send(payouts);
-			}
-			catch(e) {
-				const status = e.response
-					? e.response.status
-					: 502;
-				const message = e.response
-					? e.response.data
-					: e.message;
+			} catch (e) {
+				const status = e.response ? e.response.status : 502;
+				const message = e.response ? e.response.data : e.message;
 
 				res.status(status).send(message);
 			}
@@ -113,14 +104,9 @@ export class Routes {
 				});
 
 				res.send(payouts);
-			}
-			catch(e) {
-				const status = e.response
-					? e.response.status
-					: 502;
-				const message = e.response
-					? e.response.data
-					: e.message;
+			} catch (e) {
+				const status = e.response ? e.response.status : 502;
+				const message = e.response ? e.response.data : e.message;
 
 				res.status(status).send(message);
 			}

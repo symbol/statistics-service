@@ -61,23 +61,13 @@ export class NodeRewards {
 	}
 
 	static async getPayouts(filter: PayoutFilter): Promise<PayoutPageDTO> {
-		const payoutPageDTO = (
-			await HTTP.get(
-				`${nodeRewards.CONTROLLER_ENDPOINT}/payouts`,
-				{ params: filter },
-			)
-		).data;
+		const payoutPageDTO = (await HTTP.get(`${nodeRewards.CONTROLLER_ENDPOINT}/payouts`, { params: filter })).data;
 
 		return payoutPageDTO;
 	}
 
 	static async getVotingPayouts(filter: PayoutFilter): Promise<PayoutPageDTO> {
-		const payoutPageDTO = (
-			await HTTP.get(
-				`${nodeRewards.CONTROLLER_ENDPOINT}/votingPayouts`,
-				{ params: filter },
-			)
-		).data;
+		const payoutPageDTO = (await HTTP.get(`${nodeRewards.CONTROLLER_ENDPOINT}/votingPayouts`, { params: filter })).data;
 
 		return payoutPageDTO;
 	}
