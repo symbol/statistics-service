@@ -70,4 +70,15 @@ export class NodeRewards {
 
 		return payoutPageDTO;
 	}
+
+	static async getVotingPayouts(filter: PayoutFilter): Promise<PayoutPageDTO> {
+		const payoutPageDTO = (
+			await HTTP.get(
+				`${nodeRewards.CONTROLLER_ENDPOINT}/votingPayouts`,
+				{ params: filter },
+			)
+		).data;
+
+		return payoutPageDTO;
+	}
 }

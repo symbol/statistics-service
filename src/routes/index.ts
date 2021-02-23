@@ -102,5 +102,28 @@ export class Routes {
 				res.status(status).send(message);
 			}
 		});
+
+		app.get('/nodeRewards/votingPayouts', async (req: Request, res: Response) => {
+			try {
+				const payouts = await NodeRewards.getVotingPayouts({
+					nodeId: req.query.nodeId as string,
+					pageSize: req.query.pageSize as string,
+					pageNumber: req.query.pageNumber as string,
+					order: req.query.order as string,
+				});
+
+				res.send(payouts);
+			}
+			catch(e) {
+				const status = e.response
+					? e.response.status
+					: 502;
+				const message = e.response
+					? e.response.data
+					: e.message;
+
+				res.status(status).send(message);
+			}
+		});
 	};
 }
