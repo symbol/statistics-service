@@ -5,9 +5,12 @@ dotenv.config();
 import * as cors from 'cors';
 import * as winston from 'winston';
 import * as config from './config';
-import { DataBase } from './DataBase';
+import { DataBase } from './services/DataBase';
+import { NodeMonitor } from './services/NodeMonitor';
+import { ChainHeightMonitor } from './services/ChainHeightMonitor';
+import { GeolocationMonitor } from './services/GeolocationMonitor';
 import { Routes } from './routes';
-import { NodeMonitor, Logger } from './infrastructure';
+import { Logger } from './infrastructure';
 import * as utils from '@src/utils';
 
 const logger: winston.Logger = Logger.getLogger(utils.basename(__filename));
@@ -33,6 +36,8 @@ class App {
 		await DataBase.connect(config.db.MONGODB_ENDPOINT);
 		await Routes.register(app);
 		new NodeMonitor(config.monitor.NODE_MONITOR_SCHEDULE_INTERVAL).start();
+		new ChainHeightMonitor(config.monitor.CHAIN_HEIGHT_MONITOR_SCHEDULE_INTERVAL).start();
+		new GeolocationMonitor(config.monitor.GEOLOCATION_MONITOR_SCHEDULE_INTERVAL).start();
 
 		/**
 		 * -------------- Server listen --------------

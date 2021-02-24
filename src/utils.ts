@@ -1,4 +1,4 @@
-import { INode } from '@src/DataBase/models/Node';
+import { INode } from '@src/models/Node';
 import * as path from 'path';
 
 export const stringToArray = (str: string | undefined): Array<any> => {
@@ -33,4 +33,20 @@ export const sleep = (ms: number): Promise<any> => {
 
 export const basename = (filename: string) => {
 	return path.basename(filename, '.js');
+};
+
+export const parseArray = (array: any): Array<any> | null => {
+	if (Array.isArray(array)) return array;
+
+	if (typeof array === 'string') {
+		try {
+			const json = JSON.parse(array);
+
+			if (Array.isArray(json)) return json;
+		} catch (e) {
+			return null;
+		}
+	}
+
+	return null;
 };

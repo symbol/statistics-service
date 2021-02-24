@@ -1,7 +1,10 @@
-.idea
-docs/build
+
 node_modules
 dist
+docs/build
+.idea
 .vscode
 .env
 .eslintcache
+openapitools.json
+*.log

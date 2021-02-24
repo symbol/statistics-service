@@ -9,6 +9,15 @@ export class NotFoundError {
 	};
 }
 
+export class MissingParamError {
+	static send = (res: Response, param: string) => {
+		return res.status(422).send({
+			code: 'UnprocessableEntity',
+			message: `Missing required parameter "${param}"`,
+		});
+	};
+}
+
 export class InternalServerError {
 	static send = (res: Response, error: Error) => {
 		return res.status(500).send({
