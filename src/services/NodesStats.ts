@@ -17,8 +17,7 @@ export class NodesStats implements INodesStats {
 
 	addToStats(node: INode) {
 		this.updateStats(String(node.roles));
-		// if(Array.isArray(node.rewardPrograms))
-		// 	node.rewardPrograms.forEach(program => this.updateStats(program.name));
+		if (Array.isArray(node.rewardPrograms)) node.rewardPrograms.forEach((program) => this.updateStats(program.name));
 	}
 
 	clear() {
