@@ -20,7 +20,7 @@ const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
 export class NodeMonitor {
 	private nodesStats: NodesStats;
-	private nodeCountTimeSeriesService: TimeSeriesService<AbstractTimeSeries, AbstractTimeSeriesDocument>; 
+	private nodeCountTimeSeriesService: TimeSeriesService<AbstractTimeSeries, AbstractTimeSeriesDocument>;
 	private nodeList: INode[];
 	private isRunning: boolean;
 	private interval: number;
@@ -30,7 +30,7 @@ export class NodeMonitor {
 		this.nodeCountTimeSeriesService = new TimeSeriesService<AbstractTimeSeries, AbstractTimeSeriesDocument>(
 			'average',
 			NodeCountSeriesDay,
-			NodeCountSeries
+			NodeCountSeries,
 		);
 		this.nodeList = [];
 		this.isRunning = false;
@@ -146,17 +146,16 @@ export class NodeMonitor {
 		this.nodeCountTimeSeriesService.setData({
 			date: new Date(),
 			values: [
-				...Object.keys(this.nodesStats.nodeTypes)
-				.map(type => ({
+				...Object.keys(this.nodesStats.nodeTypes).map((type) => ({
 					name: type,
-					value: this.nodesStats.nodeTypes[type]
+					value: this.nodesStats.nodeTypes[type],
 				})),
 				{
 					name: 'Total',
-					value: this.nodesStats.getTotal()
-				}
-			]
-		})
+					value: this.nodesStats.getTotal(),
+				},
+			],
+		});
 		if (this.nodeList.length > 0) {
 			logger.info(`Update collection`);
 			const prevNodeList = await DataBase.getNodeList();

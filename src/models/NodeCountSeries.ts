@@ -4,13 +4,15 @@ import { AbstractTimeSeriesDocument } from '@src/models/AbstractTimeSeries';
 
 const schema: Schema = new Schema({
 	date: {
-        type: Date,
-        required: true
-    },
-    values: [{
-        name: String,
-        value: Number
-    }]
+		type: Date,
+		required: true,
+	},
+	values: [
+		{
+			name: String,
+			value: Number,
+		},
+	],
 });
 
 export const NodeCountSeries = mongoose.model<AbstractTimeSeriesDocument>('NodeCountSeries', schema);

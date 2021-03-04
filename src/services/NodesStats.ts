@@ -23,10 +23,7 @@ export class NodesStats implements INodesStats {
 	getTotal() {
 		let sum = 0;
 
-		for(let i = 1; i <= 7; i++) {
-			if (this.nodeTypes['' + i])
-				sum += this.nodeTypes['' + i];
-		}
+		for (let i = 1; i <= 7; i++) if (this.nodeTypes['' + i]) sum += this.nodeTypes['' + i];
 
 		return sum;
 	}
@@ -39,7 +36,7 @@ export class NodesStats implements INodesStats {
 			'4': 0,
 			'5': 0,
 			'6': 0,
-			'7': 0
+			'7': 0,
 		};
 	}
 }
