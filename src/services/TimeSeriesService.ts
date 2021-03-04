@@ -1,4 +1,4 @@
-import { Document, Model, Query } from 'mongoose';
+import { Model } from 'mongoose';
 import { AbstractTimeSeries, AbstractTimeSeriesDocument, TimeSeriesValue } from '@src/models/AbstractTimeSeries';
 import { Logger } from '@src/infrastructure';
 import { basename } from '@src/utils';
@@ -9,12 +9,9 @@ type AggreagateType = 'average' | 'accumulate';
 
 export class TimeSeriesService<T extends AbstractTimeSeries, D extends AbstractTimeSeriesDocument> {
     private dayCollection: Array<T>;
-    // private mainCollection: Array<T>;
     private aggregateType: AggreagateType;
     private dayModel: Model<D>;
     private mainModel: Model<D>;
-    private lastMainCollectionDocument: D | null;
-    
 
     constructor(
         aggregateType: AggreagateType,
@@ -25,16 +22,11 @@ export class TimeSeriesService<T extends AbstractTimeSeries, D extends AbstractT
         this.dayModel = dayModel;
         this.mainModel = mainModel;
         this.dayCollection = [];
-        this.lastMainCollectionDocument = null;
         this.getDayCollection();
-        //this.getLastMainCollectionDocument();
     }
 
     public async setData(data: T) {
-        console.log('==========> setData', data)
-        console.log('==========> this.dayCollection', this.dayCollection)
         if (this.shouldMainCollectionBeUpdated(data)) {
-            console.log('==========> setData.shouldMainCollectionBeUpdated(true)')
             const date = this.dayCollection[this.dayCollection.length - 1].date;
             let sum: Array<TimeSeriesValue> = [];
             let mainData: Array<TimeSeriesValue> = [];
@@ -68,26 +60,16 @@ export class TimeSeriesService<T extends AbstractTimeSeries, D extends AbstractT
                 values: mainData
             }
 
-            console.log('==========> setData.mainDocument', mainDocument)
-
             await this.insertToMainCollection(mainDocument as T);
             await this.clearDayCollection();
         }
-        else {
-            console.log('==========> setData.shouldMainCollectionBeUpdated(false)');
-            await this.insertToDayCollection(data);
-            this.dayCollection.push(data);
-        }
+
+        await this.insertToDayCollection(data);
+        this.dayCollection.push(data);
+
     }
 
     private shouldMainCollectionBeUpdated(data: T) {
-        // if (this.lastMainCollectionDocument) {
-        //     return this.isDayEnded(
-        //         this.lastMainCollectionDocument.date,
-        //         data.date
-        //     );
-        // }
-
         if (this.dayCollection.length) {
             return this.isDayEnded(
                 this.dayCollection[this.dayCollection.length - 1].date,
@@ -102,18 +84,14 @@ export class TimeSeriesService<T extends AbstractTimeSeries, D extends AbstractT
         const day = date.getUTCDate();
         const month = date.getUTCMonth() + 1;
         const year = date.getUTCFullYear();
-        const minutes = date.getUTCMinutes();
         
         const currentDay = currentDate.getUTCDate();
         const currentMonth = currentDate.getUTCMonth() + 1;
         const currentYear = currentDate.getUTCFullYear();
-        const currentMinutes = currentDate.getUTCMinutes();
 
-        console.log(`minutes(${minutes}) > currentMinutes(${currentMinutes})`)
         if (year > currentYear) return true;
         if (year === currentYear && month > currentMonth) return true;
         if (year === currentYear && month === currentMonth && day > currentDay)  return true;
-        if (minutes > currentMinutes)  return true;
 
         return false;
     }
@@ -172,27 +150,6 @@ export class TimeSeriesService<T extends AbstractTimeSeries, D extends AbstractT
         }
     }
 
-    private async getLastMainCollectionDocument() {
-        try {
-            const mainCollection = await this.mainModel
-                .find()
-                .sort({ _id: -1 })
-                .limit(1)
-                .exec();
-
-            this.lastMainCollectionDocument = mainCollection[0];
-        }
-        catch(e) {
-            logger.error(
-				`Failed getLastMainCollectionDocument. Error: ${e.message}`,
-			);
-            await new Promise(resolve => setTimeout(() => {
-                this.getLastMainCollectionDocument()
-                    .then(() => resolve(null));
-            }, ERROR_REPEATE_TIMEOUT));
-        }
-    }
-
     private async clearDayCollection() {
         try {
             await this.dayModel.deleteMany();
@@ -207,5 +164,10 @@ export class TimeSeriesService<T extends AbstractTimeSeries, D extends AbstractT
                     .then(() => resolve(null));
             }, ERROR_REPEATE_TIMEOUT));
         }
+    }
+
+    public clear() {
+        this.clearDayCollection();
+        this.mainModel.deleteMany();
     }
 }

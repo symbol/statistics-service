@@ -20,7 +20,26 @@ export class NodesStats implements INodesStats {
 		if (Array.isArray(node.rewardPrograms)) node.rewardPrograms.forEach((program) => this.updateStats(program.name));
 	}
 
+	getTotal() {
+		let sum = 0;
+
+		for(let i = 1; i <= 7; i++) {
+			if (this.nodeTypes['' + i])
+				sum += this.nodeTypes['' + i];
+		}
+
+		return sum;
+	}
+
 	clear() {
-		this.nodeTypes = {};
+		this.nodeTypes = {
+			'1': 0,
+			'2': 0,
+			'3': 0,
+			'4': 0,
+			'5': 0,
+			'6': 0,
+			'7': 0
+		};
 	}
 }
