@@ -6,6 +6,9 @@ import { ApiNodeService } from '@src/services/ApiNodeService';
 import { PeerNodeService } from '@src/services/PeerNodeService';
 import { NodeRewards } from '@src/services/NodeRewards';
 import { NodesStats } from '@src/services/NodesStats';
+import { TimeSeriesService } from '@src/services/TimeSeriesService';
+import { NodeCountSeries, NodeCountSeriesDay } from '@src/models/NodeCountSeries';
+import { AbstractTimeSeries, AbstractTimeSeriesDocument } from '@src/models/AbstractTimeSeries';
 import { memoryCache } from '@src/services/MemoryCache';
 import { Logger } from '@src/infrastructure';
 
@@ -17,12 +20,18 @@ const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
 export class NodeMonitor {
 	private nodesStats: NodesStats;
+	private nodeCountTimeSeriesService: TimeSeriesService<AbstractTimeSeries, AbstractTimeSeriesDocument>; 
 	private nodeList: INode[];
 	private isRunning: boolean;
 	private interval: number;
 
 	constructor(_interval: number) {
 		this.nodesStats = new NodesStats();
+		this.nodeCountTimeSeriesService = new TimeSeriesService<AbstractTimeSeries, AbstractTimeSeriesDocument>(
+			'average',
+			NodeCountSeriesDay,
+			NodeCountSeries
+		);
 		this.nodeList = [];
 		this.isRunning = false;
 		this.interval = _interval || 300000;
@@ -134,6 +143,13 @@ export class NodeMonitor {
 	};
 
 	private updateCollection = async (): Promise<any> => {
+		this.nodeCountTimeSeriesService.setData({
+			date: new Date(),
+			values: [{
+				name: 'name',
+				value: Math.round(Math.random() * 100)
+			}]
+		})
 		if (this.nodeList.length > 0) {
 			logger.info(`Update collection`);
 			const prevNodeList = await DataBase.getNodeList();
