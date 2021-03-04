@@ -111,5 +111,11 @@ export class Routes {
 				res.status(status).send(message);
 			}
 		});
+
+		app.get('/timeSeries/nodeCount', async (req: Request, res: Response) => {
+			return DataBase.getNodeCountSeries()
+				.then((data) => res.send(data))
+				.catch((error) => InternalServerError.send(res, error));
+		});
 	};
 }
