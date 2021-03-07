@@ -145,16 +145,11 @@ export class NodeMonitor {
 	private updateCollection = async (): Promise<any> => {
 		this.nodeCountTimeSeriesService.setData({
 			date: new Date(),
-			values: [
-				...Object.keys(this.nodesStats.nodeTypes).map((type) => ({
-					name: type,
-					value: this.nodesStats.nodeTypes[type],
-				})),
-				{
-					name: 'Total',
-					value: this.nodesStats.getTotal(),
-				},
-			],
+			values: {
+				...this.nodesStats.nodeTypes,
+				total: this.nodesStats.getTotal(),
+				rand: Math.round(Math.random() * 1000)
+			},
 		});
 		if (this.nodeList.length > 0) {
 			logger.info(`Update collection`);

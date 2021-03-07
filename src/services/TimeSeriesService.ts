@@ -1,5 +1,5 @@
 import { Model } from 'mongoose';
-import { AbstractTimeSeries, AbstractTimeSeriesDocument, TimeSeriesValue } from '@src/models/AbstractTimeSeries';
+import { AbstractTimeSeries, AbstractTimeSeriesDocument, TimeSeriesValues } from '@src/models/AbstractTimeSeries';
 import { Logger } from '@src/infrastructure';
 import { basename } from '@src/utils';
 
@@ -25,32 +25,28 @@ export class TimeSeriesService<T extends AbstractTimeSeries, D extends AbstractT
 	public async setData(data: T) {
 		if (this.shouldMainCollectionBeUpdated(data)) {
 			const date = this.dayCollection[this.dayCollection.length - 1].date;
-			let sum: Array<TimeSeriesValue> = [];
-			let mainData: Array<TimeSeriesValue> = [];
+			let sum: TimeSeriesValues = {};
+			let mainDocumentValues: TimeSeriesValues = {};
 
 			for (let docIndex = 0; docIndex < this.dayCollection.length; docIndex++) {
-				for (let valueIndex = 0; valueIndex < this.dayCollection[docIndex].values.length; valueIndex++) {
-					if (!sum[valueIndex]) {
-						sum[valueIndex] = {
-							name: this.dayCollection[docIndex].values[valueIndex].name,
-							value: 0,
-						};
+				for (let key of Object.keys(this.dayCollection[docIndex].values)) {
+					if (!sum[key]) {
+						sum[key] = 0
 					}
 
-					sum[valueIndex].value = sum[valueIndex].value += this.dayCollection[docIndex].values[valueIndex].value;
+					sum[key] = sum[key] += this.dayCollection[docIndex].values[key];
 				}
 			}
 
 			if (this.aggregateType === 'average') {
-				mainData = sum.map((el) => ({
-					...el,
-					value: el.value / this.dayCollection.length,
-				}));
-			} else mainData = sum;
+				for(const key of Object.keys(sum)) {
+					mainDocumentValues[key] = sum[key] / this.dayCollection.length;
+				}
+			} else mainDocumentValues = sum;
 
 			const mainDocument = {
 				date,
-				values: mainData,
+				values: mainDocumentValues,
 			};
 
 			await this.insertToMainCollection(mainDocument as T);
@@ -71,14 +67,18 @@ export class TimeSeriesService<T extends AbstractTimeSeries, D extends AbstractT
 		const day = date.getUTCDate();
 		const month = date.getUTCMonth() + 1;
 		const year = date.getUTCFullYear();
+		const minute = date.getUTCMinutes();
 
 		const currentDay = currentDate.getUTCDate();
 		const currentMonth = currentDate.getUTCMonth() + 1;
 		const currentYear = currentDate.getUTCFullYear();
+		const currentMinute = currentDate.getUTCMinutes();
+		console.log(minute + '=========>' + currentMinute)
 
 		if (year > currentYear) return true;
 		if (year === currentYear && month > currentMonth) return true;
 		if (year === currentYear && month === currentMonth && day > currentDay) return true;
+		if (minute > currentMinute) return true;
 
 		return false;
 	}

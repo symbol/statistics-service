@@ -7,12 +7,10 @@ const schema: Schema = new Schema({
 		type: Date,
 		required: true,
 	},
-	values: [
-		{
-			name: String,
-			value: Number,
-		},
-	],
+	values: {
+		type: Schema.Types.Mixed,
+		required: false,
+	},
 });
 
 export const NodeCountSeries = mongoose.model<AbstractTimeSeriesDocument>('NodeCountSeries', schema);
