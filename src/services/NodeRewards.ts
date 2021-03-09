@@ -25,11 +25,11 @@ export interface PayoutFilter {
 }
 
 export class NodeRewards {
-	static async getNodeRewardPrograms(nodePublicKey: string): Promise<RewardProgram[]> {
+	static async getNodeRewardPrograms(mainPublicKey: string): Promise<RewardProgram[]> {
 		const rewardPrograms: Array<RewardProgram> = [];
 
 		try {
-			const nodeInfo = await NodeRewards.getNodeInfo(nodePublicKey);
+			const nodeInfo = await NodeRewards.getNodeInfo(mainPublicKey);
 
 			rewardPrograms.push({
 				name: nodeInfo.rewardProgram,
@@ -40,8 +40,8 @@ export class NodeRewards {
 		return rewardPrograms;
 	}
 
-	static async getNodeInfo(nodePublicKey: string): Promise<NodeInfoDTO> {
-		const nodeInfo: NodeInfoDTO = (await HTTP.get(`${nodeRewards.CONTROLLER_ENDPOINT}/nodes/nodePublicKey/${nodePublicKey}`)).data;
+	static async getNodeInfo(mainPublicKey: string): Promise<NodeInfoDTO> {
+		const nodeInfo: NodeInfoDTO = (await HTTP.get(`${nodeRewards.CONTROLLER_ENDPOINT}/nodes/mainPublicKey/${mainPublicKey}`)).data;
 
 		return nodeInfo;
 	}

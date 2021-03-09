@@ -125,10 +125,10 @@ export class NodeMonitor {
 
 			if (isAPIRole(node.roles)) {
 				nodeWithInfo.apiStatus = await ApiNodeService.getStatus(node.host, monitor.API_NODE_PORT);
-
-				if (nodeWithInfo.apiStatus?.nodePublicKey)
-					nodeWithInfo.rewardPrograms = await NodeRewards.getNodeRewardPrograms(nodeWithInfo.apiStatus.nodePublicKey);
 			}
+
+			if (nodeWithInfo.publicKey)
+				nodeWithInfo.rewardPrograms = await NodeRewards.getNodeRewardPrograms(nodeWithInfo.publicKey);
 		} catch (e) {
 			logger.error(`failed to get info. ${e.message}`);
 		}

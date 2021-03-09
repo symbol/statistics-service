@@ -45,13 +45,13 @@ export class Routes {
 				.catch((error) => InternalServerError.send(res, error));
 		});
 
-		app.get('/nodeRewards/nodes/nodePublicKey/:nodePublicKey', async (req: Request, res: Response) => {
+		app.get('/nodeRewards/nodes/mainPublicKey/:mainPublicKey', async (req: Request, res: Response) => {
 			try {
-				const nodePublicKey = req.params.nodePublicKey;
+				const mainPublicKey = req.params.mainPublicKey;
 
-				if (!nodePublicKey) return MissingParamError.send(res, 'nodePublicKey');
+				if (!mainPublicKey) return MissingParamError.send(res, 'mainPublicKey');
 
-				const nodeInfo = await NodeRewards.getNodeInfo(nodePublicKey);
+				const nodeInfo = await NodeRewards.getNodeInfo(mainPublicKey);
 				const nodeId = nodeInfo.id;
 				const testResults = await NodeRewards.getTestResults(nodeId);
 				let testResultInfo;
