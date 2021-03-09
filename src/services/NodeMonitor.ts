@@ -28,7 +28,7 @@ export class NodeMonitor {
 	constructor(_interval: number) {
 		this.nodesStats = new NodesStats();
 		this.nodeCountTimeSeriesService = new TimeSeriesService<AbstractTimeSeries, AbstractTimeSeriesDocument>(
-			'average',
+			'average-round',
 			NodeCountSeriesDay,
 			NodeCountSeries,
 		);

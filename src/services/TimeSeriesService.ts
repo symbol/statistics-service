@@ -6,7 +6,7 @@ import { basename } from '@src/utils';
 const logger = Logger.getLogger(basename(__filename));
 const ERROR_REPEATE_TIMEOUT = 5000;
 
-type AggreagateType = 'average' | 'accumulate';
+type AggreagateType = 'average' | 'average-round' | 'accumulate';
 
 export class TimeSeriesService<T extends AbstractTimeSeries, D extends AbstractTimeSeriesDocument> {
 	private dayCollection: Array<T>;
@@ -38,9 +38,17 @@ export class TimeSeriesService<T extends AbstractTimeSeries, D extends AbstractT
 				}
 			}
 
-			if (this.aggregateType === 'average') {
+			let type;
+			switch(this.aggregateType) {
+				case 'average': type = 0; break;
+				case 'average-round': type = 1; break;
+				case 'accumulate': type = 2; break;
+			}
+
+			if (type === 0 || type === 1) {
 				for(const key of Object.keys(sum)) {
-					mainDocumentValues[key] = sum[key] / this.dayCollection.length;
+					const value = sum[key] / this.dayCollection.length;
+					mainDocumentValues[key] = type === 0 ? value : Math.round(value);
 				}
 			} else mainDocumentValues = sum;
 
@@ -67,18 +75,14 @@ export class TimeSeriesService<T extends AbstractTimeSeries, D extends AbstractT
 		const day = date.getUTCDate();
 		const month = date.getUTCMonth() + 1;
 		const year = date.getUTCFullYear();
-		const minute = date.getUTCMinutes();
 
 		const currentDay = currentDate.getUTCDate();
 		const currentMonth = currentDate.getUTCMonth() + 1;
 		const currentYear = currentDate.getUTCFullYear();
-		const currentMinute = currentDate.getUTCMinutes();
-		console.log(minute + '=========>' + currentMinute)
 
 		if (year > currentYear) return true;
 		if (year === currentYear && month > currentMonth) return true;
 		if (year === currentYear && month === currentMonth && day > currentDay) return true;
-		if (minute > currentMinute) return true;
 
 		return false;
 	}
