@@ -127,8 +127,7 @@ export class NodeMonitor {
 				nodeWithInfo.apiStatus = await ApiNodeService.getStatus(node.host, monitor.API_NODE_PORT);
 			}
 
-			if (nodeWithInfo.publicKey)
-				nodeWithInfo.rewardPrograms = await NodeRewards.getNodeRewardPrograms(nodeWithInfo.publicKey);
+			if (nodeWithInfo.publicKey) nodeWithInfo.rewardPrograms = await NodeRewards.getNodeRewardPrograms(nodeWithInfo.publicKey);
 		} catch (e) {
 			logger.error(`failed to get info. ${e.message}`);
 		}
@@ -148,7 +147,7 @@ export class NodeMonitor {
 			values: {
 				...this.nodesStats.nodeTypes,
 				total: this.nodesStats.getTotal(),
-				rand: Math.round(Math.random() * 1000)
+				rand: Math.round(Math.random() * 1000),
 			},
 		});
 		if (this.nodeList.length > 0) {

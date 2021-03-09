@@ -31,7 +31,7 @@ export class TimeSeriesService<T extends AbstractTimeSeries, D extends AbstractT
 			for (let docIndex = 0; docIndex < this.dayCollection.length; docIndex++) {
 				for (let key of Object.keys(this.dayCollection[docIndex].values)) {
 					if (!sum[key]) {
-						sum[key] = 0
+						sum[key] = 0;
 					}
 
 					sum[key] = sum[key] += this.dayCollection[docIndex].values[key];
@@ -39,15 +39,23 @@ export class TimeSeriesService<T extends AbstractTimeSeries, D extends AbstractT
 			}
 
 			let type;
-			switch(this.aggregateType) {
-				case 'average': type = 0; break;
-				case 'average-round': type = 1; break;
-				case 'accumulate': type = 2; break;
+
+			switch (this.aggregateType) {
+				case 'average':
+					type = 0;
+					break;
+				case 'average-round':
+					type = 1;
+					break;
+				case 'accumulate':
+					type = 2;
+					break;
 			}
 
 			if (type === 0 || type === 1) {
-				for(const key of Object.keys(sum)) {
+				for (const key of Object.keys(sum)) {
 					const value = sum[key] / this.dayCollection.length;
+
 					mainDocumentValues[key] = type === 0 ? value : Math.round(value);
 				}
 			} else mainDocumentValues = sum;

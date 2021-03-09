@@ -12,19 +12,9 @@
       "sourceType": "module"
     },
     "rules": {
-        "curly": ["error", "multi-or-nest"],
         "no-useless-escape": "off",
         "no-var": "error",
-        "space-before-function-paren": ["error", {
-            "anonymous": "always",
-            "named": "never",
-            "asyncArrow": "always"
-        }],
-        "indent": ["error", "tab"],
-        "no-unused-expressions": "off",
         "no-tabs": 0,
-        "no-mixed-spaces-and-tabs": 0,
-        "semi": ["error", "always"],
         "newline-per-chained-call": ["error"],
         "newline-after-var": ["error", "always"],
     }
