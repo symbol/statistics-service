@@ -78,8 +78,7 @@ export class TimeSeriesService<T extends AbstractTimeSeries, D extends AbstractT
 
 			await this.insertToDayCollection(data);
 			this.dayCollection.push(data);
-		}
-		else throw Error(`Service is not initialized`);
+		} else throw Error(`Service is not initialized`);
 	}
 
 	private shouldMainCollectionBeUpdated(data: T) {

@@ -41,7 +41,7 @@ export class NodeMonitor {
 	public init = async () => {
 		await this.nodeCountTimeSeriesService.init();
 		return this;
-	}
+	};
 
 	public start = async () => {
 		logger.info(`Start`);
