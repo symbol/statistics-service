@@ -9,7 +9,7 @@ The changelog format is based on [Keep a Changelog](https://keepachangelog.com/e
 
 Package  | Version  | Link
 ---|---|---
-REST Core| v2.3.0 | [catapult-rest][catapult-rest@v2.3.3]
+REST Core| v2.3.3 | [catapult-rest][catapult-rest@v2.3.3]
 SDK Core| v0.23.3 | [symbol-sdk][symbol-sdk@v0.23.3]
 
 ### Added
