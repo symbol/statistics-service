@@ -35,7 +35,7 @@ class App {
 		 */
 		await DataBase.connect(config.db.MONGODB_ENDPOINT);
 		await Routes.register(app);
-		new NodeMonitor(config.monitor.NODE_MONITOR_SCHEDULE_INTERVAL).start();
+		(await new NodeMonitor(config.monitor.NODE_MONITOR_SCHEDULE_INTERVAL).init()).start();
 		new ChainHeightMonitor(config.monitor.CHAIN_HEIGHT_MONITOR_SCHEDULE_INTERVAL).start();
 		new GeolocationMonitor(config.monitor.GEOLOCATION_MONITOR_SCHEDULE_INTERVAL).start();
 

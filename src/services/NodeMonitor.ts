@@ -38,6 +38,11 @@ export class NodeMonitor {
 		this.cacheCollection();
 	}
 
+	public init = async () => {
+		await this.nodeCountTimeSeriesService.init();
+		return this;
+	};
+
 	public start = async () => {
 		logger.info(`Start`);
 		try {

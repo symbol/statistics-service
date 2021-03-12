@@ -13,68 +13,76 @@ export class TimeSeriesService<T extends AbstractTimeSeries, D extends AbstractT
 	private aggregateType: AggreagateType;
 	private dayModel: Model<D>;
 	private mainModel: Model<D>;
+	private isInitialized: boolean;
 
 	constructor(aggregateType: AggreagateType, dayModel: Model<D>, mainModel: Model<D>) {
+		this.isInitialized = false;
 		this.aggregateType = aggregateType;
 		this.dayModel = dayModel;
 		this.mainModel = mainModel;
 		this.dayCollection = [];
-		this.getDayCollection();
+	}
+
+	public async init() {
+		await this.getDayCollection();
+		this.isInitialized = true;
 	}
 
 	public async setData(data: T) {
-		if (this.shouldMainCollectionBeUpdated(data)) {
-			const date = this.dayCollection[this.dayCollection.length - 1].date;
-			let sum: TimeSeriesValues = {};
-			let mainDocumentValues: TimeSeriesValues = {};
+		if (this.isInitialized) {
+			if (this.shouldMainCollectionBeUpdated(data)) {
+				const date = this.dayCollection[this.dayCollection.length - 1].date;
+				let sum: TimeSeriesValues = {};
+				let mainDocumentValues: TimeSeriesValues = {};
 
-			for (let docIndex = 0; docIndex < this.dayCollection.length; docIndex++) {
-				for (let key of Object.keys(this.dayCollection[docIndex].values)) {
-					if (!sum[key]) {
-						sum[key] = 0;
+				for (let docIndex = 0; docIndex < this.dayCollection.length; docIndex++) {
+					for (let key of Object.keys(this.dayCollection[docIndex].values)) {
+						if (!sum[key]) {
+							sum[key] = 0;
+						}
+
+						sum[key] = sum[key] += this.dayCollection[docIndex].values[key];
 					}
-
-					sum[key] = sum[key] += this.dayCollection[docIndex].values[key];
 				}
+
+				let type;
+
+				switch (this.aggregateType) {
+					case 'average':
+						type = 0;
+						break;
+					case 'average-round':
+						type = 1;
+						break;
+					case 'accumulate':
+						type = 2;
+						break;
+				}
+
+				if (type === 0 || type === 1) {
+					for (const key of Object.keys(sum)) {
+						const value = sum[key] / this.dayCollection.length;
+
+						mainDocumentValues[key] = type === 0 ? value : Math.round(value);
+					}
+				} else mainDocumentValues = sum;
+
+				const mainDocument = {
+					date,
+					values: mainDocumentValues,
+				};
+
+				await this.insertToMainCollection(mainDocument as T);
+				await this.clearDayCollection();
 			}
 
-			let type;
-
-			switch (this.aggregateType) {
-				case 'average':
-					type = 0;
-					break;
-				case 'average-round':
-					type = 1;
-					break;
-				case 'accumulate':
-					type = 2;
-					break;
-			}
-
-			if (type === 0 || type === 1) {
-				for (const key of Object.keys(sum)) {
-					const value = sum[key] / this.dayCollection.length;
-
-					mainDocumentValues[key] = type === 0 ? value : Math.round(value);
-				}
-			} else mainDocumentValues = sum;
-
-			const mainDocument = {
-				date,
-				values: mainDocumentValues,
-			};
-
-			await this.insertToMainCollection(mainDocument as T);
-			await this.clearDayCollection();
-		}
-
-		await this.insertToDayCollection(data);
-		this.dayCollection.push(data);
+			await this.insertToDayCollection(data);
+			this.dayCollection.push(data);
+		} else throw Error(`Service is not initialized`);
 	}
 
 	private shouldMainCollectionBeUpdated(data: T) {
-		if (this.dayCollection.length) return this.isDayEnded(this.dayCollection[this.dayCollection.length - 1].date, data.date);
+		if (this.dayCollection.length) return this.isDayEnded(this.dayCollection[0].date, data.date);
 
 		return false;
 	}
