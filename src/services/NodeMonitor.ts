@@ -6,6 +6,9 @@ import { ApiNodeService } from '@src/services/ApiNodeService';
 import { PeerNodeService } from '@src/services/PeerNodeService';
 import { NodeRewards } from '@src/services/NodeRewards';
 import { NodesStats } from '@src/services/NodesStats';
+import { TimeSeriesService } from '@src/services/TimeSeriesService';
+import { NodeCountSeries, NodeCountSeriesDay } from '@src/models/NodeCountSeries';
+import { AbstractTimeSeries, AbstractTimeSeriesDocument } from '@src/models/AbstractTimeSeries';
 import { memoryCache } from '@src/services/MemoryCache';
 import { Logger } from '@src/infrastructure';
 
@@ -17,17 +20,28 @@ const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
 export class NodeMonitor {
 	private nodesStats: NodesStats;
+	private nodeCountTimeSeriesService: TimeSeriesService<AbstractTimeSeries, AbstractTimeSeriesDocument>;
 	private nodeList: INode[];
 	private isRunning: boolean;
 	private interval: number;
 
 	constructor(_interval: number) {
 		this.nodesStats = new NodesStats();
+		this.nodeCountTimeSeriesService = new TimeSeriesService<AbstractTimeSeries, AbstractTimeSeriesDocument>(
+			'average-round',
+			NodeCountSeriesDay,
+			NodeCountSeries,
+		);
 		this.nodeList = [];
 		this.isRunning = false;
 		this.interval = _interval || 300000;
 		this.cacheCollection();
 	}
+
+	public init = async () => {
+		await this.nodeCountTimeSeriesService.init();
+		return this;
+	};
 
 	public start = async () => {
 		logger.info(`Start`);
@@ -116,10 +130,9 @@ export class NodeMonitor {
 
 			if (isAPIRole(node.roles)) {
 				nodeWithInfo.apiStatus = await ApiNodeService.getStatus(node.host, monitor.API_NODE_PORT);
-
-				if (nodeWithInfo.apiStatus?.nodePublicKey)
-					nodeWithInfo.rewardPrograms = await NodeRewards.getNodeRewardPrograms(nodeWithInfo.apiStatus.nodePublicKey);
 			}
+
+			if (nodeWithInfo.publicKey) nodeWithInfo.rewardPrograms = await NodeRewards.getNodeRewardPrograms(nodeWithInfo.publicKey);
 		} catch (e) {
 			logger.error(`failed to get info. ${e.message}`);
 		}
@@ -134,6 +147,14 @@ export class NodeMonitor {
 	};
 
 	private updateCollection = async (): Promise<any> => {
+		this.nodeCountTimeSeriesService.setData({
+			date: new Date(),
+			values: {
+				...this.nodesStats.nodeTypes,
+				total: this.nodesStats.getTotal(),
+				rand: Math.round(Math.random() * 1000),
+			},
+		});
 		if (this.nodeList.length > 0) {
 			logger.info(`Update collection`);
 			const prevNodeList = await DataBase.getNodeList();

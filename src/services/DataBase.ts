@@ -6,6 +6,8 @@ import { INode, NodeDocument, Node } from '@src/models/Node';
 import { IHostDetail, HostDetail } from '@src/models/HostDetail';
 import { INodesStats, NodesStatsDocument, NodesStats } from '@src/models/NodesStats';
 import { INodeHeightStats, NodeHeightStatsDocument, NodeHeightStats } from '@src/models/NodeHeightStats';
+import { NodeCountSeries } from '@src/models/NodeCountSeries';
+import { AbstractTimeSeriesDocument } from '@src/models/AbstractTimeSeries';
 import { SearchCriteria, Pagination, PaginationResponse } from '@src/infrastructure/Pagination';
 
 const logger: winston.Logger = Logger.getLogger(basename(__filename));
@@ -84,5 +86,9 @@ export class DataBase {
 	static updateNodesHostDetail = async (hostDetail: IHostDetail[]): Promise<void> => {
 		await HostDetail.deleteMany();
 		await HostDetail.insertMany(hostDetail);
+	};
+
+	static getNodeCountSeries = async (): Promise<AbstractTimeSeriesDocument[]> => {
+		return NodeCountSeries.find().exec();
 	};
 }
