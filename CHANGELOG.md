@@ -3,6 +3,17 @@ All notable changes to this project will be documented in this file.
 
 The changelog format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [v1.0.0][v1.0.0] - 14-Mar-2021
+
+### Milestone: [catapult-server@v1.0.0.0][catapult-server@v1.0.0.0]
+
+Package  | Version  | Link
+---|---|---
+REST Core| v2.3.4 | [catapult-rest][catapult-rest@v2.3.4]
+SDK Core| v1.0.0 | [symbol-sdk][symbol-sdk@v1.0.0]
+
+- Release for Symbol mainnet.
+
 ## [v0.3.0][v0.3.0] - 12-Mar-2021
 
 ### Milestone: [catapult-server@v0.10.0.8][catapult-server@v0.10.0.8]
@@ -66,7 +77,12 @@ REST Core| v2.1.0 | [catapult-rest](https://github.com/nemtech/catapult-rest/rel
 [v0.1.0]: https://github.com/nemfoundation/symbol-statistics-service/releases/tag/v0.1.0
 
 [catapult-server@v0.10.0.7]: https://github.com/nemtech/catapult-server/releases/tag/v0.10.0.7
-[symbol-sdk@v0.23.3-alpha]: https://www.npmjs.com/package/symbol-sdk/v/0.23.3-alpha-202102181227
 [catapult-server@v0.10.0.8]: https://github.com/nemtech/catapult-server/releases/tag/v0.10.0.8
+[catapult-server@v1.0.0.0]: https://github.com/nemtech/catapult-server/releases/tag/v1.0.0.0
+
+[symbol-sdk@v0.23.3-alpha]: https://www.npmjs.com/package/symbol-sdk/v/0.23.3-alpha-202102181227
 [symbol-sdk@v0.23.3]: https://www.npmjs.com/package/symbol-sdk/v/0.23.3
+[symbol-sdk@v1.0.0]: https://www.npmjs.com/package/symbol-sdk/v/1.0.0
+
 [catapult-rest@v2.3.3]: https://github.com/nemtech/catapult-rest/releases/tag/v2.3.3
+[catapult-rest@v2.3.4]: https://github.com/nemtech/catapult-rest/releases/tag/v2.3.4
