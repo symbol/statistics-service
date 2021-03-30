@@ -70,6 +70,10 @@ const NodeSchema: Schema = new Schema({
 			type: String,
 			required: false,
 		},
+		restVersion: {
+			type: String,
+			required: false,
+		},
 		lastStatusCheck: {
 			type: Number,
 			required: false,
