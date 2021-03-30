@@ -1,5 +1,6 @@
 import * as config from './config.json';
 import * as utils from '@src/utils';
+import { NetworkType } from 'symbol-sdk';
 
 interface Network {
 	PORT: number;
@@ -20,6 +21,7 @@ interface Monitor {
 	API_NODE_PORT: number;
 	PEER_NODE_PORT: number;
 	REQUEST_TIMEOUT: number;
+	NETWORK_IDENTIFIER: NetworkType;
 }
 
 interface NodeRewardsConfig {
@@ -55,6 +57,7 @@ export const monitor: Monitor = {
 	API_NODE_PORT: Number(process.env.API_NODE_PORT) || config.API_NODE_PORT,
 	PEER_NODE_PORT: Number(process.env.PEER_NODE_PORT) || config.PEER_NODE_PORT,
 	REQUEST_TIMEOUT: Number(process.env.REQUEST_TIMEOUT) || config.REQUEST_TIMEOUT,
+	NETWORK_IDENTIFIER: Number(process.env.NETWORK_IDENTIFIER) || config.NETWORK_IDENTIFIER,
 };
 
 export const nodeRewards: NodeRewardsConfig = {
@@ -90,6 +93,9 @@ export const verifyConfig = (cfg: Config): boolean => {
 		error = 'Invalid "PEER_NODE_PORT"';
 
 	if (isNaN(cfg.monitor.REQUEST_TIMEOUT) || cfg.monitor.REQUEST_TIMEOUT <= 0) error = 'Invalid "REQUEST_TIMEOUT"';
+
+	if (isNaN(cfg.monitor.NETWORK_IDENTIFIER) || !Object.values(NetworkType).includes(cfg.monitor.NETWORK_IDENTIFIER))
+		error = 'Invalid "NETWORK_IDENTIFIER"';
 
 	if (error) throw 'Invalid config. ' + error;
 	return true;
