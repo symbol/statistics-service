@@ -14,7 +14,7 @@ import { Logger } from '@src/infrastructure';
 
 import { INode, validateNodeModel } from '@src/models/Node';
 import { symbol, monitor } from '@src/config';
-import { isAPIRole, isPeerRole, getNodeURL, basename } from '@src/utils';
+import { isAPIRole, isPeerRole, getNodeURL, basename, splitArray, sleep } from '@src/utils';
 
 const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
@@ -24,6 +24,8 @@ export class NodeMonitor {
 	private nodeList: INode[];
 	private isRunning: boolean;
 	private interval: number;
+	private nodeInfoChunks: number;
+	private nodeInfoDelay: number;
 
 	constructor(_interval: number) {
 		this.nodesStats = new NodesStats();
@@ -35,6 +37,8 @@ export class NodeMonitor {
 		this.nodeList = [];
 		this.isRunning = false;
 		this.interval = _interval || 300000;
+		this.nodeInfoChunks = 500;
+		this.nodeInfoDelay = 1000;
 		this.cacheCollection();
 	}
 
@@ -125,10 +129,16 @@ export class NodeMonitor {
 	};
 
 	private getNodeListInfo = async () => {
-		logger.info(`Getting node info for ${this.nodeList.length} nodes`);
-		const nodeInfoPromises = this.nodeList.map(this.getNodeInfo);
+		logger.info(`Getting node info total for ${this.nodeList.length} nodes`);
+		const nodeInfoPromises = [...this.nodeList].map(this.getNodeInfo);
+		const nodeInfoPromisesChunks = splitArray(nodeInfoPromises, this.nodeInfoChunks);
+		this.nodeList = [];
 
-		this.nodeList = await Promise.all(nodeInfoPromises);
+		for(const chunk of nodeInfoPromisesChunks) {
+			logger.info(`Getting node info for chunk of ${chunk.length} nodes`);
+			this.addNodesToList(await Promise.all(chunk) as INode[]);
+			await sleep(this.nodeInfoDelay);
+		}
 		this.nodeList.forEach((node) => this.nodesStats.addToStats(node));
 	};
 
