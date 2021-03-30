@@ -12,7 +12,7 @@ import { AbstractTimeSeries, AbstractTimeSeriesDocument } from '@src/models/Abst
 import { memoryCache } from '@src/services/MemoryCache';
 import { Logger } from '@src/infrastructure';
 
-import { INode } from '@src/models/Node';
+import { INode, validateNodeModel } from '@src/models/Node';
 import { symbol, monitor } from '@src/config';
 import { isAPIRole, isPeerRole, getNodeURL, basename } from '@src/utils';
 
@@ -197,7 +197,12 @@ export class NodeMonitor {
 
 	private addNodesToList = (nodes: INode[]) => {
 		nodes.forEach((node: INode) => {
-			if (!!this.nodeList.find((addedNode) => addedNode.publicKey === node.publicKey)) return;
+			if (
+				!!this.nodeList.find((addedNode) => addedNode.publicKey === node.publicKey)
+				|| !validateNodeModel(node)
+			) 
+				return;
+
 			this.nodeList.push(node);
 		});
 	};
