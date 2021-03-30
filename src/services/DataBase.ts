@@ -91,4 +91,41 @@ export class DataBase {
 	static getNodeCountSeries = async (): Promise<AbstractTimeSeriesDocument[]> => {
 		return NodeCountSeries.find().exec();
 	};
+
+	private static updateCollection = async <T extends mongoose.Document>(
+		model: mongoose.Model<T>, 
+		documents: Array<T>, 
+		collectionName: string
+	) => {
+		const prevState = await model.find().exec();
+		let status = 0;
+		let error = Error();
+
+		try {
+			await model.deleteMany();
+			status = 1;
+			await model.insertMany(documents);
+			status = 2;
+		}
+		catch(e) {
+			error = e;
+		}
+
+		if (status === 0)
+			throw(error);
+
+		if (status === 1) {
+			await model.insertMany(prevState);
+			throw(error);
+		}
+
+		if (status === 2) {
+			const currentState = await model.find().exec();
+
+			if (documents.length !== currentState.length) {
+				await model.insertMany(prevState);
+				throw new Error(`Failed to update collection "${collectionName}. Insertion completed but: collectin.length(${currentState.length}) !== documentsToInsert.length(${documents.length})`);
+			}
+		}
+	}
 }
