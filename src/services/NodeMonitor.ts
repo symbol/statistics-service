@@ -108,12 +108,12 @@ export class NodeMonitor {
 					timeout: monitor.REQUEST_TIMEOUT,
 				});
 				const host = new URL(nodeUrl).hostname;
+
 				nodeList.push({
 					...nodeInfo.data,
-					host
+					host,
 				});
-			}
-			catch(e){}
+			} catch (e) {}
 		}
 
 		try {
@@ -121,8 +121,7 @@ export class NodeMonitor {
 				timeout: monitor.REQUEST_TIMEOUT,
 			});
 
-			if (Array.isArray(nodePeers.data)) 
-				nodeList = [...nodeList, ...nodePeers.data];
+			if (Array.isArray(nodePeers.data)) nodeList = [...nodeList, ...nodePeers.data];
 		} catch (e) {}
 
 		return nodeList;
@@ -132,11 +131,12 @@ export class NodeMonitor {
 		logger.info(`Getting node info total for ${this.nodeList.length} nodes`);
 		const nodeInfoPromises = [...this.nodeList].map(this.getNodeInfo);
 		const nodeInfoPromisesChunks = splitArray(nodeInfoPromises, this.nodeInfoChunks);
+
 		this.nodeList = [];
 
-		for(const chunk of nodeInfoPromisesChunks) {
+		for (const chunk of nodeInfoPromisesChunks) {
 			logger.info(`Getting node info for chunk of ${chunk.length} nodes`);
-			this.addNodesToList(await Promise.all(chunk) as INode[]);
+			this.addNodesToList((await Promise.all(chunk)) as INode[]);
 			await sleep(this.nodeInfoDelay);
 		}
 		this.nodeList.forEach((node) => this.nodesStats.addToStats(node));
@@ -207,11 +207,7 @@ export class NodeMonitor {
 
 	private addNodesToList = (nodes: INode[]) => {
 		nodes.forEach((node: INode) => {
-			if (
-				!!this.nodeList.find((addedNode) => addedNode.publicKey === node.publicKey)
-				|| !validateNodeModel(node)
-			) 
-				return;
+			if (!!this.nodeList.find((addedNode) => addedNode.publicKey === node.publicKey) || !validateNodeModel(node)) return;
 
 			this.nodeList.push(node);
 		});

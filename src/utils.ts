@@ -51,9 +51,10 @@ export const parseArray = (array: any): Array<any> | null => {
 	return null;
 };
 
-export const splitArray = (array: Array<any>, chunks: number): Array<any> => 
+export const splitArray = (array: Array<any>, chunks: number): Array<any> =>
 	array.reduce((all, one, i) => {
-		const ch = Math.floor(i / chunks); 
-		all[ch] = [].concat((all[ch] || []), one); 
+		const ch = Math.floor(i / chunks);
+
+		all[ch] = [].concat(all[ch] || [], one);
 		return all;
 	}, []);

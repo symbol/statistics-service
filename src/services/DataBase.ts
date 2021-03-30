@@ -80,9 +80,9 @@ export class DataBase {
 	};
 
 	private static updateCollection = async <T extends mongoose.Document>(
-		model: mongoose.Model<T>, 
-		documents: Array<any>, 
-		collectionName: string
+		model: mongoose.Model<T>,
+		documents: Array<any>,
+		collectionName: string,
 	) => {
 		const prevState = await model.find().exec();
 		let status = 0;
@@ -93,30 +93,31 @@ export class DataBase {
 			status = 1;
 			await model.insertMany(documents);
 			status = 2;
-		}
-		catch(e) {
+		} catch (e) {
 			error = e;
 		}
 
 		if (status === 0) {
 			logger.error(`Update collection "${collectionName}" failed. Error during "model.deleteMany()". ${error.message}`);
-			throw(error);
+			throw error;
 		}
 
 		if (status === 1) {
 			logger.error(`Update collection "${collectionName}" failed. Error during "model.insertMany()". ${error.message}`);
 			await model.insertMany(prevState);
-			throw(error);
+			throw error;
 		}
 
 		if (status === 2) {
 			const currentState = await model.find().exec();
 
 			if (documents.length !== currentState.length) {
-				logger.error(`Update collection "${collectionName}" failed. Collectin.length(${currentState.length}) !== documentsToInsert.length(${documents.length})`);
+				logger.error(
+					`Update collection "${collectionName}" failed. Collectin.length(${currentState.length}) !== documentsToInsert.length(${documents.length})`,
+				);
 				await model.insertMany(prevState);
 				throw new Error(`Failed to update collection "${collectionName}. Length verification failed`);
 			}
 		}
-	}
+	};
 }
