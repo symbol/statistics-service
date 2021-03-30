@@ -73,11 +73,9 @@ export class NodeMonitor {
 	private getNodeList = async (): Promise<any> => {
 		// Init fetch node list from config nodes
 		logger.info(`Getting node list`);
-		let counter = 0;
 
 		for (const nodeUrl of symbol.NODES) {
-			counter++;
-			const peers = await this.fetchNodesByURL(nodeUrl);
+			const peers = await this.fetchNodesByURL(nodeUrl, true);
 
 			this.addNodesToList(peers);
 		}
@@ -97,15 +95,33 @@ export class NodeMonitor {
 		return Promise.resolve();
 	};
 
-	private fetchNodesByURL = async (nodeUrl: string): Promise<Array<INode>> => {
+	private fetchNodesByURL = async (nodeUrl: string, includeCurrent: boolean = false): Promise<Array<INode>> => {
+		let nodeList = [];
+
+		if (includeCurrent === true) {
+			try {
+				const nodeInfo = await HTTP.get(nodeUrl + '/node/info', {
+					timeout: monitor.REQUEST_TIMEOUT,
+				});
+				const host = new URL(nodeUrl).hostname;
+				nodeList.push({
+					...nodeInfo.data,
+					host
+				});
+			}
+			catch(e){}
+		}
+
 		try {
-			const nodeList = await HTTP.get(nodeUrl + '/node/peers', {
+			const nodePeers = await HTTP.get(nodeUrl + '/node/peers', {
 				timeout: monitor.REQUEST_TIMEOUT,
 			});
 
-			if (Array.isArray(nodeList.data)) return nodeList.data;
+			if (Array.isArray(nodePeers.data)) 
+				nodeList = [...nodeList, ...nodePeers.data];
 		} catch (e) {}
-		return [];
+
+		return nodeList;
 	};
 
 	private getNodeListInfo = async () => {
