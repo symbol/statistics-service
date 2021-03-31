@@ -35,8 +35,7 @@
         "swagger-cli": "^4.0.4",
         "ts-node": "^8.10.1",
         "tslint": "^6.1.2",
-        "typescript": "^3.8.3",
-        "utf8": "^3.0.0"
+        "typescript": "^3.8.3"
     },
     "dependencies": {
         "@types/cors": "^2.8.6",
