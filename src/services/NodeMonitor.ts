@@ -102,7 +102,7 @@ export class NodeMonitor {
 	private fetchNodesByURL = async (nodeUrl: string, includeCurrent: boolean = false): Promise<Array<INode>> => {
 		let nodeList = [];
 
-		if (includeCurrent === true) {
+		if (includeCurrent) {
 			try {
 				const nodeInfo = await HTTP.get(nodeUrl + '/node/info', {
 					timeout: monitor.REQUEST_TIMEOUT,
@@ -113,7 +113,9 @@ export class NodeMonitor {
 					...nodeInfo.data,
 					host,
 				});
-			} catch (e) {}
+			} catch (e) {
+				logger.error(`FetchNodesByURL. Failed to get /node/info from "${nodeUrl}". ${e.message}`);
+			}
 		}
 
 		try {
@@ -122,7 +124,9 @@ export class NodeMonitor {
 			});
 
 			if (Array.isArray(nodePeers.data)) nodeList = [...nodeList, ...nodePeers.data];
-		} catch (e) {}
+		} catch (e) {
+			logger.error(`FetchNodesByURL. Failed to get /node/peers from "${nodeUrl}". ${e.message}`);
+		}
 
 		return nodeList;
 	};
@@ -160,7 +164,7 @@ export class NodeMonitor {
 
 			if (nodeWithInfo.publicKey) nodeWithInfo.rewardPrograms = await NodeRewards.getNodeRewardPrograms(nodeWithInfo.publicKey);
 		} catch (e) {
-			logger.error(`failed to get info. ${e.message}`);
+			logger.error(`GetNodeInfo. Failed to fetch info for "${node}". ${e.message}`);
 		}
 
 		return nodeWithInfo;
