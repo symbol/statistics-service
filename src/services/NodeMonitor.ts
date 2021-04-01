@@ -24,6 +24,7 @@ export class NodeMonitor {
 	private nodeList: INode[];
 	private isRunning: boolean;
 	private interval: number;
+	private networkIdentifier: number;
 
 	constructor(_interval: number) {
 		this.nodesStats = new NodesStats();
@@ -35,6 +36,7 @@ export class NodeMonitor {
 		this.nodeList = [];
 		this.isRunning = false;
 		this.interval = _interval || 300000;
+		this.networkIdentifier = 152; // default Testnet
 		this.cacheCollection();
 	}
 
@@ -48,6 +50,8 @@ export class NodeMonitor {
 		try {
 			this.isRunning = true;
 			this.clear();
+
+			await this.getNetworkType(); // Read network Type from provided nodes.
 
 			await this.getNodeList();
 			await this.getNodeListInfo(); //HostInfo.getInfoForListOfNodes(this.nodeList);
@@ -179,8 +183,26 @@ export class NodeMonitor {
 		}
 	};
 
+	private getNetworkType = async (): Promise<void> => {
+		for (const nodeUrl of symbol.NODES) {
+			const url = new URL(nodeUrl);
+
+			const nodeInfo = await ApiNodeService.getNodeInfo(url.hostname, Number(url.port || monitor.API_NODE_PORT));
+
+			if (nodeInfo) {
+				this.networkIdentifier = nodeInfo.networkIdentifier;
+				logger.info(`Found network identifier ${nodeInfo.networkIdentifier}`);
+				return;
+			}
+		}
+
+		logger.info(`Network identifier not found in ${symbol.NODES}, using default ${this.networkIdentifier}`);
+	};
+
 	private addNodesToList = (nodes: INode[]) => {
-		nodes.forEach((node: INode) => {
+		const filterNodes = nodes.filter((node) => node.networkIdentifier === this.networkIdentifier);
+
+		filterNodes.forEach((node: INode) => {
 			if (!!this.nodeList.find((addedNode) => addedNode.publicKey === node.publicKey)) return;
 			this.nodeList.push(node);
 		});
