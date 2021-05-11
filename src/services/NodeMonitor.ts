@@ -12,9 +12,9 @@ import { AbstractTimeSeries, AbstractTimeSeriesDocument } from '@src/models/Abst
 import { memoryCache } from '@src/services/MemoryCache';
 import { Logger } from '@src/infrastructure';
 
-import { INode } from '@src/models/Node';
+import { INode, validateNodeModel } from '@src/models/Node';
 import { symbol, monitor } from '@src/config';
-import { isAPIRole, isPeerRole, getNodeURL, basename } from '@src/utils';
+import { isAPIRole, isPeerRole, getNodeURL, basename, splitArray, sleep } from '@src/utils';
 
 const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
@@ -24,6 +24,8 @@ export class NodeMonitor {
 	private nodeList: INode[];
 	private isRunning: boolean;
 	private interval: number;
+	private nodeInfoChunks: number;
+	private nodeInfoDelay: number;
 	private networkIdentifier: number;
 
 	constructor(_interval: number) {
@@ -36,6 +38,8 @@ export class NodeMonitor {
 		this.nodeList = [];
 		this.isRunning = false;
 		this.interval = _interval || 300000;
+		this.nodeInfoChunks = 500;
+		this.nodeInfoDelay = 1000;
 		this.networkIdentifier = 152; // default Testnet
 		this.cacheCollection();
 	}
@@ -77,11 +81,9 @@ export class NodeMonitor {
 	private getNodeList = async (): Promise<any> => {
 		// Init fetch node list from config nodes
 		logger.info(`Getting node list`);
-		let counter = 0;
 
 		for (const nodeUrl of symbol.NODES) {
-			counter++;
-			const peers = await this.fetchNodesByURL(nodeUrl);
+			const peers = await this.fetchNodesByURL(nodeUrl, true);
 
 			this.addNodesToList(peers);
 		}
@@ -101,22 +103,50 @@ export class NodeMonitor {
 		return Promise.resolve();
 	};
 
-	private fetchNodesByURL = async (nodeUrl: string): Promise<Array<INode>> => {
+	private fetchNodesByURL = async (nodeUrl: string, includeCurrent: boolean = false): Promise<Array<INode>> => {
+		let nodeList = [];
+
+		if (includeCurrent) {
+			try {
+				const nodeInfo = await HTTP.get(nodeUrl + '/node/info', {
+					timeout: monitor.REQUEST_TIMEOUT,
+				});
+				const host = new URL(nodeUrl).hostname;
+
+				nodeList.push({
+					...nodeInfo.data,
+					host,
+				});
+			} catch (e) {
+				logger.error(`FetchNodesByURL. Failed to get /node/info from "${nodeUrl}". ${e.message}`);
+			}
+		}
+
 		try {
-			const nodeList = await HTTP.get(nodeUrl + '/node/peers', {
+			const nodePeers = await HTTP.get(nodeUrl + '/node/peers', {
 				timeout: monitor.REQUEST_TIMEOUT,
 			});
 
-			if (Array.isArray(nodeList.data)) return nodeList.data;
-		} catch (e) {}
-		return [];
+			if (Array.isArray(nodePeers.data)) nodeList = [...nodeList, ...nodePeers.data];
+		} catch (e) {
+			logger.error(`FetchNodesByURL. Failed to get /node/peers from "${nodeUrl}". ${e.message}`);
+		}
+
+		return nodeList;
 	};
 
 	private getNodeListInfo = async () => {
-		logger.info(`Getting node info for ${this.nodeList.length} nodes`);
-		const nodeInfoPromises = this.nodeList.map(this.getNodeInfo);
+		logger.info(`Getting node info total for ${this.nodeList.length} nodes`);
+		const nodeInfoPromises = [...this.nodeList].map(this.getNodeInfo);
+		const nodeInfoPromisesChunks = splitArray(nodeInfoPromises, this.nodeInfoChunks);
 
-		this.nodeList = await Promise.all(nodeInfoPromises);
+		this.nodeList = [];
+
+		for (const chunk of nodeInfoPromisesChunks) {
+			logger.info(`Getting node info for chunk of ${chunk.length} nodes`);
+			this.addNodesToList((await Promise.all(chunk)) as INode[]);
+			await sleep(this.nodeInfoDelay);
+		}
 		this.nodeList.forEach((node) => this.nodesStats.addToStats(node));
 	};
 
@@ -138,7 +168,7 @@ export class NodeMonitor {
 
 			if (nodeWithInfo.publicKey) nodeWithInfo.rewardPrograms = await NodeRewards.getNodeRewardPrograms(nodeWithInfo.publicKey);
 		} catch (e) {
-			logger.error(`failed to get info. ${e.message}`);
+			logger.error(`GetNodeInfo. Failed to fetch info for "${node}". ${e.message}`);
 		}
 
 		return nodeWithInfo;
@@ -200,10 +230,14 @@ export class NodeMonitor {
 	};
 
 	private addNodesToList = (nodes: INode[]) => {
-		const filterNodes = nodes.filter((node) => node.networkIdentifier === this.networkIdentifier);
+		nodes.forEach((node: INode) => {
+			if (
+				node.networkIdentifier !== this.networkIdentifier ||
+				!!this.nodeList.find((addedNode) => addedNode.publicKey === node.publicKey) ||
+				!validateNodeModel(node)
+			)
+				return;
 
-		filterNodes.forEach((node: INode) => {
-			if (!!this.nodeList.find((addedNode) => addedNode.publicKey === node.publicKey)) return;
 			this.nodeList.push(node);
 		});
 	};
