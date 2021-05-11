@@ -28,7 +28,6 @@ export class NodeMonitor {
 	private nodeInfoDelay: number;
 	private networkIdentifier: number;
 
-
 	constructor(_interval: number) {
 		this.nodesStats = new NodesStats();
 		this.nodeCountTimeSeriesService = new TimeSeriesService<AbstractTimeSeries, AbstractTimeSeriesDocument>(
@@ -233,11 +232,11 @@ export class NodeMonitor {
 	private addNodesToList = (nodes: INode[]) => {
 		nodes.forEach((node: INode) => {
 			if (
-				node.networkIdentifier !== this.networkIdentifier
-				|| !!this.nodeList.find((addedNode) => addedNode.publicKey === node.publicKey) 
-				|| !validateNodeModel(node)
-			) 
-			return;
+				node.networkIdentifier !== this.networkIdentifier ||
+				!!this.nodeList.find((addedNode) => addedNode.publicKey === node.publicKey) ||
+				!validateNodeModel(node)
+			)
+				return;
 
 			this.nodeList.push(node);
 		});
