@@ -87,7 +87,8 @@ REST Core| v2.1.0 | [catapult-rest](https://github.com/nemtech/catapult-rest/rel
 ### Fixes
 - Cors error. [#13](https://github.com/nemgrouplimited/symbol-statistics-service/issues/13)
 
-
+[v1.0.1]: https://github.com/nemfoundation/symbol-statistics-service/releases/tag/v1.0.1
+[v1.0.0]: https://github.com/nemfoundation/symbol-statistics-service/releases/tag/v1.0.0
 [v0.3.0]: https://github.com/nemfoundation/symbol-statistics-service/releases/tag/v0.3.0
 [v0.2.0]: https://github.com/nemfoundation/symbol-statistics-service/releases/tag/v0.2.0
 [v0.1.0]: https://github.com/nemfoundation/symbol-statistics-service/releases/tag/v0.1.0
