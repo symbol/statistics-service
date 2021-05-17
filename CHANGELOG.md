@@ -3,6 +3,22 @@ All notable changes to this project will be documented in this file.
 
 The changelog format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [v1.0.1][v1.0.1] - 14-May-2021
+
+### Milestone: [catapult-server@v1.0.0.0][catapult-server@v1.0.0.0]
+
+Package  | Version  | Link
+---|---|---
+REST Core| v2.3.4 | [catapult-rest][catapult-rest@v2.3.4]
+SDK Core| v1.0.0 | [symbol-sdk][symbol-sdk@v1.0.0]
+
+- Added the network type check to the Node Monitor Service [#53](https://github.com/nemgrouplimited/symbol-statistics-service/issues/53)
+- Added version of REST to the Node List [#55](https://github.com/nemgrouplimited/symbol-statistics-service/issues/53)
+- Fixed the peer node status check issue [#58](https://github.com/nemgrouplimited/symbol-statistics-service/pull/58)
+- Improved DB collection store [#58](https://github.com/nemgrouplimited/symbol-statistics-service/pull/58)
+- Included the initial nodes from config to the list [#58](https://github.com/nemgrouplimited/symbol-statistics-service/pull/58)
+- Added missing utf8 dependency
+
 ## [v1.0.0][v1.0.0] - 14-Mar-2021
 
 ### Milestone: [catapult-server@v1.0.0.0][catapult-server@v1.0.0.0]
