@@ -85,39 +85,31 @@ export class DataBase {
 		collectionName: string,
 	) => {
 		const prevState = await model.find().exec();
-		let status = 0;
 		let error = Error();
 
 		try {
 			await model.deleteMany();
-			status = 1;
-			await model.insertMany(documents);
-			status = 2;
 		} catch (e) {
-			error = e;
-		}
-
-		if (status === 0) {
 			logger.error(`Update collection "${collectionName}" failed. Error during "model.deleteMany()". ${error.message}`);
 			throw error;
 		}
 
-		if (status === 1) {
+		try {
+			await model.insertMany(documents);
+		} catch (e) {
 			logger.error(`Update collection "${collectionName}" failed. Error during "model.insertMany()". ${error.message}`);
 			await model.insertMany(prevState);
 			throw error;
 		}
 
-		if (status === 2) {
-			const currentState = await model.find().exec();
+		const currentState = await model.find().exec();
 
-			if (documents.length !== currentState.length) {
-				logger.error(
-					`Update collection "${collectionName}" failed. Collectin.length(${currentState.length}) !== documentsToInsert.length(${documents.length})`,
-				);
-				await model.insertMany(prevState);
-				throw new Error(`Failed to update collection "${collectionName}. Length verification failed`);
-			}
+		if (documents.length !== currentState.length) {
+			logger.error(
+				`Update collection "${collectionName}" failed. Collectin.length(${currentState.length}) !== documentsToInsert.length(${documents.length})`,
+			);
+			await model.insertMany(prevState);
+			throw new Error(`Failed to update collection "${collectionName}. Length verification failed`);
 		}
 	};
 }
