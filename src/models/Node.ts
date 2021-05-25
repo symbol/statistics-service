@@ -70,6 +70,10 @@ const NodeSchema: Schema = new Schema({
 			type: String,
 			required: false,
 		},
+		restVersion: {
+			type: String,
+			required: false,
+		},
 		lastStatusCheck: {
 			type: Number,
 			required: false,
@@ -176,3 +180,9 @@ NodeSchema.set('toObject', {
 });
 
 export const Node = mongoose.model<NodeDocument>('Node', NodeSchema);
+
+export const validateNodeModel = (node: any): boolean => {
+	if (!node || typeof node !== 'object') return false;
+
+	return !new Node(node).validateSync();
+};

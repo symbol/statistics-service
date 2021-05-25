@@ -3,7 +3,7 @@ import * as winston from 'winston';
 import { basename } from '@src/utils';
 import { Logger } from '@src/infrastructure';
 import { INode, NodeDocument, Node } from '@src/models/Node';
-import { IHostDetail, HostDetail } from '@src/models/HostDetail';
+import { IHostDetail, HostDetail, HostDetailDocument } from '@src/models/HostDetail';
 import { INodesStats, NodesStatsDocument, NodesStats } from '@src/models/NodesStats';
 import { INodeHeightStats, NodeHeightStatsDocument, NodeHeightStats } from '@src/models/NodeHeightStats';
 import { NodeCountSeries } from '@src/models/NodeCountSeries';
@@ -40,17 +40,7 @@ export class DataBase {
 	};
 
 	static updateNodeList = async (nodeList: INode[]): Promise<void> => {
-		// Replace this part with mongo transactions
-		const prevNodeList = await DataBase.getNodeList();
-
-		await Node.deleteMany();
-		await Node.insertMany(nodeList);
-		const currentNodeList = await DataBase.getNodeList();
-
-		if (currentNodeList.length !== nodeList.length) {
-			await Node.deleteMany();
-			await Node.insertMany(prevNodeList);
-		}
+		await DataBase.updateCollection<NodeDocument>(Node, nodeList, 'Node');
 	};
 
 	static updateNode = async (node: INode): Promise<void> => {
@@ -66,13 +56,11 @@ export class DataBase {
 	};
 
 	static updateNodesStats = async (nodeList: INodesStats): Promise<void> => {
-		await NodesStats.deleteMany();
-		await NodesStats.create(nodeList);
+		await DataBase.updateCollection<NodesStatsDocument>(NodesStats, [nodeList], 'NodesStats');
 	};
 
 	static updateNodeHeightStats = async (nodeHeightStats: INodeHeightStats): Promise<void> => {
-		await NodeHeightStats.deleteMany();
-		await NodeHeightStats.create(nodeHeightStats);
+		await DataBase.updateCollection<NodeHeightStatsDocument>(NodeHeightStats, [nodeHeightStats], 'NodeHeightStats');
 	};
 
 	static getNodesHostDetail = async (): Promise<IHostDetail[]> => {
@@ -84,11 +72,44 @@ export class DataBase {
 	};
 
 	static updateNodesHostDetail = async (hostDetail: IHostDetail[]): Promise<void> => {
-		await HostDetail.deleteMany();
-		await HostDetail.insertMany(hostDetail);
+		await DataBase.updateCollection<HostDetailDocument>(HostDetail, hostDetail, 'HostDetail');
 	};
 
 	static getNodeCountSeries = async (): Promise<AbstractTimeSeriesDocument[]> => {
 		return NodeCountSeries.find().exec();
+	};
+
+	private static updateCollection = async <T extends mongoose.Document>(
+		model: mongoose.Model<T>,
+		documents: Array<any>,
+		collectionName: string,
+	) => {
+		const prevState = await model.find().exec();
+		let error = Error();
+
+		try {
+			await model.deleteMany();
+		} catch (e) {
+			logger.error(`Update collection "${collectionName}" failed. Error during "model.deleteMany()". ${error.message}`);
+			throw error;
+		}
+
+		try {
+			await model.insertMany(documents);
+		} catch (e) {
+			logger.error(`Update collection "${collectionName}" failed. Error during "model.insertMany()". ${error.message}`);
+			await model.insertMany(prevState);
+			throw error;
+		}
+
+		const currentState = await model.find().exec();
+
+		if (documents.length !== currentState.length) {
+			logger.error(
+				`Update collection "${collectionName}" failed. Collectin.length(${currentState.length}) !== documentsToInsert.length(${documents.length})`,
+			);
+			await model.insertMany(prevState);
+			throw new Error(`Failed to update collection "${collectionName}. Length verification failed`);
+		}
 	};
 }

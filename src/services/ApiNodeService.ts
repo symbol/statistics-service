@@ -10,6 +10,7 @@ export interface ApiStatus {
 	chainHeight?: number;
 	finalizationHeight?: number;
 	nodePublicKey?: string;
+	restVersion?: string;
 	lastStatusCheck: number;
 }
 
@@ -44,12 +45,14 @@ export class ApiNodeService {
 		try {
 			const nodeInfo = (await HTTP.get(`http://${host}:${port}/node/info`)).data;
 			const chainInfo = (await HTTP.get(`http://${host}:${port}/chain/info`)).data;
+			const nodeServer = (await HTTP.get(`http://${host}:${port}/node/server`)).data;
 
 			return {
 				isAvailable: true,
 				chainHeight: chainInfo.height,
 				finalizationHeight: chainInfo.latestFinalizedBlock.height,
 				nodePublicKey: nodeInfo.nodePublicKey,
+				restVersion: nodeServer.serverInfo.restVersion,
 				lastStatusCheck: Date.now(),
 			};
 		} catch (e) {

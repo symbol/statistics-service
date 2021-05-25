@@ -163,9 +163,4 @@ export class TimeSeriesService<T extends AbstractTimeSeries, D extends AbstractT
 			);
 		}
 	}
-
-	public clear() {
-		this.clearDayCollection();
-		this.mainModel.deleteMany();
-	}
 }
