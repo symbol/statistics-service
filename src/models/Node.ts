@@ -54,6 +54,10 @@ const NodeSchema: Schema = new Schema({
 		},
 	},
 	apiStatus: {
+		isHttpsEnabled: {
+			type: Boolean,
+			required: false,
+		},
 		isAvailable: {
 			type: Boolean,
 			required: false,
@@ -62,9 +66,23 @@ const NodeSchema: Schema = new Schema({
 			type: Number,
 			required: false,
 		},
-		finalizationHeight: {
-			type: Number,
-			required: false,
+		finalizedBlock: {
+			height: {
+				type: Number,
+				required: false,
+			},
+			epoch: {
+				type: Number,
+				required: false,
+			},
+			point: {
+				type: Number,
+				required: false,
+			},
+			hash: {
+				type: String,
+				required: false,
+			},
 		},
 		nodePublicKey: {
 			type: String,
@@ -73,6 +91,28 @@ const NodeSchema: Schema = new Schema({
 		restVersion: {
 			type: String,
 			required: false,
+		},
+		votingKeys: {
+			type: [
+				{
+					publicKey: {
+						type: String,
+						required: true,
+					},
+					startEpoch: {
+						type: Number,
+						required: false,
+					},
+					endEpoch: {
+						type: Number,
+						required: false,
+					},
+				},
+			],
+			required: false,
+		},
+		delegatedAccounts: {
+			type: Array,
 		},
 		lastStatusCheck: {
 			type: Number,
