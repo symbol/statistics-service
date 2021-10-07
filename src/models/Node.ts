@@ -58,6 +58,10 @@ const NodeSchema: Schema = new Schema({
 			type: Boolean,
 			required: false,
 		},
+		isHttpsEnabled: {
+			type: Boolean,
+			required: false,
+		},
 		chainHeight: {
 			type: Number,
 			required: false,

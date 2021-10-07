@@ -7,6 +7,7 @@ const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
 export interface ApiStatus {
 	isAvailable: boolean;
+	isHttpsEnabled?: boolean;
 	chainHeight?: number;
 	finalizationHeight?: number;
 	nodePublicKey?: string;
@@ -76,6 +77,15 @@ export class ApiNodeService {
 			return (await HTTP.get(`http://${host}:${port}/chain/info`)).data;
 		} catch (e) {
 			return null;
+		}
+	};
+
+	static isHttpsEnabled = async (host: string, port = 3001): Promise<boolean> => {
+		try {
+			await HTTP.get(`https://${host}:${port}/chain/info`);
+			return true;
+		} catch (e) {
+			return false;
 		}
 	};
 }
