@@ -38,7 +38,7 @@ export class NodeMonitor {
 		this.nodeList = [];
 		this.isRunning = false;
 		this.interval = _interval || 300000;
-		this.nodeInfoChunks = 500;
+		this.nodeInfoChunks = monitor.NUMBER_OF_NODE_REQUEST_CHUNK;
 		this.nodeInfoDelay = 1000;
 		this.networkIdentifier = 152; // default Testnet
 		this.cacheCollection();
@@ -139,14 +139,16 @@ export class NodeMonitor {
 
 	private getNodeListInfo = async () => {
 		logger.info(`Getting node info total for ${this.nodeList.length} nodes`);
-		const nodeInfoPromises = [...this.nodeList].map(this.getNodeInfo);
-		const nodeInfoPromisesChunks = splitArray(nodeInfoPromises, this.nodeInfoChunks);
+		const nodeListChunks = splitArray(this.nodeList, this.nodeInfoChunks);
 
 		this.nodeList = [];
 
-		for (const chunk of nodeInfoPromisesChunks) {
-			logger.info(`Getting node info for chunk of ${chunk.length} nodes`);
-			this.addNodesToList((await Promise.all(chunk)) as INode[]);
+		for (const nodes of nodeListChunks) {
+			logger.info(`Getting node info for chunk of ${nodes.length} nodes`);
+
+			const nodeInfoPromises = [...nodes].map(this.getNodeInfo);
+
+			this.addNodesToList((await Promise.all(nodeInfoPromises)) as INode[]);
 			await sleep(this.nodeInfoDelay);
 		}
 		this.nodeList.forEach((node) => this.nodesStats.addToStats(node));
