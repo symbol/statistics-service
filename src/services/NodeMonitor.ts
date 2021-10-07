@@ -90,7 +90,9 @@ export class NodeMonitor {
 
 		// Nested fetch node list from current nodeList[]
 		const nodeListPromises = this.nodeList.map(async (node) => {
-			if (isAPIRole(node.roles)) return this.fetchNodesByURL(getNodeURL(node, monitor.API_NODE_PORT));
+			if (isAPIRole(node.roles)) {
+				this.fetchNodesByURL(getNodeURL(node, monitor.API_NODE_PORT));
+			}
 
 			return [];
 		});
@@ -160,13 +162,17 @@ export class NodeMonitor {
 
 			if (hostDetail) nodeWithInfo.hostDetail = hostDetail;
 
-			if (isPeerRole(node.roles)) nodeWithInfo.peerStatus = await PeerNodeService.getStatus(node.host, node.port);
-
-			if (isAPIRole(node.roles)) {
-				nodeWithInfo.apiStatus = await ApiNodeService.getStatus(node.host, monitor.API_NODE_PORT);
+			if (isPeerRole(node.roles)) {
+				nodeWithInfo.peerStatus = await PeerNodeService.getStatus(node.host, node.port);
 			}
 
-			if (nodeWithInfo.publicKey) nodeWithInfo.rewardPrograms = await NodeRewards.getNodeRewardPrograms(nodeWithInfo.publicKey);
+			if (isAPIRole(node.roles)) {
+				nodeWithInfo.apiStatus = await ApiNodeService.getStatus(node.host);
+			}
+
+			if (nodeWithInfo.publicKey) {
+				nodeWithInfo.rewardPrograms = await NodeRewards.getNodeRewardPrograms(nodeWithInfo.publicKey);
+			}
 		} catch (e) {
 			logger.error(`GetNodeInfo. Failed to fetch info for "${node}". ${e.message}`);
 		}
