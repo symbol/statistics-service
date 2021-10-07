@@ -39,24 +39,59 @@ export interface ChainInfo {
 	};
 }
 
+export interface ServerInfo {
+	restVersion: string;
+	sdkVersion: string;
+	deployment: {
+		deploymentTool: string;
+		deploymentToolVersion: string;
+		lastUpdatedDate: string;
+	};
+}
+
 export class ApiNodeService {
-	static getStatus = async (host: string, port: number): Promise<ApiStatus> => {
-		// logger.info(`Getting api status for: ${host}`);
-
+	static getStatus = async (host: string): Promise<ApiStatus> => {
 		try {
-			const nodeInfo = (await HTTP.get(`http://${host}:${port}/node/info`)).data;
-			const chainInfo = (await HTTP.get(`http://${host}:${port}/chain/info`)).data;
-			const nodeServer = (await HTTP.get(`http://${host}:${port}/node/server`)).data;
+			const isHttps = await ApiNodeService.isHttpsEnabled(host);
+			const protocol = isHttps ? 'https' : 'http';
+			const port = isHttps ? 3001 : 3000;
 
-			return {
+			logger.info(`Getting node status for: ${protocol}://${host}:${port}`);
+
+			const [nodeInfo, chainInfo, nodeServer] = await Promise.all([
+				ApiNodeService.getNodeInfo(host, port, protocol),
+				ApiNodeService.getNodeChainInfo(host, port, protocol),
+				ApiNodeService.getNodeServer(host, port, protocol),
+			]);
+
+			let apiStatus = {
 				isAvailable: true,
-				chainHeight: chainInfo.height,
-				finalizationHeight: chainInfo.latestFinalizedBlock.height,
-				nodePublicKey: nodeInfo.nodePublicKey,
-				restVersion: nodeServer.serverInfo.restVersion,
 				lastStatusCheck: Date.now(),
 			};
+
+			if (nodeInfo) {
+				Object.assign(apiStatus, {
+					isHttpsEnabled: isHttps,
+					nodePublicKey: nodeInfo.nodePublicKey,
+				});
+			}
+
+			if (chainInfo) {
+				Object.assign(apiStatus, {
+					chainHeight: chainInfo.height,
+					finalizationHeight: chainInfo.latestFinalizedBlock.height,
+				});
+			}
+
+			if (nodeServer) {
+				Object.assign(apiStatus, {
+					restVersion: nodeServer.restVersion,
+				});
+			}
+
+			return apiStatus;
 		} catch (e) {
+			logger.error(`Fail to request host node status: ${host}`, e);
 			return {
 				isAvailable: false,
 				lastStatusCheck: Date.now(),
@@ -64,18 +99,29 @@ export class ApiNodeService {
 		}
 	};
 
-	static getNodeInfo = async (host: string, port: number): Promise<NodeInfo | null> => {
+	static getNodeInfo = async (host: string, port: number, protocol = 'http'): Promise<NodeInfo | null> => {
 		try {
-			return (await HTTP.get(`http://${host}:${port}/node/info`)).data;
+			return (await HTTP.get(`${protocol}://${host}:${port}/node/info`)).data;
 		} catch (e) {
+			logger.error(`Fail to request /node/info: ${host}`, e);
 			return null;
 		}
 	};
 
-	static getNodeChainInfo = async (host: string, port: number): Promise<ChainInfo | null> => {
+	static getNodeChainInfo = async (host: string, port: number, protocol = 'http'): Promise<ChainInfo | null> => {
 		try {
-			return (await HTTP.get(`http://${host}:${port}/chain/info`)).data;
+			return (await HTTP.get(`${protocol}://${host}:${port}/chain/info`)).data;
 		} catch (e) {
+			logger.error(`Fail to request /chain/info: ${host}`, e);
+			return null;
+		}
+	};
+
+	static getNodeServer = async (host: string, port: number, protocol = 'http'): Promise<ServerInfo | null> => {
+		try {
+			return (await HTTP.get(`${protocol}://${host}:${port}/node/server`)).data as ServerInfo;
+		} catch (e) {
+			logger.error(`Fail to request /node/server: ${host}`, e);
 			return null;
 		}
 	};

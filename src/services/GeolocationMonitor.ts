@@ -63,7 +63,7 @@ export class GeolocationMonitor {
 				const node = await ApiNodeService.getNodeInfo(new URL(nodeUrl).host, Number(monitor.API_NODE_PORT));
 
 				if (node) {
-					const status = await ApiNodeService.getStatus(node.host, monitor.API_NODE_PORT);
+					const status = await ApiNodeService.getStatus(node.host);
 
 					if (status.isAvailable) this.nodeList.push({ ...node, rewardPrograms: [] });
 				}
