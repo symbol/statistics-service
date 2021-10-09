@@ -79,8 +79,25 @@ const NodeSchema: Schema = new Schema({
 			type: Number,
 			required: false,
 		},
-		finalizationHeight: {
-			type: Number,
+		finalization: {
+			type: {
+				height: {
+					type: Number,
+					required: false,
+				},
+				epoch: {
+					type: Number,
+					required: false,
+				},
+				point: {
+					type: Number,
+					required: false,
+				},
+				hash: {
+					type: String,
+					required: false,
+				},
+			},
 			required: false,
 		},
 		nodePublicKey: {

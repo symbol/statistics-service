@@ -10,12 +10,19 @@ interface NodeStatus {
 	db: string;
 }
 
+interface FinalizedBlock {
+	height: number;
+	epoch: number;
+	point: number;
+	hash: string;
+}
+
 export interface ApiStatus {
 	isAvailable: boolean;
 	isHttpsEnabled?: boolean;
 	nodeStatus?: NodeStatus;
 	chainHeight?: number;
-	finalizationHeight?: number;
+	finalization?: FinalizedBlock;
 	nodePublicKey?: string;
 	restVersion?: string;
 	lastStatusCheck: number;
@@ -92,7 +99,12 @@ export class ApiNodeService {
 			if (chainInfo) {
 				Object.assign(apiStatus, {
 					chainHeight: chainInfo.height,
-					finalizationHeight: chainInfo.latestFinalizedBlock.height,
+					finalization: {
+						height: chainInfo.latestFinalizedBlock.height,
+						epoch: chainInfo.latestFinalizedBlock.finalizationEpoch,
+						point: chainInfo.latestFinalizedBlock.finalizationPoint,
+						hash: chainInfo.latestFinalizedBlock.hash,
+					},
 				});
 			}
 
@@ -132,7 +144,8 @@ export class ApiNodeService {
 
 	static getNodeServer = async (host: string, port: number, protocol = 'http'): Promise<ServerInfo | null> => {
 		try {
-			return (await HTTP.get(`${protocol}://${host}:${port}/node/server`)).data as ServerInfo;
+			const nodeServerInfo = (await HTTP.get(`${protocol}://${host}:${port}/node/server`)).data;
+			return nodeServerInfo.serverInfo;
 		} catch (e) {
 			logger.error(`Fail to request /node/server: ${host}`, e);
 			return null;
