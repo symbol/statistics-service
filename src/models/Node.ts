@@ -62,6 +62,19 @@ const NodeSchema: Schema = new Schema({
 			type: Boolean,
 			required: false,
 		},
+		nodeStatus: {
+			type: {
+				apiNode: {
+					type: String,
+					required: false,
+				},
+				db: {
+					type: String,
+					required: false,
+				},
+			},
+			required: false,
+		},
 		chainHeight: {
 			type: Number,
 			required: false,

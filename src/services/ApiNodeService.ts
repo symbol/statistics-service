@@ -5,9 +5,15 @@ import { Logger } from '@src/infrastructure';
 
 const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
+interface NodeStatus {
+	apiNode: string;
+	db: string;
+}
+
 export interface ApiStatus {
 	isAvailable: boolean;
 	isHttpsEnabled?: boolean;
+	nodeStatus?: NodeStatus;
 	chainHeight?: number;
 	finalizationHeight?: number;
 	nodePublicKey?: string;
@@ -58,16 +64,23 @@ export class ApiNodeService {
 
 			logger.info(`Getting node status for: ${protocol}://${host}:${port}`);
 
-			const [nodeInfo, chainInfo, nodeServer] = await Promise.all([
+			const [nodeInfo, chainInfo, nodeServer, nodeHealth] = await Promise.all([
 				ApiNodeService.getNodeInfo(host, port, protocol),
 				ApiNodeService.getNodeChainInfo(host, port, protocol),
 				ApiNodeService.getNodeServer(host, port, protocol),
+				ApiNodeService.getNodeHealth(host, port, protocol),
 			]);
 
 			let apiStatus = {
 				isAvailable: true,
 				lastStatusCheck: Date.now(),
 			};
+
+			if (nodeHealth) {
+				Object.assign(apiStatus, {
+					nodeStatus: nodeHealth,
+				});
+			}
 
 			if (nodeInfo) {
 				Object.assign(apiStatus, {
@@ -122,6 +135,17 @@ export class ApiNodeService {
 			return (await HTTP.get(`${protocol}://${host}:${port}/node/server`)).data as ServerInfo;
 		} catch (e) {
 			logger.error(`Fail to request /node/server: ${host}`, e);
+			return null;
+		}
+	};
+
+	static getNodeHealth = async (host: string, port: number, protocol = 'http'): Promise<NodeStatus | null> => {
+		try {
+			const health = (await HTTP.get(`${protocol}://${host}:${port}/node/health`)).data;
+
+			return health.status;
+		} catch (e) {
+			logger.error(`Fail to request /node/health: ${host}`, e);
 			return null;
 		}
 	};
