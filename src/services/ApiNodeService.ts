@@ -145,6 +145,7 @@ export class ApiNodeService {
 	static getNodeServer = async (host: string, port: number, protocol = 'http'): Promise<ServerInfo | null> => {
 		try {
 			const nodeServerInfo = (await HTTP.get(`${protocol}://${host}:${port}/node/server`)).data;
+
 			return nodeServerInfo.serverInfo;
 		} catch (e) {
 			logger.error(`Fail to request /node/server: ${host}`, e);
