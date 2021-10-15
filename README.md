@@ -1,11 +1,12 @@
 # Symbol Statistics Service
 
-It collects network nodes' information time by time and uses it to turn data into useful metrics and insights, such as total nodes in the network, health of the network.
+It periodically collects information from the network's nodes and produces useful metrics and insights, such as the total number of nodes, their health or their geographical distribution.
 
 ## Architecture
 
-The project using Typescript, node express, and MongoDB as databases.
-```
+The project uses Typescript, Node Express, and MongoDB as database.
+
+```text
                        +---------------+
                        |  Application  |
                        +----+----^-----+
@@ -26,101 +27,100 @@ The project using Typescript, node express, and MongoDB as databases.
 |             |                     |
 | +-Services--v-----------------+   |
 | |                             |   |
-| |- Node Monitor               |   |
+| | - Node Monitor              |   |
 | |                             |   |   +------------------+
-| |- Chain Height Monitor       +---+--->                  |
+| | - Chain Height Monitor      +---+--->                  |
 | |                             |   |   | Mongodb Database |
-| |- Geolocation Monitor        <---+---+                  |
+| | - Geolocation Monitor       <---+---+                  |
 | |                             |   |   +------------------+
 | +-----------------------------+   |
 |                                   |
 +-----------------------------------+
 ```
 
-### Task Node Monitor
+### Node Monitor Task
 
-To discover nodes on the network, we need to make a request to catapult-rest endpoint `/node/peer` to discover node peers on each of the API nodes.
+To discover nodes on the network, a request is made to the catapult-rest endpoint `/node/peer`. This returns the list of peers known to that node, which the task then explores recursively.
 
-To start, we picked the official node as a starting point and doing it recursively to each node on the network.
+To start the process, the task uses the nodes maintained by NEM Group.
 
-Once we gather nodes from the network, it will loop through nodes and gather node status data such as `node/info`, `chain/info` and etc.
+Once the whole list of nodes is known, additional information is gathered from each one of them such as `/node/info` and `/chain/info`.
 
-When the completed query, all nodes will be updated on the `Node` collection.
+When the search completes, all node information is updated on the `Node` collection.
 
-### Task Chain Height Monitor
+### Chain Height Monitor Task
 
-To prevent the chain fork happen, we need to gather chain/finalization height from each node and analysis to generate height stats data.
+To prevent chain forks happening, the finalization height from each node is gathered and height statistics are produced.
 
-### Task Geolocation Monitor
+### Geolocation Monitor Task
 
-To getting geolocation from the network node, we will request 3rd party endpoint `ip-api.com` to get coordinates.
+A 3rd party service (`ip-api.com`) is used to obtain geolocalization for each node.
 
-### Structure
+### Source Code Structure
 
-* `/src/config`: Handles the statistics service configuration.
-* `/src/routes`: Handles the REST endpoint routes.
-* `/src/models`: Handles database collection and mongoose schema.
-* `/src/service`: Handles all the service logic, such as to request geolocation.
-* `/src/infrastructure`: Handles logger and pagination component.
+* `/src/config`: Statistics service configuration.
+* `/src/routes`: REST endpoint routes.
+* `/src/models`: Database collection and mongoose schema.
+* `/src/service`: Service logic, such as requesting geolocation.
+* `/src/infrastructure`: Logger and pagination component.
 
 ## Configuration
 
-The default config file at `src/config/config.json`
+The default config file can be found at `src/config/config.json`.
 
-If you like to overwrite the config, you need to create `.env` in the root path.
+If you want to overwrite the configuration you need to create an `.env` file in the root path.
 
 ## Installation
 
 1. Clone the project.
 
-```
-git clone https://github.com/symbol/symbol-statistics-service.git
-```
+   ```bash
+   git clone https://github.com/symbol/symbol-statistics-service.git
+   ```
 
 2. Install the required dependencies.
 
-```
-cd symbol-statistics-service
-npm install
-```
+   ```bash
+   cd symbol-statistics-service
+   npm install
+   ```
 
-3. Run the application in development.
+3. Run the application in development mode.
 
-```
-npm run dev
-```
+   ```bash
+   npm run dev
+   ```
 
-### Docker
-- Build docker image
+### Docker Setup
 
-```
-docker build -t symbol-statistics-service .
-```
+1. Build Docker image.
 
-- Run docker image with docker compose.
+   ```bash
+   docker build -t symbol-statistics-service .
+   ```
 
-```
-version: "3"
-services:
-    app:
-        container_name: statistics-service
-        restart: always
-        build: .
-        environment:
-        - MONGODB_ENDPOINT=mongodb+srv://mongodbURI
-        - NODES=["http://symbol-node-1.io:3000",http://symbol-node-2.io:3000"]
-        - PORT=4001
-        ports:
-        - "3000:4001"
-```
+2. Run the Docker image with the following Docker compose file.
 
-### REST Endpoint
+   ```yaml
+   version: "3"
+   services:
+       app:
+           container_name: statistics-service
+           restart: always
+           build: .
+           environment:
+           - MONGODB_ENDPOINT=mongodb+srv://mongodbURI
+           - NODES=["http://symbol-node-1.io:3000",http://symbol-node-2.io:3000"]
+           - PORT=4001
+           ports:
+           - "3000:4001"
+   ```
 
+## Sample REST responses
 
-```
-# GET /nodes
-# Sample response
+### GET `/nodes`
 
+```json
 [
     {
         "peerStatus": {
@@ -168,10 +168,9 @@ services:
 ]
 ```
 
-```
-# GET /nodes/:publicKey
-# Sample response
+### GET `/nodes/:publicKey`
 
+```json
 {
   "peerStatus": {
     "isAvailable": true,
@@ -216,10 +215,9 @@ services:
 }
 ```
 
-```
-# GET /nodesHostDetail
-# Sample response
+### GET `/nodesHostDetail`
 
+```json
 [
     {
         "_id": "60c022e6ad707a00129f00f9",
@@ -245,10 +243,9 @@ services:
 
 ```
 
-```
-# GET /nodeStats
-# Sample response
+### GET `/nodeStats`
 
+```json
 {
   "nodeTypes": {
     "0": 3,
@@ -263,10 +260,9 @@ services:
 }
 ```
 
-```
-# GET /nodeHeightStats
-# Sample response
+### GET `/nodeHeightStats`
 
+```json
 {
   "height": [
     {
@@ -288,10 +284,9 @@ services:
 }
 ```
 
-```
-# /timeSeries/nodeCount
-# Sample response
+### GET `/timeSeries/nodeCount`
 
+```json
 [
     {
         "_id": "60c15609ad707a0012480830",
