@@ -124,7 +124,7 @@ export class ApiNodeService {
 		}
 	};
 
-	static getNodeInfo = async (host: string, port: number, protocol = 'http'): Promise<NodeInfo | null> => {
+	static getNodeInfo = async (host: string, port: number, protocol: string): Promise<NodeInfo | null> => {
 		try {
 			return (await HTTP.get(`${protocol}://${host}:${port}/node/info`)).data;
 		} catch (e) {
@@ -133,7 +133,7 @@ export class ApiNodeService {
 		}
 	};
 
-	static getNodeChainInfo = async (host: string, port: number, protocol = 'http'): Promise<ChainInfo | null> => {
+	static getNodeChainInfo = async (host: string, port: number, protocol: string): Promise<ChainInfo | null> => {
 		try {
 			return (await HTTP.get(`${protocol}://${host}:${port}/chain/info`)).data;
 		} catch (e) {
@@ -142,7 +142,7 @@ export class ApiNodeService {
 		}
 	};
 
-	static getNodeServer = async (host: string, port: number, protocol = 'http'): Promise<ServerInfo | null> => {
+	static getNodeServer = async (host: string, port: number, protocol: string): Promise<ServerInfo | null> => {
 		try {
 			const nodeServerInfo = (await HTTP.get(`${protocol}://${host}:${port}/node/server`)).data;
 
@@ -153,7 +153,7 @@ export class ApiNodeService {
 		}
 	};
 
-	static getNodeHealth = async (host: string, port: number, protocol = 'http'): Promise<NodeStatus | null> => {
+	static getNodeHealth = async (host: string, port: number, protocol: string): Promise<NodeStatus | null> => {
 		try {
 			const health = (await HTTP.get(`${protocol}://${host}:${port}/node/health`)).data;
 

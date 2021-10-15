@@ -225,7 +225,7 @@ export class NodeMonitor {
 		for (const nodeUrl of symbol.NODES) {
 			const url = new URL(nodeUrl);
 
-			const nodeInfo = await ApiNodeService.getNodeInfo(url.hostname, Number(url.port || monitor.API_NODE_PORT));
+			const nodeInfo = await ApiNodeService.getNodeInfo(url.hostname, Number(url.port), url.protocol);
 
 			if (nodeInfo) {
 				this.networkIdentifier = nodeInfo.networkIdentifier;
