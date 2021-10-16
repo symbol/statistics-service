@@ -58,12 +58,46 @@ const NodeSchema: Schema = new Schema({
 			type: Boolean,
 			required: false,
 		},
+		isHttpsEnabled: {
+			type: Boolean,
+			required: false,
+		},
+		nodeStatus: {
+			type: {
+				apiNode: {
+					type: String,
+					required: false,
+				},
+				db: {
+					type: String,
+					required: false,
+				},
+			},
+			required: false,
+		},
 		chainHeight: {
 			type: Number,
 			required: false,
 		},
-		finalizationHeight: {
-			type: Number,
+		finalization: {
+			type: {
+				height: {
+					type: Number,
+					required: false,
+				},
+				epoch: {
+					type: Number,
+					required: false,
+				},
+				point: {
+					type: Number,
+					required: false,
+				},
+				hash: {
+					type: String,
+					required: false,
+				},
+			},
 			required: false,
 		},
 		nodePublicKey: {
