@@ -16,6 +16,7 @@ interface Symbol {
 
 interface Monitor {
 	NODE_MONITOR_SCHEDULE_INTERVAL: number;
+	NUMBER_OF_NODE_REQUEST_CHUNK: number;
 	CHAIN_HEIGHT_MONITOR_SCHEDULE_INTERVAL: number;
 	GEOLOCATION_MONITOR_SCHEDULE_INTERVAL: number;
 	API_NODE_PORT: number;
@@ -50,6 +51,7 @@ export const symbol: Symbol = {
 
 export const monitor: Monitor = {
 	NODE_MONITOR_SCHEDULE_INTERVAL: Number(process.env.NODE_MONITOR_SCHEDULE_INTERVAL) || config.NODE_MONITOR_SCHEDULE_INTERVAL,
+	NUMBER_OF_NODE_REQUEST_CHUNK: Number(process.env.NUMBER_OF_NODE_REQUEST_CHUNK) || config.NUMBER_OF_NODE_REQUEST_CHUNK,
 	CHAIN_HEIGHT_MONITOR_SCHEDULE_INTERVAL:
 		Number(process.env.CHAIN_HEIGHT_MONITOR_SCHEDULE_INTERVAL) || config.CHAIN_HEIGHT_MONITOR_SCHEDULE_INTERVAL,
 	GEOLOCATION_MONITOR_SCHEDULE_INTERVAL:
@@ -85,6 +87,9 @@ export const verifyConfig = (cfg: Config): boolean => {
 
 	if (isNaN(cfg.monitor.NODE_MONITOR_SCHEDULE_INTERVAL) || cfg.monitor.NODE_MONITOR_SCHEDULE_INTERVAL < 0)
 		error = 'Invalid "NODE_MONITOR_SCHEDULE_INTERVAL"';
+
+	if (isNaN(cfg.monitor.NUMBER_OF_NODE_REQUEST_CHUNK) || cfg.monitor.NUMBER_OF_NODE_REQUEST_CHUNK < 0)
+		error = 'Invalid "NUMBER_OF_NODE_REQUEST_CHUNK"';
 
 	if (isNaN(cfg.monitor.API_NODE_PORT) || cfg.monitor.API_NODE_PORT <= 0 || cfg.monitor.API_NODE_PORT >= 10000)
 		error = 'Invalid "API_NODE_PORT"';

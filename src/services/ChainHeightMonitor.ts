@@ -62,13 +62,14 @@ export class ChainHeightMonitor {
 			this.nodeList = (await DataBase.getNodeList()).filter((node) => isAPIRole(node.roles));
 		} catch (e) {
 			logger.error('Failed to get node list. Use nodes from config');
-			for (const nodeUrl of symbol.NODES) {
-				const node = await ApiNodeService.getNodeInfo(new URL(nodeUrl).host, Number(monitor.API_NODE_PORT));
+			for (const node of symbol.NODES) {
+				const url = new URL(node);
+				const nodeInfo = await ApiNodeService.getNodeInfo(url.host, Number(url.port), url.protocol);
 
-				if (node) {
-					const status = await ApiNodeService.getStatus(node.host, monitor.API_NODE_PORT);
+				if (nodeInfo) {
+					const status = await ApiNodeService.getStatus(nodeInfo.host);
 
-					if (status.isAvailable) this.nodeList.push({ ...node, rewardPrograms: [] });
+					if (status.isAvailable) this.nodeList.push({ ...nodeInfo, rewardPrograms: [] });
 				}
 			}
 		}
@@ -79,7 +80,13 @@ export class ChainHeightMonitor {
 	private getNodeChainHeight = async () => {
 		logger.info(`Getting height stats for ${this.nodeList.length} nodes`);
 		const nodes: INode[] = this.nodeList;
-		const nodeChainInfoPromises = nodes.map((node) => ApiNodeService.getNodeChainInfo(node.host, monitor.API_NODE_PORT));
+		const nodeChainInfoPromises = nodes.map((node) => {
+			const isHttps = node.apiStatus?.isHttpsEnabled;
+			const protocol = isHttps ? 'https' : 'http';
+			const port = isHttps ? 3001 : 3000;
+
+			return ApiNodeService.getNodeChainInfo(node.host, port, protocol);
+		});
 		const nodeChainInfoList = await Promise.all(nodeChainInfoPromises);
 
 		for (let chainInfo of nodeChainInfoList) {

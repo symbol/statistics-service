@@ -20,7 +20,7 @@ before_script:
     - VERSION="$(node_load_version)"
     - log_env_variables
 script:
-    - npm run build:clients
+    # - npm run build:clients
     - npm run build
 jobs:
   include:

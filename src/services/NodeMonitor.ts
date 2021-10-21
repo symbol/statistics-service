@@ -38,7 +38,7 @@ export class NodeMonitor {
 		this.nodeList = [];
 		this.isRunning = false;
 		this.interval = _interval || 300000;
-		this.nodeInfoChunks = 500;
+		this.nodeInfoChunks = monitor.NUMBER_OF_NODE_REQUEST_CHUNK;
 		this.nodeInfoDelay = 1000;
 		this.networkIdentifier = 152; // default Testnet
 		this.cacheCollection();
@@ -90,7 +90,9 @@ export class NodeMonitor {
 
 		// Nested fetch node list from current nodeList[]
 		const nodeListPromises = this.nodeList.map(async (node) => {
-			if (isAPIRole(node.roles)) return this.fetchNodesByURL(getNodeURL(node, monitor.API_NODE_PORT));
+			if (isAPIRole(node.roles)) {
+				this.fetchNodesByURL(getNodeURL(node, monitor.API_NODE_PORT));
+			}
 
 			return [];
 		});
@@ -137,14 +139,16 @@ export class NodeMonitor {
 
 	private getNodeListInfo = async () => {
 		logger.info(`Getting node info total for ${this.nodeList.length} nodes`);
-		const nodeInfoPromises = [...this.nodeList].map(this.getNodeInfo);
-		const nodeInfoPromisesChunks = splitArray(nodeInfoPromises, this.nodeInfoChunks);
+		const nodeListChunks = splitArray(this.nodeList, this.nodeInfoChunks);
 
 		this.nodeList = [];
 
-		for (const chunk of nodeInfoPromisesChunks) {
-			logger.info(`Getting node info for chunk of ${chunk.length} nodes`);
-			this.addNodesToList((await Promise.all(chunk)) as INode[]);
+		for (const nodes of nodeListChunks) {
+			logger.info(`Getting node info for chunk of ${nodes.length} nodes`);
+
+			const nodeInfoPromises = [...nodes].map(this.getNodeInfo);
+
+			this.addNodesToList((await Promise.all(nodeInfoPromises)) as INode[]);
 			await sleep(this.nodeInfoDelay);
 		}
 		this.nodeList.forEach((node) => this.nodesStats.addToStats(node));
@@ -160,13 +164,17 @@ export class NodeMonitor {
 
 			if (hostDetail) nodeWithInfo.hostDetail = hostDetail;
 
-			if (isPeerRole(node.roles)) nodeWithInfo.peerStatus = await PeerNodeService.getStatus(node.host, node.port);
-
-			if (isAPIRole(node.roles)) {
-				nodeWithInfo.apiStatus = await ApiNodeService.getStatus(node.host, monitor.API_NODE_PORT);
+			if (isPeerRole(node.roles)) {
+				nodeWithInfo.peerStatus = await PeerNodeService.getStatus(node.host, node.port);
 			}
 
-			if (nodeWithInfo.publicKey) nodeWithInfo.rewardPrograms = await NodeRewards.getNodeRewardPrograms(nodeWithInfo.publicKey);
+			if (isAPIRole(node.roles)) {
+				nodeWithInfo.apiStatus = await ApiNodeService.getStatus(node.host);
+			}
+
+			if (nodeWithInfo.publicKey) {
+				nodeWithInfo.rewardPrograms = await NodeRewards.getNodeRewardPrograms(nodeWithInfo.publicKey);
+			}
 		} catch (e) {
 			logger.error(`GetNodeInfo. Failed to fetch info for "${node}". ${e.message}`);
 		}
@@ -217,7 +225,7 @@ export class NodeMonitor {
 		for (const nodeUrl of symbol.NODES) {
 			const url = new URL(nodeUrl);
 
-			const nodeInfo = await ApiNodeService.getNodeInfo(url.hostname, Number(url.port || monitor.API_NODE_PORT));
+			const nodeInfo = await ApiNodeService.getNodeInfo(url.hostname, Number(url.port), url.protocol);
 
 			if (nodeInfo) {
 				this.networkIdentifier = nodeInfo.networkIdentifier;
