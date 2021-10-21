@@ -5,8 +5,8 @@ import { Logger } from '@src/infrastructure';
 
 import { INode } from '@src/models/Node';
 import { INodeHeightStats } from '@src/models/NodeHeightStats';
-import { symbol, monitor } from '@src/config';
-import { isAPIRole, isPeerRole, getNodeURL, basename, sleep } from '@src/utils';
+import { symbol } from '@src/config';
+import { isAPIRole, basename, sleep } from '@src/utils';
 
 const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
@@ -69,7 +69,7 @@ export class ChainHeightMonitor {
 				if (nodeInfo) {
 					const status = await ApiNodeService.getStatus(nodeInfo.host);
 
-					if (status.isAvailable) this.nodeList.push({ ...nodeInfo, rewardPrograms: [] });
+					if (status.isAvailable) this.nodeList.push({ ...nodeInfo });
 				}
 			}
 		}

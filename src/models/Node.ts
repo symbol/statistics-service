@@ -1,6 +1,5 @@
 import * as mongoose from 'mongoose';
 import { Schema, Document } from 'mongoose';
-import { RewardProgram } from '@src/services/NodeRewards';
 import { ApiStatus } from '@src/services/ApiNodeService';
 import { PeerStatus } from '@src/models/PeerStatus';
 import { IHostDetail } from './HostDetail';
@@ -14,7 +13,6 @@ export interface INode {
 	publicKey: string;
 	roles: number;
 	version: number;
-	rewardPrograms: RewardProgram[];
 	peerStatus?: PeerStatus;
 	apiStatus?: ApiStatus;
 	hostDetail?: IHostDetail;
@@ -125,21 +123,6 @@ const NodeSchema: Schema = new Schema({
 	},
 	version: {
 		type: Number,
-		required: true,
-	},
-	rewardPrograms: {
-		type: [
-			{
-				name: {
-					type: String,
-					required: true,
-				},
-				passed: {
-					type: Boolean,
-					required: true,
-				},
-			},
-		],
 		required: true,
 	},
 	hostDetail: {
