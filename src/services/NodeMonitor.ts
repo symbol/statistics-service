@@ -4,7 +4,6 @@ import { DataBase } from '@src/services/DataBase';
 import { HostInfo } from '@src/services/HostInfo';
 import { ApiNodeService } from '@src/services/ApiNodeService';
 import { PeerNodeService } from '@src/services/PeerNodeService';
-import { NodeRewards } from '@src/services/NodeRewards';
 import { NodesStats } from '@src/services/NodesStats';
 import { TimeSeriesService } from '@src/services/TimeSeriesService';
 import { NodeCountSeries, NodeCountSeriesDay } from '@src/models/NodeCountSeries';
@@ -158,8 +157,6 @@ export class NodeMonitor {
 		let nodeWithInfo: INode = { ...node };
 
 		try {
-			nodeWithInfo.rewardPrograms = [];
-
 			const hostDetail = await HostInfo.getHostDetailCached(node.host);
 
 			if (hostDetail) nodeWithInfo.hostDetail = hostDetail;
@@ -170,10 +167,6 @@ export class NodeMonitor {
 
 			if (isAPIRole(node.roles)) {
 				nodeWithInfo.apiStatus = await ApiNodeService.getStatus(node.host);
-			}
-
-			if (nodeWithInfo.publicKey) {
-				nodeWithInfo.rewardPrograms = await NodeRewards.getNodeRewardPrograms(nodeWithInfo.publicKey);
 			}
 		} catch (e) {
 			logger.error(`GetNodeInfo. Failed to fetch info for "${node}". ${e.message}`);
