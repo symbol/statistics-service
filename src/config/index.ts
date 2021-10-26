@@ -12,6 +12,7 @@ interface Db {
 
 interface Symbol {
 	NODES: Array<string>;
+	PREFERRED_NODES: Array<string>;
 }
 
 interface Monitor {
@@ -42,6 +43,7 @@ export const db: Db = {
 
 export const symbol: Symbol = {
 	NODES: utils.stringToArray(process.env.NODES) || config.NODES,
+	PREFERRED_NODES: utils.stringToArray(process.env.PREFERRED_NODES) || config.PREFERRED_NODES,
 };
 
 export const monitor: Monitor = {
@@ -75,6 +77,8 @@ export const verifyConfig = (cfg: Config): boolean => {
 	} catch (e) {
 		error = 'Invalid "NODES"';
 	}
+
+	if (cfg.symbol.PREFERRED_NODES.length === 0) error = 'Invalid "PREFERRED NODES"';
 
 	if (isNaN(cfg.monitor.NODE_MONITOR_SCHEDULE_INTERVAL) || cfg.monitor.NODE_MONITOR_SCHEDULE_INTERVAL < 0)
 		error = 'Invalid "NODE_MONITOR_SCHEDULE_INTERVAL"';
