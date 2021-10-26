@@ -23,8 +23,8 @@ export class DataBase {
 		logger.info(`DataBase Connected to MongoDB`);
 	};
 
-	static getNodeList = (): Promise<NodeDocument[]> => {
-		return Node.find().exec();
+	static getNodeList = (filters = {}): Promise<NodeDocument[]> => {
+		return Node.find(filters).exec();
 	};
 
 	static getNodeListWithCriteria = async (searchCriteria: SearchCriteria): Promise<PaginationResponse<NodeDocument>> => {

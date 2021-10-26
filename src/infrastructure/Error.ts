@@ -18,6 +18,15 @@ export class MissingParamError {
 	};
 }
 
+export class UnsupportedFilterError {
+	static send = (res: Response, param: string) => {
+		return res.status(422).send({
+			code: 'UnprocessableEntity',
+			message: `Filter unsupport ${param}`,
+		});
+	};
+}
+
 export class InternalServerError {
 	static send = (res: Response, error: Error) => {
 		return res.status(500).send({

@@ -1,18 +1,54 @@
 import { Express, Request, Response } from 'express';
 import { DataBase } from '@src/services/DataBase';
-import { NotFoundError, InternalServerError, MissingParamError } from '@src/infrastructure/Error';
-import { memoryCache } from '@src/services/MemoryCache';
+import { NotFoundError, InternalServerError, UnsupportedFilterError } from '@src/infrastructure/Error';
+import { symbol } from '@src/config';
 
+enum nodeFilter {
+	Preferred = 'preferred',
+	Suggested = 'suggested',
+}
 export class Routes {
 	static register = async (app: Express) => {
-		app.get('/nodes', (req: Request, res: Response) => {
-			const nodeList = memoryCache.get('nodeList');
+		app.get('/nodes', async (req: Request, res: Response) => {
+			const { filter } = req.query;
 
-			if (nodeList?.length) return res.send(nodeList);
+			// if filter is empty, it will return full list
+			if (!filter) {
+				return DataBase.getNodeList()
+					.then((nodes) => res.send(nodes))
+					.catch((error) => InternalServerError.send(res, error));
+			}
 
-			return DataBase.getNodeList()
-				.then((nodes) => res.send(nodes))
-				.catch((error) => InternalServerError.send(res, error));
+			// Return error message filter is not support
+			if (!(filter === nodeFilter.Preferred || filter === nodeFilter.Suggested)) {
+				return UnsupportedFilterError.send(res, filter as string);
+			}
+
+			// ?filter=preferred
+			// return list config by admin.
+			if (filter === nodeFilter.Preferred) {
+				const nodeFilter = {
+					host: { $in: symbol.PREFERRED_NODES.map((node) => new RegExp(`^.${node}`, 'i')) },
+				};
+
+				return DataBase.getNodeList(nodeFilter)
+					.then((nodes) => res.send(nodes))
+					.catch((error) => InternalServerError.send(res, error));
+			}
+
+			// ?filter=suggested
+			// it filter health nodes
+			if (filter === nodeFilter.Suggested) {
+				const nodeFilter = {
+					'apiStatus.isAvailable': true,
+					'apiStatus.nodeStatus.apiNode': 'up',
+					'apiStatus.nodeStatus.db': 'up',
+				};
+
+				return DataBase.getNodeList(nodeFilter)
+					.then((nodes) => res.send(nodes))
+					.catch((error) => InternalServerError.send(res, error));
+			}
 		});
 
 		app.get('/nodesHostDetail', (req: Request, res: Response) => {
