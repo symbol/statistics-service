@@ -125,6 +125,10 @@ export class ChainHeightMonitor {
 			date: new Date(),
 		};
 
-		await DataBase.updateNodeHeightStats(nodeHeightStats);
+		if (nodeHeightStats.height.length > 0 || nodeHeightStats.finalizedHeight.length > 0) {
+			await DataBase.updateNodeHeightStats(nodeHeightStats);
+		} else {
+			logger.error(`Failed to update collection. Collection length = ${this.nodeList.length}`);
+		}
 	};
 }
