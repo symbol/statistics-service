@@ -100,7 +100,7 @@ export class ApiNodeService {
 				Object.assign(apiStatus, {
 					chainHeight: chainInfo.height,
 					finalization: {
-						height: chainInfo.latestFinalizedBlock.height,
+						height: Number(chainInfo.latestFinalizedBlock.height),
 						epoch: chainInfo.latestFinalizedBlock.finalizationEpoch,
 						point: chainInfo.latestFinalizedBlock.finalizationPoint,
 						hash: chainInfo.latestFinalizedBlock.hash,
