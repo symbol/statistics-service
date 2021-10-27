@@ -29,6 +29,9 @@ export class Routes {
 			if (filter === nodeFilter.Preferred) {
 				const nodeFilter = {
 					host: { $in: symbol.PREFERRED_NODES.map((node) => new RegExp(`^.${node}`, 'i')) },
+					'apiStatus.isAvailable': true,
+					'apiStatus.nodeStatus.apiNode': 'up',
+					'apiStatus.nodeStatus.db': 'up',
 				};
 
 				return DataBase.getNodeList(nodeFilter)
