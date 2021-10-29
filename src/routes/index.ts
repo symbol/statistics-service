@@ -14,7 +14,9 @@ export class Routes {
 			const { filter, limit } = req.query;
 
 			let searchCriteria: NodeSearchCriteria = {
-				filter: {},
+				filter: {
+					version: symbol.CLIENT_VERSION,
+				},
 				limit: Number(limit) || 0,
 			};
 
