@@ -29,7 +29,11 @@ export class DataBase {
 	};
 
 	static getNodeList = ({ filter, limit }: NodeSearchCriteria = { filter: {}, limit: 0 }): Promise<NodeDocument[]> => {
-		return Node.find(filter).limit(limit).exec();
+		// prettier-ignore
+		return Node
+			.find(filter)
+			.limit(limit)
+			.exec();
 	};
 
 	static getNodeListWithCriteria = async (searchCriteria: SearchCriteria): Promise<PaginationResponse<NodeDocument>> => {
