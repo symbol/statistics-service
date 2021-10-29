@@ -3,7 +3,7 @@ import { DataBase, NodeSearchCriteria } from '@src/services/DataBase';
 import { NotFoundError, InternalServerError, UnsupportedFilterError } from '@src/infrastructure/Error';
 import { symbol } from '@src/config';
 
-enum nodeFilter {
+enum NodeFilter {
 	Preferred = 'preferred',
 	Suggested = 'suggested',
 }
@@ -15,19 +15,19 @@ export class Routes {
 
 			let searchCriteria: NodeSearchCriteria = {
 				filter: {
-					version: symbol.CLIENT_VERSION,
+					version: { $gte: symbol.MIN_PARTNER_NODE_VERSION },
 				},
 				limit: Number(limit) || 0,
 			};
 
 			// Return error message filter is not support
-			if (!(filter === nodeFilter.Preferred || filter === nodeFilter.Suggested || !filter)) {
+			if (filter && filter !== NodeFilter.Preferred && filter !== NodeFilter.Suggested) {
 				return UnsupportedFilterError.send(res, filter as string);
 			}
 
 			// ?filter=preferred
 			// it filter by host / domain name config by admin.
-			if (filter === nodeFilter.Preferred) {
+			if (filter === NodeFilter.Preferred) {
 				Object.assign(searchCriteria.filter, {
 					host: { $in: symbol.PREFERRED_NODES.map((node) => new RegExp(`^.${node}`, 'i')) },
 					'apiStatus.isAvailable': true,
@@ -38,7 +38,7 @@ export class Routes {
 
 			// ?filter=suggested
 			// it filter health nodes
-			if (filter === nodeFilter.Suggested) {
+			if (filter === NodeFilter.Suggested) {
 				Object.assign(searchCriteria.filter, {
 					'apiStatus.isAvailable': true,
 					'apiStatus.nodeStatus.apiNode': 'up',

@@ -13,7 +13,7 @@ interface Db {
 interface Symbol {
 	NODES: Array<string>;
 	PREFERRED_NODES: Array<string>;
-	CLIENT_VERSION: number;
+	MIN_PARTNER_NODE_VERSION: number;
 }
 
 interface Monitor {
@@ -45,7 +45,7 @@ export const db: Db = {
 export const symbol: Symbol = {
 	NODES: utils.stringToArray(process.env.NODES) || config.NODES,
 	PREFERRED_NODES: utils.stringToArray(process.env.PREFERRED_NODES) || config.PREFERRED_NODES,
-	CLIENT_VERSION: Number(process.env.CLIENT_VERSION) || config.CLIENT_VERSION,
+	MIN_PARTNER_NODE_VERSION: Number(process.env.MIN_PARTNER_NODE_VERSION) || config.MIN_PARTNER_NODE_VERSION,
 };
 
 export const monitor: Monitor = {
