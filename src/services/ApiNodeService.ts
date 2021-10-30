@@ -5,10 +5,24 @@ import { Logger } from '@src/infrastructure';
 
 const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
+interface NodeStatus {
+	apiNode: string;
+	db: string;
+}
+
+interface FinalizedBlock {
+	height: number;
+	epoch: number;
+	point: number;
+	hash: string;
+}
+
 export interface ApiStatus {
 	isAvailable: boolean;
+	isHttpsEnabled?: boolean;
+	nodeStatus?: NodeStatus;
 	chainHeight?: number;
-	finalizationHeight?: number;
+	finalization?: FinalizedBlock;
 	nodePublicKey?: string;
 	restVersion?: string;
 	lastStatusCheck: number;
@@ -38,24 +52,71 @@ export interface ChainInfo {
 	};
 }
 
+export interface ServerInfo {
+	restVersion: string;
+	sdkVersion: string;
+	deployment: {
+		deploymentTool: string;
+		deploymentToolVersion: string;
+		lastUpdatedDate: string;
+	};
+}
+
 export class ApiNodeService {
-	static getStatus = async (host: string, port: number): Promise<ApiStatus> => {
-		// logger.info(`Getting api status for: ${host}`);
-
+	static getStatus = async (host: string): Promise<ApiStatus> => {
 		try {
-			const nodeInfo = (await HTTP.get(`http://${host}:${port}/node/info`)).data;
-			const chainInfo = (await HTTP.get(`http://${host}:${port}/chain/info`)).data;
-			const nodeServer = (await HTTP.get(`http://${host}:${port}/node/server`)).data;
+			const isHttps = await ApiNodeService.isHttpsEnabled(host);
+			const protocol = isHttps ? 'https' : 'http';
+			const port = isHttps ? 3001 : 3000;
 
-			return {
+			logger.info(`Getting node status for: ${protocol}://${host}:${port}`);
+
+			const [nodeInfo, chainInfo, nodeServer, nodeHealth] = await Promise.all([
+				ApiNodeService.getNodeInfo(host, port, protocol),
+				ApiNodeService.getNodeChainInfo(host, port, protocol),
+				ApiNodeService.getNodeServer(host, port, protocol),
+				ApiNodeService.getNodeHealth(host, port, protocol),
+			]);
+
+			let apiStatus = {
 				isAvailable: true,
-				chainHeight: chainInfo.height,
-				finalizationHeight: chainInfo.latestFinalizedBlock.height,
-				nodePublicKey: nodeInfo.nodePublicKey,
-				restVersion: nodeServer.serverInfo.restVersion,
 				lastStatusCheck: Date.now(),
 			};
+
+			if (nodeHealth) {
+				Object.assign(apiStatus, {
+					nodeStatus: nodeHealth,
+				});
+			}
+
+			if (nodeInfo) {
+				Object.assign(apiStatus, {
+					isHttpsEnabled: isHttps,
+					nodePublicKey: nodeInfo.nodePublicKey,
+				});
+			}
+
+			if (chainInfo) {
+				Object.assign(apiStatus, {
+					chainHeight: chainInfo.height,
+					finalization: {
+						height: Number(chainInfo.latestFinalizedBlock.height),
+						epoch: chainInfo.latestFinalizedBlock.finalizationEpoch,
+						point: chainInfo.latestFinalizedBlock.finalizationPoint,
+						hash: chainInfo.latestFinalizedBlock.hash,
+					},
+				});
+			}
+
+			if (nodeServer) {
+				Object.assign(apiStatus, {
+					restVersion: nodeServer.restVersion,
+				});
+			}
+
+			return apiStatus;
 		} catch (e) {
+			logger.error(`Fail to request host node status: ${host}`, e);
 			return {
 				isAvailable: false,
 				lastStatusCheck: Date.now(),
@@ -63,19 +124,52 @@ export class ApiNodeService {
 		}
 	};
 
-	static getNodeInfo = async (host: string, port: number): Promise<NodeInfo | null> => {
+	static getNodeInfo = async (host: string, port: number, protocol: string): Promise<NodeInfo | null> => {
 		try {
-			return (await HTTP.get(`http://${host}:${port}/node/info`)).data;
+			return (await HTTP.get(`${protocol}://${host}:${port}/node/info`)).data;
 		} catch (e) {
+			logger.error(`Fail to request /node/info: ${host}`, e);
 			return null;
 		}
 	};
 
-	static getNodeChainInfo = async (host: string, port: number): Promise<ChainInfo | null> => {
+	static getNodeChainInfo = async (host: string, port: number, protocol: string): Promise<ChainInfo | null> => {
 		try {
-			return (await HTTP.get(`http://${host}:${port}/chain/info`)).data;
+			return (await HTTP.get(`${protocol}://${host}:${port}/chain/info`)).data;
 		} catch (e) {
+			logger.error(`Fail to request /chain/info: ${host}`, e);
 			return null;
+		}
+	};
+
+	static getNodeServer = async (host: string, port: number, protocol: string): Promise<ServerInfo | null> => {
+		try {
+			const nodeServerInfo = (await HTTP.get(`${protocol}://${host}:${port}/node/server`)).data;
+
+			return nodeServerInfo.serverInfo;
+		} catch (e) {
+			logger.error(`Fail to request /node/server: ${host}`, e);
+			return null;
+		}
+	};
+
+	static getNodeHealth = async (host: string, port: number, protocol: string): Promise<NodeStatus | null> => {
+		try {
+			const health = (await HTTP.get(`${protocol}://${host}:${port}/node/health`)).data;
+
+			return health.status;
+		} catch (e) {
+			logger.error(`Fail to request /node/health: ${host}`, e);
+			return null;
+		}
+	};
+
+	static isHttpsEnabled = async (host: string, port = 3001): Promise<boolean> => {
+		try {
+			await HTTP.get(`https://${host}:${port}/chain/info`);
+			return true;
+		} catch (e) {
+			return false;
 		}
 	};
 }

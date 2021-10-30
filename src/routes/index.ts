@@ -1,17 +1,52 @@
 import { Express, Request, Response } from 'express';
-import { DataBase } from '@src/services/DataBase';
-import { NodeRewards, PayoutFilter } from '@src/services/NodeRewards';
-import { NotFoundError, InternalServerError, MissingParamError } from '@src/infrastructure/Error';
-import { memoryCache } from '@src/services/MemoryCache';
+import { DataBase, NodeSearchCriteria } from '@src/services/DataBase';
+import { NotFoundError, InternalServerError, UnsupportedFilterError } from '@src/infrastructure/Error';
+import { symbol } from '@src/config';
+
+enum NodeFilter {
+	Preferred = 'preferred',
+	Suggested = 'suggested',
+}
 
 export class Routes {
 	static register = async (app: Express) => {
-		app.get('/nodes', (req: Request, res: Response) => {
-			const nodeList = memoryCache.get('nodeList');
+		app.get('/nodes', async (req: Request, res: Response) => {
+			const { filter, limit } = req.query;
 
-			if (nodeList?.length) return res.send(nodeList);
+			let searchCriteria: NodeSearchCriteria = {
+				filter: {
+					version: { $gte: symbol.MIN_PARTNER_NODE_VERSION },
+				},
+				limit: Number(limit) || 0,
+			};
 
-			return DataBase.getNodeList()
+			// Return error message filter is not support
+			if (filter && filter !== NodeFilter.Preferred && filter !== NodeFilter.Suggested) {
+				return UnsupportedFilterError.send(res, filter as string);
+			}
+
+			// ?filter=preferred
+			// it filter by host / domain name config by admin.
+			if (filter === NodeFilter.Preferred) {
+				Object.assign(searchCriteria.filter, {
+					host: { $in: symbol.PREFERRED_NODES.map((node) => new RegExp(`^.${node}`, 'i')) },
+					'apiStatus.isAvailable': true,
+					'apiStatus.nodeStatus.apiNode': 'up',
+					'apiStatus.nodeStatus.db': 'up',
+				});
+			}
+
+			// ?filter=suggested
+			// it filter health nodes
+			if (filter === NodeFilter.Suggested) {
+				Object.assign(searchCriteria.filter, {
+					'apiStatus.isAvailable': true,
+					'apiStatus.nodeStatus.apiNode': 'up',
+					'apiStatus.nodeStatus.db': 'up',
+				});
+			}
+
+			return DataBase.getNodeList(searchCriteria)
 				.then((nodes) => res.send(nodes))
 				.catch((error) => InternalServerError.send(res, error));
 		});
@@ -43,73 +78,6 @@ export class Routes {
 			return DataBase.getNodeHeightStats()
 				.then((stats) => res.send(stats))
 				.catch((error) => InternalServerError.send(res, error));
-		});
-
-		app.get('/nodeRewards/nodes/mainPublicKey/:mainPublicKey', async (req: Request, res: Response) => {
-			try {
-				const mainPublicKey = req.params.mainPublicKey;
-
-				if (!mainPublicKey) return MissingParamError.send(res, 'mainPublicKey');
-
-				const nodeInfo = await NodeRewards.getNodeInfo(mainPublicKey);
-				const nodeId = nodeInfo.id;
-				const testResults = await NodeRewards.getTestResults(nodeId);
-				let testResultInfo;
-
-				if (testResults.length) {
-					const latestRound = testResults[0].round;
-
-					testResultInfo = await NodeRewards.getTestResultInfo(nodeId, latestRound);
-				}
-				const nodeRewardsInfo = {
-					nodeInfo,
-					testResults,
-					testResultInfo,
-				};
-
-				res.send(nodeRewardsInfo);
-			} catch (e) {
-				const status = e.response ? e.response.status : 502;
-				const message = e.response ? e.response.data : e.message;
-
-				res.status(status).send(message);
-			}
-		});
-
-		app.get('/nodeRewards/payouts', async (req: Request, res: Response) => {
-			try {
-				const payouts = await NodeRewards.getPayouts({
-					nodeId: req.query.nodeId as string,
-					pageSize: req.query.pageSize as string,
-					pageNumber: req.query.pageNumber as string,
-					order: req.query.order as string,
-				});
-
-				res.send(payouts);
-			} catch (e) {
-				const status = e.response ? e.response.status : 502;
-				const message = e.response ? e.response.data : e.message;
-
-				res.status(status).send(message);
-			}
-		});
-
-		app.get('/nodeRewards/votingPayouts', async (req: Request, res: Response) => {
-			try {
-				const payouts = await NodeRewards.getVotingPayouts({
-					nodeId: req.query.nodeId as string,
-					pageSize: req.query.pageSize as string,
-					pageNumber: req.query.pageNumber as string,
-					order: req.query.order as string,
-				});
-
-				res.send(payouts);
-			} catch (e) {
-				const status = e.response ? e.response.status : 502;
-				const message = e.response ? e.response.data : e.message;
-
-				res.status(status).send(message);
-			}
 		});
 
 		app.get('/timeSeries/nodeCount', async (req: Request, res: Response) => {

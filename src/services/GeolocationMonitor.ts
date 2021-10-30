@@ -59,13 +59,14 @@ export class GeolocationMonitor {
 		try {
 			this.nodeList = await DataBase.getNodeList();
 		} catch (e) {
-			for (const nodeUrl of symbol.NODES) {
-				const node = await ApiNodeService.getNodeInfo(new URL(nodeUrl).host, Number(monitor.API_NODE_PORT));
+			for (const node of symbol.NODES) {
+				const url = new URL(node);
+				const nodeInfo = await ApiNodeService.getNodeInfo(url.host, Number(url.port), url.protocol);
 
-				if (node) {
-					const status = await ApiNodeService.getStatus(node.host, monitor.API_NODE_PORT);
+				if (nodeInfo) {
+					const status = await ApiNodeService.getStatus(nodeInfo.host);
 
-					if (status.isAvailable) this.nodeList.push({ ...node, rewardPrograms: [] });
+					if (status.isAvailable) this.nodeList.push({ ...nodeInfo });
 				}
 			}
 		}

@@ -12,6 +12,11 @@ import { SearchCriteria, Pagination, PaginationResponse } from '@src/infrastruct
 
 const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
+export interface NodeSearchCriteria {
+	filter: object;
+	limit: number;
+}
+
 export class DataBase {
 	static connect = async (url: string) => {
 		try {
@@ -23,8 +28,12 @@ export class DataBase {
 		logger.info(`DataBase Connected to MongoDB`);
 	};
 
-	static getNodeList = (): Promise<NodeDocument[]> => {
-		return Node.find().exec();
+	static getNodeList = ({ filter, limit }: NodeSearchCriteria = { filter: {}, limit: 0 }): Promise<NodeDocument[]> => {
+		// prettier-ignore
+		return Node
+			.find(filter)
+			.limit(limit)
+			.exec();
 	};
 
 	static getNodeListWithCriteria = async (searchCriteria: SearchCriteria): Promise<PaginationResponse<NodeDocument>> => {

@@ -12,10 +12,13 @@ interface Db {
 
 interface Symbol {
 	NODES: Array<string>;
+	PREFERRED_NODES: Array<string>;
+	MIN_PARTNER_NODE_VERSION: number;
 }
 
 interface Monitor {
 	NODE_MONITOR_SCHEDULE_INTERVAL: number;
+	NUMBER_OF_NODE_REQUEST_CHUNK: number;
 	CHAIN_HEIGHT_MONITOR_SCHEDULE_INTERVAL: number;
 	GEOLOCATION_MONITOR_SCHEDULE_INTERVAL: number;
 	API_NODE_PORT: number;
@@ -24,16 +27,11 @@ interface Monitor {
 	NETWORK_IDENTIFIER: NetworkType;
 }
 
-interface NodeRewardsConfig {
-	CONTROLLER_ENDPOINT: string;
-}
-
 export interface Config {
 	network: Network;
 	db: Db;
 	symbol: Symbol;
 	monitor: Monitor;
-	nodeRewards: NodeRewardsConfig;
 }
 
 export const network: Network = {
@@ -46,10 +44,13 @@ export const db: Db = {
 
 export const symbol: Symbol = {
 	NODES: utils.stringToArray(process.env.NODES) || config.NODES,
+	PREFERRED_NODES: utils.stringToArray(process.env.PREFERRED_NODES) || config.PREFERRED_NODES,
+	MIN_PARTNER_NODE_VERSION: Number(process.env.MIN_PARTNER_NODE_VERSION) || config.MIN_PARTNER_NODE_VERSION,
 };
 
 export const monitor: Monitor = {
 	NODE_MONITOR_SCHEDULE_INTERVAL: Number(process.env.NODE_MONITOR_SCHEDULE_INTERVAL) || config.NODE_MONITOR_SCHEDULE_INTERVAL,
+	NUMBER_OF_NODE_REQUEST_CHUNK: Number(process.env.NUMBER_OF_NODE_REQUEST_CHUNK) || config.NUMBER_OF_NODE_REQUEST_CHUNK,
 	CHAIN_HEIGHT_MONITOR_SCHEDULE_INTERVAL:
 		Number(process.env.CHAIN_HEIGHT_MONITOR_SCHEDULE_INTERVAL) || config.CHAIN_HEIGHT_MONITOR_SCHEDULE_INTERVAL,
 	GEOLOCATION_MONITOR_SCHEDULE_INTERVAL:
@@ -58,10 +59,6 @@ export const monitor: Monitor = {
 	PEER_NODE_PORT: Number(process.env.PEER_NODE_PORT) || config.PEER_NODE_PORT,
 	REQUEST_TIMEOUT: Number(process.env.REQUEST_TIMEOUT) || config.REQUEST_TIMEOUT,
 	NETWORK_IDENTIFIER: Number(process.env.NETWORK_IDENTIFIER) || config.NETWORK_IDENTIFIER,
-};
-
-export const nodeRewards: NodeRewardsConfig = {
-	CONTROLLER_ENDPOINT: process.env.CONTROLLER_ENDPOINT || config.CONTROLLER_ENDPOINT,
 };
 
 export const verifyConfig = (cfg: Config): boolean => {
@@ -83,8 +80,13 @@ export const verifyConfig = (cfg: Config): boolean => {
 		error = 'Invalid "NODES"';
 	}
 
+	if (cfg.symbol.PREFERRED_NODES.length === 0) error = 'Invalid "PREFERRED NODES"';
+
 	if (isNaN(cfg.monitor.NODE_MONITOR_SCHEDULE_INTERVAL) || cfg.monitor.NODE_MONITOR_SCHEDULE_INTERVAL < 0)
 		error = 'Invalid "NODE_MONITOR_SCHEDULE_INTERVAL"';
+
+	if (isNaN(cfg.monitor.NUMBER_OF_NODE_REQUEST_CHUNK) || cfg.monitor.NUMBER_OF_NODE_REQUEST_CHUNK < 0)
+		error = 'Invalid "NUMBER_OF_NODE_REQUEST_CHUNK"';
 
 	if (isNaN(cfg.monitor.API_NODE_PORT) || cfg.monitor.API_NODE_PORT <= 0 || cfg.monitor.API_NODE_PORT >= 10000)
 		error = 'Invalid "API_NODE_PORT"';
