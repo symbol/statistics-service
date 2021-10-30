@@ -11,7 +11,7 @@ enum NodeFilter {
 export class Routes {
 	static register = async (app: Express) => {
 		app.get('/nodes', async (req: Request, res: Response) => {
-			const { filter, limit } = req.query;
+			const { filter, limit, ssl } = req.query;
 
 			let searchCriteria: NodeSearchCriteria = {
 				filter: {
@@ -19,6 +19,15 @@ export class Routes {
 				},
 				limit: Number(limit) || 0,
 			};
+
+			// add ssl filter to query isHttpsEnabled nodes.
+			if (ssl) {
+				const isSSL = ssl.toString().toLocaleLowerCase() === 'true';
+
+				Object.assign(searchCriteria.filter, {
+					'apiStatus.isHttpsEnabled': isSSL,
+				});
+			}
 
 			// Return error message filter is not support
 			if (filter && filter !== NodeFilter.Preferred && filter !== NodeFilter.Suggested) {
