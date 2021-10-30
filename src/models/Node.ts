@@ -52,6 +52,10 @@ const NodeSchema: Schema = new Schema({
 		},
 	},
 	apiStatus: {
+		restGatewayUrl: {
+			type: String,
+			required: false,
+		},
 		isAvailable: {
 			type: Boolean,
 			required: false,
