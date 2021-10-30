@@ -18,6 +18,7 @@ interface FinalizedBlock {
 }
 
 export interface ApiStatus {
+	restGatewayUrl: string;
 	isAvailable: boolean;
 	isHttpsEnabled?: boolean;
 	nodeStatus?: NodeStatus;
@@ -79,6 +80,7 @@ export class ApiNodeService {
 			]);
 
 			let apiStatus = {
+				restGatewayUrl: `${protocol}://${host}:${port}`,
 				isAvailable: true,
 				lastStatusCheck: Date.now(),
 			};
@@ -118,6 +120,7 @@ export class ApiNodeService {
 		} catch (e) {
 			logger.error(`Fail to request host node status: ${host}`, e);
 			return {
+				restGatewayUrl: `http://${host}:3000`,
 				isAvailable: false,
 				lastStatusCheck: Date.now(),
 			};
