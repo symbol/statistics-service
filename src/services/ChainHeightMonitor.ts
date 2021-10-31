@@ -82,7 +82,7 @@ export class ChainHeightMonitor {
 		const nodes: INode[] = this.nodeList;
 		const nodeChainInfoPromises = nodes.map((node) => {
 			const isHttps = node.apiStatus?.isHttpsEnabled;
-			const protocol = isHttps ? 'https' : 'http';
+			const protocol = isHttps ? 'https:' : 'http:';
 			const port = isHttps ? 3001 : 3000;
 
 			return ApiNodeService.getNodeChainInfo(node.host, port, protocol);
