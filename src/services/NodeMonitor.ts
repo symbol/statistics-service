@@ -90,7 +90,7 @@ export class NodeMonitor {
 		// Nested fetch node list from current nodeList[]
 		const nodeListPromises = this.nodeList.map(async (node) => {
 			if (isAPIRole(node.roles)) {
-				this.fetchNodesByURL(getNodeURL(node, monitor.API_NODE_PORT));
+				return this.fetchNodesByURL(getNodeURL(node, monitor.API_NODE_PORT));
 			}
 
 			return [];
