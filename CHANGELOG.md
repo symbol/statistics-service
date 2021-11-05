@@ -10,7 +10,7 @@ Package  | Version  | Link
 REST Core| v2.3.7 | [catapult-rest][catapult-rest@v2.3.7]
 SDK Core| v1.0.1 | [symbol-sdk][symbol-sdk@v1.0.1]
 
-- Fix node is not fully discover [#91](https://github.com/symbol/statistics-service/issues/91)
+- Fix node list not being fully discovered [#91](https://github.com/symbol/statistics-service/issues/91)
 
 ## [v1.1.1][v1.1.1] - 31-Oct-2021
 
