@@ -3,6 +3,15 @@ All notable changes to this project will be documented in this file.
 
 The changelog format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [v1.1.2][v1.1.2] - 5-Nov-2021
+
+Package  | Version  | Link
+---|---|---
+REST Core| v2.3.7 | [catapult-rest][catapult-rest@v2.3.7]
+SDK Core| v1.0.1 | [symbol-sdk][symbol-sdk@v1.0.1]
+
+- Fix node is not fully discover [#91](https://github.com/symbol/statistics-service/issues/91)
+
 ## [v1.1.1][v1.1.1] - 31-Oct-2021
 
 ### Milestone: [catapult-server@v1.0.2.0][catapult-server@v1.0.2.0]
@@ -112,6 +121,7 @@ REST Core| v2.1.0 | [catapult-rest](https://github.com/nemtech/catapult-rest/rel
 ### Fixes
 - Cors error. [#13](https://github.com/nemgrouplimited/symbol-statistics-service/issues/13)
 
+[v1.1.2]: https://github.com/symbol/statistics-service/releases/tag/v1.1.2
 [v1.1.1]: https://github.com/symbol/statistics-service/releases/tag/v1.1.1
 [v1.1.0]: https://github.com/symbol/statistics-service/releases/tag/v1.1.0
 
