@@ -27,6 +27,9 @@ jobs:
       name: lint
       script: npm run lint
     - stage: test
+      name: openapi
+      script: npm run test:openapi
+    - stage: test
       name: docker test build
       script: /bin/bash travis/docker-functions.sh docker_build $VERSION
       node_js: 10

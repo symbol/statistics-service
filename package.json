@@ -11,7 +11,8 @@
         "prettier": "prettier --write ./src",
         "lint": "eslint --cache src/ --ext .ts",
         "lint:fix": "eslint src/ --ext .ts --fix",
-        "style:fix": "npm run prettier && npm run lint:fix"
+        "style:fix": "npm run prettier && npm run lint:fix",
+        "test:openapi": "swagger-cli validate openapi/openapi.yml"
     },
     "main": "dist/app.js",
     "typings": "dist/index.d.ts",

@@ -1,0 +1,433 @@
+openapi: 3.0.3
+info:
+    title: Symbol Statistic Service API Documentation
+    version: '1.1.2'
+servers:
+    - url: 'http://testnet.symbol.services'
+      description: Testnet server
+    - url: 'http://mainnet.symbol.services'
+      description: Mainnet server
+    - url: 'http://127.0.0.1:4001'
+      description: Local server
+paths:
+    /nodes:
+        get:
+            summary: Returns the list of known nodes that are compatible with the current catapult version.
+            tags:
+                - node
+            operationId: getNodes
+            parameters:
+                - name: filter
+                  in: query
+                  required: false
+                  description: Filter the nodes by the optional filter.
+                  example: suggested
+                  schema:
+                      $ref: '#/components/schemas/NodeListFilter'
+                - name: limit
+                  in: query
+                  required: false
+                  description: The maximum number of nodes to be returned.
+                  example: 100
+                  schema:
+                      $ref: '#/components/schemas/NodeListLimit'
+                - name: ssl
+                  in: query
+                  required: false
+                  description: Filter the nodes by the HTTPS ready.
+                  example: true
+                  schema:
+                      $ref: '#/components/schemas/NodeListSSL'
+            responses:
+                200:
+                    description: The list of known nodes
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/NodeInfo'
+    /nodes/{publicKey}:
+        get:
+            summary: Returns the node information for the given public key.
+            tags:
+                - node
+            operationId: getNode
+            parameters:
+                - name: publicKey
+                  required: true
+                  description: The node's main public key.
+                  in: path
+                  schema:
+                      type: string
+                  example: E3FC28889BDE31406465167F1D9D6A16DCA1FF67A3BABFA5E5A8596478848F78
+            responses:
+                200:
+                    description: The node information for the given public key.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/NodeInfo'
+                404:
+                    description: There is no node with the given main account.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+    /nodesHostDetail:
+        get:
+            summary: Returns the list of hosting details for all the known nodes.
+            tags:
+                - node
+            operationId: getNodesHostDetail
+            responses:
+                200:
+                    description: The list of the hosting details of all the nodes.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/HostDetail'
+    /nodeStats:
+        get:
+            summary: Returns a summary of the number of nodes per role type.
+            tags:
+                - node
+            operationId: getNodeStats
+            responses:
+                200:
+                    description: A summary of the number of nodes per role type.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/NodeStats'
+    /nodeHeightStats:
+        get:
+            summary: Returns a summary of the number of nodes per height and finalized height.
+            tags:
+                - node
+            operationId: getNodeHeightStats
+            responses:
+                200:
+                    description: A summary of the number of nodes per height and finalized height.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/NodeHeightStats'
+    /timeSeries/nodeCount:
+        get:
+            summary: Returns a summary of the number per role over time.
+            tags:
+                - node
+            operationId: getNodeCount
+            responses:
+                200:
+                    description: A summary of the number per role over time.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/TimeSeriesNodeCount'
+
+components:
+    schemas:
+        Error:
+            description: An error has occurred processing the request.
+            type: object
+            required:
+                - message
+                - code
+            properties:
+                code:
+                    type: string
+                    example: ResourceNotFound
+                message:
+                    type: string
+                    example: no resource exists
+        TimeSeriesNodeCount:
+            type: object
+            description: A summary of the number per role over time.
+            allOf:
+                - $ref: '#/components/schemas/NodeStatsNodeTypes'
+                - type: object
+                  properties:
+                      total:
+                          type: integer
+                          example: 64
+                      rand:
+                          type: integer
+                          example: 527
+        NetworkType:
+            type: integer
+            enum:
+                - 104
+                - 152
+            description: |
+                Network type:
+                * 0x68 (104 decimal) - Public main network.
+                * 0x98 (152 decimal) - Public test network.
+            example: 144
+        NodeHeightStatValue:
+            type: object
+            description: A simple value of the Node Hight Stats.
+            properties:
+                value:
+                    type: string
+                    example: '28080'
+                count:
+                    type: integer
+                    format: int32
+                    example: 10
+        NodeHeightStats:
+            type: object
+            description: A summary of the number of nodes per height and finalized height.
+            required:
+                - height
+                - finalizedHeight
+                - date
+            properties:
+                height:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/NodeHeightStatValue'
+                finalizedHeight:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/NodeHeightStatValue'
+                date:
+                    type: string
+                    description: Date and time when the data was collected
+                    example: '2021-10-30T01:12:35.746Z'
+        NodeStatsNodeTypes:
+            type: object
+            additionalProperties: true
+            #            Note, we could have a large number of possible role types once IPv6 and IPv4 are introduced
+            description: The number of nodes indexed by role type
+        NodeStats:
+            description: A summary of the number of nodes per role type.
+            type: object
+            required:
+                - nodeTypes
+            properties:
+                nodeTypes:
+                    $ref: '#/components/schemas/NodeStatsNodeTypes'
+        NodeListLimit:
+            type: integer
+            example: 30
+        NodeListFilter:
+            type: string
+            description: |
+                suggested: all available api nodes that have a rest endpoint and are online.
+                preferred: all preferred api nodes that have a rest endpoint and are online. Prefered are nodes that match some specific domains.
+            enum:
+                - 'suggested'
+                - 'preferred'
+            example: 'preferred'
+        NodeListSSL:
+            type: boolean
+            example: true
+        PeerStatus:
+            type: object
+            description: |
+                The status of the peer node.
+            required:
+                - isAvailable
+                - lastStatusCheck
+            properties:
+                lastStatusCheck:
+                    type: integer
+                    format: int64
+                    example: 1635515531373
+                isAvailable:
+                    type: boolean
+                    example: true
+        NodeStatus:
+            type: object
+            description: |
+                The status of the rest gateway.
+            properties:
+                apiNode:
+                    type: string
+                    example: up
+                db:
+                    type: string
+                    example: down
+        Finalization:
+            type: object
+            properties:
+                height:
+                    type: integer
+                    format: int32
+                    description: The finalized block of the blockchain.
+                    example: 512112
+                epoch:
+                    type: integer
+                    format: int32
+                    example: 713
+                point:
+                    type: integer
+                    format: int32
+                    example: 13
+                hash:
+                    type: string
+                    example: 7C9BDF478CB18562A078F191867CB9B3FB12601AE0C69606A34C602A0F7D47EB
+        ApiStatus:
+            type: object
+            description: |
+                The status of the api node. Information is from the rest gateway.
+            required:
+                - restGatewayUrl
+                - isAvailable
+                - lastStatusCheck
+                - nodePublicKey
+                - isHttpsEnabled
+                - chainHeight
+                - finalization
+                - restVersion
+            properties:
+                restGatewayUrl:
+                    type: string
+                    description: 'The rest gateway url ready to be connected.'
+                    example: 'https://symbol.node.dev:3001'
+                isAvailable:
+                    type: boolean
+                    example: true
+                lastStatusCheck:
+                    type: integer
+                    format: int64
+                    example: 1635531195763
+                nodeStatus:
+                    $ref: '#/components/schemas/NodeStatus'
+                isHttpsEnabled:
+                    type: boolean
+                nodePublicKey:
+                    type: string
+                    example: A2160AB911943082C88109DD8B65A0082EF547CA7C28F001F857112F7ADD9B3D
+                chainHeight:
+                    type: integer
+                    format: int32
+                    example: 512127
+                finalization:
+                    $ref: '#/components/schemas/Finalization'
+                restVersion:
+                    type: string
+                    example: 2.3.7
+        Coordinates:
+            type: object
+            description: The world coordinates of the node based on the ip address.
+            required:
+                - latitude
+                - longitude
+            properties:
+                latitude:
+                    type: integer
+                    example: 54.7091
+                longitude:
+                    type: integer
+                    example: 25.2971
+        HostDetail:
+            type: object
+            description: Location detils of the node.
+            required:
+                - host
+            properties:
+                host:
+                    type: string
+                    description: The IP or hostname of the node.
+                    example: somehost.symbol.io
+                coordinates:
+                    $ref: '#/components/schemas/Coordinates'
+                location:
+                    type: string
+                    example: 'Ashburn, VA, United States'
+                ip:
+                    type: string
+                    example: '3.86.20.100'
+                organization:
+                    type: string
+                    example: 'My VPC provider'
+                as:
+                    type: string
+                    example: 'Some Company, Inc.'
+                continent:
+                    type: string
+                    example: 'North America'
+                country:
+                    type: string
+                    example: 'United States'
+                region:
+                    type: string
+                    example: 'VA'
+                city:
+                    type: string
+                    example: 'Ashburn'
+                district:
+                    type: string
+                    example: 'Springfield'
+                zip:
+                    type: string
+                    example: '20149'
+        NodeInfo:
+            type: object
+            description: |
+                The node information the statitcs service has recolected from the chain.
+            required:
+                - publicKey
+                - roles
+                - version
+                - friendlyName
+                - networkGenerationHashSeed
+                - port
+                - host
+                - peerStatus
+                - hostDetail
+            properties:
+                publicKey:
+                    type: string
+                    example: E3FC28889BDE31406465167F1D9D6A16DCA1FF67A3BABFA5E5A8596478848FCC
+                roles:
+                    type: integer
+                    description: |
+                        A number that defines the different roles the node provides. Possible roles are:
+                        * 1 - Peer node.
+                        * 2 - Api node.
+                        * 4 - Voting node.
+                        * 64 - IPv4 compatible node
+                        * 128 - IPv6 compatible node.
+
+                        The values are bitwise added together, Examples:
+                        1 = Just Peer.
+                        2 = Just Api.
+                        3 = Peer and Api node.
+                        7 = Peer, Api and Voting node.
+                        65 = IPv4 and Peer node.
+                    example: 3
+                version:
+                    type: integer
+                    description: The client version. Each pair of digits represent a digit number. E.g. 16777728 is 1.0.2.0
+                    example: 16777728
+                friendlyName:
+                    type: string
+                    description: Node friendly name.
+                    example: My Node
+                networkGenerationHashSeed:
+                    type: string
+                    example: 3B5E1FA6445653C971A50687E75E6D09FB30481055E3990C84B25E9222DC1155
+                port:
+                    type: integer
+                    description: Port used for the communication.
+                    example: 7900
+                networkIdentifier:
+                    $ref: '#/components/schemas/NetworkType'
+                host:
+                    type: string
+                    description: Server IP or Hostname
+                    example: somehost.symbol.io
+                peerStatus:
+                    $ref: '#/components/schemas/PeerStatus'
+                apiStatus:
+                    $ref: '#/components/schemas/ApiStatus'
+                hostDetail:
+                    $ref: '#/components/schemas/HostDetail'
