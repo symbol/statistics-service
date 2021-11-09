@@ -31,9 +31,16 @@ paths:
                   example: 100
                   schema:
                       $ref: '#/components/schemas/NodeListLimit'
+                - name: ssl
+                  in: query
+                  required: false
+                  description: Filter the nodes by the HTTPS ready.
+                  example: true
+                  schema:
+                      $ref: '#/components/schemas/NodeListSSL'
             responses:
                 200:
-                    description: Th list of known nodes
+                    description: The list of known nodes
                     content:
                         application/json:
                             schema:
@@ -218,6 +225,9 @@ components:
                 - 'suggested'
                 - 'preferred'
             example: 'preferred'
+        NodeListSSL:
+            type: boolean
+            example: true
         PeerStatus:
             type: object
             description: |
