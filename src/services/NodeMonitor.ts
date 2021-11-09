@@ -65,7 +65,7 @@ export class NodeMonitor {
 				setTimeout(() => this.start(), this.interval);
 			}
 		} catch (e) {
-			logger.error(`Unhandled error during a loop. ${e.message}. Restarting NodeMonitor..`);
+			logger.error(`Unhandled error during a loop. ${(e as Error).message}. Restarting NodeMonitor..`);
 			this.stop();
 			this.start();
 		}
@@ -119,7 +119,7 @@ export class NodeMonitor {
 					host,
 				});
 			} catch (e) {
-				logger.error(`FetchNodesByURL. Failed to get /node/info from "${nodeUrl}". ${e.message}`);
+				logger.error(`FetchNodesByURL. Failed to get /node/info from "${nodeUrl}". ${(e as Error).message}`);
 			}
 		}
 
@@ -130,7 +130,7 @@ export class NodeMonitor {
 
 			if (Array.isArray(nodePeers.data)) nodeList = [...nodeList, ...nodePeers.data];
 		} catch (e) {
-			logger.error(`FetchNodesByURL. Failed to get /node/peers from "${nodeUrl}". ${e.message}`);
+			logger.error(`FetchNodesByURL. Failed to get /node/peers from "${nodeUrl}". ${(e as Error).message}`);
 		}
 
 		return nodeList;
@@ -169,7 +169,7 @@ export class NodeMonitor {
 				nodeWithInfo.apiStatus = await ApiNodeService.getStatus(node.host);
 			}
 		} catch (e) {
-			logger.error(`GetNodeInfo. Failed to fetch info for "${node}". ${e.message}`);
+			logger.error(`GetNodeInfo. Failed to fetch info for "${node}". ${(e as Error).message}`);
 		}
 
 		return nodeWithInfo;
@@ -198,7 +198,7 @@ export class NodeMonitor {
 				await DataBase.updateNodeList(this.nodeList);
 				await DataBase.updateNodesStats(this.nodesStats);
 			} catch (e) {
-				logger.error(`Failed to update collection. ${e.message}`);
+				logger.error(`Failed to update collection. ${(e as Error).message}`);
 				await DataBase.updateNodeList(prevNodeList);
 			}
 		} else logger.error(`Failed to update collection. Collection length = ${this.nodeList.length}`);
@@ -210,7 +210,7 @@ export class NodeMonitor {
 
 			memoryCache.set('nodeList', nodeList);
 		} catch (e) {
-			logger.error('Failed to cache Node collection to memory. ' + e.message);
+			logger.error('Failed to cache Node collection to memory. ' + (e as Error).message);
 		}
 	};
 

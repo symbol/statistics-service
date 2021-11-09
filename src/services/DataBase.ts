@@ -8,7 +8,6 @@ import { INodesStats, NodesStatsDocument, NodesStats } from '@src/models/NodesSt
 import { INodeHeightStats, NodeHeightStatsDocument, NodeHeightStats } from '@src/models/NodeHeightStats';
 import { NodeCountSeries } from '@src/models/NodeCountSeries';
 import { AbstractTimeSeriesDocument } from '@src/models/AbstractTimeSeries';
-import { SearchCriteria, Pagination, PaginationResponse } from '@src/infrastructure/Pagination';
 
 const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
@@ -34,10 +33,6 @@ export class DataBase {
 			.find(filter)
 			.limit(limit)
 			.exec();
-	};
-
-	static getNodeListWithCriteria = async (searchCriteria: SearchCriteria): Promise<PaginationResponse<NodeDocument>> => {
-		return Pagination.getPage<NodeDocument>(Node, searchCriteria);
 	};
 
 	static getNodeByPublicKey = (publicKey: string): Promise<NodeDocument | null> => {

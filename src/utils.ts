@@ -1,5 +1,8 @@
-import { INode } from '@src/models/Node';
+import { Request } from 'express';
+import * as _ from 'lodash';
 import * as path from 'path';
+import { INode } from '@src/models/Node';
+
 
 export const stringToArray = (str: string | undefined): Array<any> => {
 	let result = null;
@@ -58,3 +61,18 @@ export const splitArray = (array: Array<any>, chunks: number): Array<any> =>
 		all[ch] = [].concat(all[ch] || [], one);
 		return all;
 	}, []);
+
+export const reqToPageParameters = (
+	req: Request,
+	filterKeys?: Array<string>,
+): { [key: string]: unknown } => {
+	const searchCriteria = _.pick(
+		req.query,
+		'pageNumber',
+		'pageSize',
+		'order',
+	);
+	const filter = _.pick(req.query, filterKeys || []);
+
+	return { ...searchCriteria, ...filter };
+}
