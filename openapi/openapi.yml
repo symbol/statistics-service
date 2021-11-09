@@ -74,6 +74,33 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Error'
+    /nodes/nodePublicKey/{nodePublicKey}:
+        get:
+            summary: Returns the node information for the given transport public key.
+            tags:
+                - node
+            operationId: getNodeByNodePublicKey
+            parameters:
+                - name: nodePublicKey
+                  required: true
+                  description: The node's transport public key.
+                  in: path
+                  schema:
+                      type: string
+                  example: E3FC28889BDE31406465167F1D9D6A16DCA1FF67A3BABFA5E5A8596478848F78
+            responses:
+                200:
+                    description: The node information for the given transport public key.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/NodeInfo'
+                404:
+                    description: There is no node with the given transport public key.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
     /nodesHostDetail:
         get:
             summary: Returns the list of hosting details for all the known nodes.

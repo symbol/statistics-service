@@ -77,6 +77,20 @@ export class Routes {
 				.catch((error) => InternalServerError.send(res, error));
 		});
 
+		app.get('/nodes/nodePublicKey/:nodePublicKey', (req: Request, res: Response) => {
+			const nodePublicKey = req.params.nodePublicKey;
+
+			return DataBase.getNodeByNodePublicKey(nodePublicKey)
+				.then((node) => {
+					if (node) {
+						res.send(node);
+					} else {
+						NotFoundError.send(res, 'nodePublicKey', nodePublicKey);
+					}
+				})
+				.catch((error) => InternalServerError.send(res, error));
+		});
+
 		app.get('/nodeStats', (req: Request, res: Response) => {
 			return DataBase.getNodesStats()
 				.then((stats) => res.send(stats))

@@ -44,6 +44,10 @@ export class DataBase {
 		return Node.findOne({ publicKey }).exec();
 	};
 
+	static getNodeByNodePublicKey = (nodePublicKey: string): Promise<NodeDocument | null> => {
+		return Node.findOne({ 'apiStatus.nodePublicKey': nodePublicKey }).exec();
+	};
+
 	static getNodeByHost = (host: string): Promise<NodeDocument | null> => {
 		return Node.findOne({ host }).exec();
 	};
