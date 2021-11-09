@@ -33,15 +33,14 @@ export class Page<T extends Document, R> implements IPage<R> {
 		parameters: Parameters,
 		model: Model<T>,
 		formatData: (data: T[]) => Array<R>,
-		formatFilter: (parameters: Parameters) => Record<string, unknown> = (
-			_,
-		) => _,
+		formatFilter: (parameters: Parameters) => Record<string, unknown> = (_) => _,
 	) {
 		this.formatData = formatData;
 		this.formatFilter = formatFilter;
 		const searchCriteria = this.parametersToSearchCriteria(parameters);
 		const filter = this.parametersToFilter(parameters);
 		const pageIndex = searchCriteria.pageNumber - 1;
+
 		this.pagination = {
 			pageSize: searchCriteria.pageSize,
 			pageNumber: searchCriteria.pageNumber,
@@ -56,6 +55,7 @@ export class Page<T extends Document, R> implements IPage<R> {
 
 	async exec(): Promise<Page<T, R>> {
 		const data = await this.query.exec();
+
 		this.data = this.formatData(data);
 		return this;
 	}
@@ -83,11 +83,10 @@ export class Page<T extends Document, R> implements IPage<R> {
 		};
 	}
 
-	private parametersToFilter(
-		parameters: Parameters,
-	): Record<string, unknown> {
+	private parametersToFilter(parameters: Parameters): Record<string, unknown> {
 		const { pageNumber, pageSize, order, ...rest } = parameters;
 		const filter = this.formatFilter({ ...rest });
+
 		return filter;
 	}
 }
