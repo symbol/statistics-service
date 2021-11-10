@@ -60,6 +60,7 @@ paths:
                   in: path
                   schema:
                       type: string
+                      pattern: '^([0-9A-Fa-f]){64}$'
                   example: E3FC28889BDE31406465167F1D9D6A16DCA1FF67A3BABFA5E5A8596478848F78
             responses:
                 200:
@@ -87,6 +88,7 @@ paths:
                   in: path
                   schema:
                       type: string
+                      pattern: '^([0-9A-Fa-f]){64}$'
                   example: E3FC28889BDE31406465167F1D9D6A16DCA1FF67A3BABFA5E5A8596478848F78
             responses:
                 200:
