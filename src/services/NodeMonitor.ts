@@ -187,7 +187,6 @@ export class NodeMonitor {
 			values: {
 				...this.nodesStats.nodeTypes,
 				total: this.nodesStats.getTotal(),
-				rand: Math.round(Math.random() * 1000),
 			},
 		});
 		if (this.nodeList.length > 0) {

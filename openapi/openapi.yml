@@ -156,9 +156,6 @@ components:
                       total:
                           type: integer
                           example: 64
-                      rand:
-                          type: integer
-                          example: 527
         NetworkType:
             type: integer
             enum:
