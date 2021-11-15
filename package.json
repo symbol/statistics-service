@@ -4,7 +4,7 @@
     "description": "",
     "scripts": {
         "dev": "nodemon",
-        "build": "rimraf ./dist/ && tsc",
+        "build": "shx rm -rf ./dist/ && tsc && shx cp -r openapi dist/openapi",
         "build:clients": "bash scripts/build-clients.sh",
         "start": "node dist/app.js",
         "version": "echo $npm_package_version",
@@ -32,7 +32,7 @@
         "nodemon": "^2.0.3",
         "openapi-to-postmanv2": "^2.6.0",
         "prettier": "^2.1.2",
-        "rimraf": "^3.0.2",
+        "shx": "^0.3.3",
         "swagger-cli": "^4.0.4",
         "ts-node": "^8.10.1",
         "tslint": "^6.1.2",
