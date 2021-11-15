@@ -42,7 +42,7 @@ export class GeolocationMonitor {
 				this.start();
 			}
 		} catch (e) {
-			logger.error(`Unhandled error during a loop. ${e.message}. Restarting Monitor..`);
+			logger.error(`Unhandled error during a loop. ${(e as Error).message}. Restarting Monitor..`);
 			await sleep(this.interval);
 			this.stop();
 			this.start();
@@ -92,7 +92,7 @@ export class GeolocationMonitor {
 
 				// await this.updateCollection();
 			} catch (e) {
-				logger.error(`Error getting host info. ${e.message}`);
+				logger.error(`Error getting host info. ${(e as Error).message}`);
 			}
 		}
 	};
@@ -115,7 +115,7 @@ export class GeolocationMonitor {
 				logger.info(`New host info added to collection`);
 			}
 		} catch (e) {
-			logger.error(`Failed to add new host info to collection`, e.message);
+			logger.error(`Failed to add new host info to collection`, (e as Error).message);
 		}
 	};
 
@@ -132,7 +132,7 @@ export class GeolocationMonitor {
 
 			memoryCache.setArray('nodesHostDetail', nodesHostDetail, ['host']);
 		} catch (e) {
-			logger.error('Failed to cache "nodesHostDetail" collection to memory. ' + e.message);
+			logger.error('Failed to cache "nodesHostDetail" collection to memory. ' + (e as Error).message);
 		}
 	};
 }
