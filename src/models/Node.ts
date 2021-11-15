@@ -52,6 +52,23 @@ const NodeSchema: Schema = new Schema({
 		},
 	},
 	apiStatus: {
+		webSocket: {
+			type: {
+				isAvailable: {
+					type: Boolean,
+					required: false,
+				},
+				isWssEnabled: {
+					type: Boolean,
+					required: false,
+				},
+				webSocketUrl: {
+					type: String,
+					required: false,
+				},
+			},
+			required: false,
+		},
 		restGatewayUrl: {
 			type: String,
 			required: false,
