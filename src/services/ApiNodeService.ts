@@ -18,7 +18,14 @@ interface FinalizedBlock {
 	hash: string;
 }
 
+interface WebSocketStatus {
+	isAvailable: boolean;
+	isWssEnabled: boolean;
+	webSocketUrl: string | undefined;
+}
+
 export interface ApiStatus {
+	webSocket?: WebSocketStatus;
 	restGatewayUrl: string;
 	isAvailable: boolean;
 	isHttpsEnabled?: boolean;
@@ -80,11 +87,19 @@ export class ApiNodeService {
 				ApiNodeService.getNodeHealth(host, port, protocol),
 			]);
 
+			const webSocketStatus = await ApiNodeService.webSocketStatus(host, isHttps);
+
 			let apiStatus = {
 				restGatewayUrl: `${protocol}//${host}:${port}`,
 				isAvailable: true,
 				lastStatusCheck: Date.now(),
 			};
+
+			if (webSocketStatus) {
+				Object.assign(apiStatus, {
+					webSocket: webSocketStatus,
+				});
+			}
 
 			if (nodeHealth) {
 				Object.assign(apiStatus, {
@@ -122,6 +137,11 @@ export class ApiNodeService {
 			logger.error(`Fail to request host node status: ${host}`, e);
 			return {
 				restGatewayUrl: `http://${host}:3000`,
+				webSocket: {
+					isAvailable: false,
+					isWssEnabled: false,
+					webSocketUrl: undefined,
+				},
 				isAvailable: false,
 				lastStatusCheck: Date.now(),
 			};
@@ -199,5 +219,34 @@ export class ApiNodeService {
 				resolve(false);
 			});
 		});
+	};
+
+	/**
+	 * Get the status of the web socket connection
+	 * @param host - host domain
+	 * @param isHttp - ssl enable flag
+	 * @returns WebSocketStatus
+	 */
+	static webSocketStatus = async (host: string, isHttp?: boolean): Promise<WebSocketStatus> => {
+		let webSocketUrl = undefined;
+		let wssHeartbeat = false;
+
+		if (isHttp) {
+			wssHeartbeat = await ApiNodeService.webSocketHeartbeat(host, 3001, 'wss:');
+		}
+
+		if (wssHeartbeat) {
+			webSocketUrl = `wss://${host}:3001/ws`;
+		} else {
+			const wsHeartbeat = await ApiNodeService.webSocketHeartbeat(host, 3000, 'ws:');
+
+			webSocketUrl = wsHeartbeat ? `ws://${host}:3000/ws` : undefined;
+		}
+
+		return {
+			isAvailable: webSocketUrl ? true : false,
+			isWssEnabled: wssHeartbeat,
+			webSocketUrl,
+		};
 	};
 }
