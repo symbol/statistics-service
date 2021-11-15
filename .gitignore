@@ -1,4 +1,3 @@
-
 node_modules
 dist
 docs/build
@@ -8,3 +7,4 @@ docs/build
 .eslintcache
 openapitools.json
 *.log
+/client/build/

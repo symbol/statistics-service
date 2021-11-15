@@ -30,6 +30,9 @@ jobs:
       name: openapi
       script: npm run test:openapi
     - stage: test
+      name: openapi typescript client generation
+      script: bash client/generate.sh
+    - stage: test
       name: docker test build
       script: /bin/bash travis/docker-functions.sh docker_build $VERSION
       node_js: 10
@@ -38,9 +41,19 @@ jobs:
       script: /bin/bash travis/docker-functions.sh docker_build $VERSION publish
       if: branch = env(DEV_BRANCH) AND type = push
       node_js: 10
+    - stage: publish
+      name: openapi typescript client alpha
+      script: bash client/generate.sh publish
+      if: branch = env(DEV_BRANCH) AND type = push
+      node_js: 10
     - stage: release
       name: docker publish release
       script: /bin/bash travis/docker-functions.sh docker_build $VERSION release
+      if: branch = env(RELEASE_BRANCH) AND type = api AND commit_message = env(RELEASE_MESSAGE)
+      node_js: 10
+   -  stage: release
+      name: openapi typescript client release
+      script: bash client/generate.sh release
       if: branch = env(RELEASE_BRANCH) AND type = api AND commit_message = env(RELEASE_MESSAGE)
       node_js: 10
     - stage: post release
