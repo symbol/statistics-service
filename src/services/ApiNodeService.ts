@@ -2,6 +2,7 @@ import { HTTP } from '@src/services/Http';
 import * as winston from 'winston';
 import { basename } from '@src/utils';
 import { Logger } from '@src/infrastructure';
+import { WebSocket } from 'ws';
 
 const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
@@ -174,5 +175,29 @@ export class ApiNodeService {
 		} catch (e) {
 			return false;
 		}
+	};
+
+	/**
+	 * Get the heartbeat of the web socket connection
+	 * @param host - host domain
+	 * @param port - websocket port
+	 * @param protocol - websocket protocal wss or ws
+	 * @returns boolean
+	 */
+	static webSocketHeartbeat = async (host: string, port: number, protocol: string): Promise<boolean> => {
+		return new Promise((resolve, reject) => {
+			const clientWS = new WebSocket(`${protocol}//${host}:${port}/ws`, {
+				timeout: 1000,
+			});
+
+			clientWS.on('open', () => {
+				resolve(true);
+			});
+
+			clientWS.on('error', (e) => {
+				logger.error(`Fail to request web socket heartbeat: ${protocol}//${host}:${port}/ws`, e);
+				resolve(false);
+			});
+		});
 	};
 }
