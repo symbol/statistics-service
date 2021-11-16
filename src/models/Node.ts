@@ -122,6 +122,7 @@ const NodeSchema: Schema = new Schema({
 		nodePublicKey: {
 			type: String,
 			required: false,
+			index: true,
 		},
 		restVersion: {
 			type: String,
@@ -137,6 +138,7 @@ const NodeSchema: Schema = new Schema({
 		type: String,
 		required: true,
 		unique: true,
+		index: true,
 	},
 	roles: {
 		type: Number,
