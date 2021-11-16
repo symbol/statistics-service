@@ -16,10 +16,6 @@ GIT_REPO_ID="$(cut -d'/' -f2 <<<"$REPO_SLUG")"
 INPUT="${ROOT_DIR}/openapi/openapi.yml"
 BUILD_DIR="${SCRIPT_DIR}/build"
 
-if [[ $OPERATION_ARG == "main" ]]; then
-  OPERATION_ARG="publish"
-fi
-
 if [[ $OPERATION_ARG == "release" ]]; then
   FULL_VERSION="$VERSION"
 else

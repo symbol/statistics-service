@@ -319,26 +319,19 @@ export class RestClientCallError extends Error {
 }
 
 export class RestClientUtils {
-	public static async getErrorFromFetchResponse(error: Response | Error): Promise<RestClientCallError> {
-		if (error instanceof Error) {
-			const statusCode = 0;
-			const message = error.message || 'Unknown Error';
-			const statusMessage = (error['code'] || 'Unknown Error').toString();
-			return new RestClientCallError(message, statusCode, statusMessage, '');
-		} else {
-			const statusCode = error?.status || 0;
-			const statusMessage = (error?.statusText || 'Unknown Error').toString();
-			const body = (error.text && typeof error.text === 'function' && (await error.text())) || '';
-			const getMessage = () => {
-				const defaultMessage = `${statusCode} - ${statusMessage}`;
-				try {
-					return JSON.parse(body)?.message || defaultMessage;
-				} catch (e) {
-					return defaultMessage;
-				}
-			};
-			const message = getMessage();
-			return new RestClientCallError(message, statusCode, statusMessage, body);
-		}
-	}
+    public static async getErrorFromFetchResponse(error: Response): Promise<RestClientCallError> {
+        const statusCode = error?.status || 0;
+        const statusMessage = (error?.statusText || 'Unknown Error').toString();
+        const body = (error.text && typeof error.text === 'function' && (await error.text())) || '';
+        const getMessage = () => {
+            const defaultMessage = `${statusCode} - ${statusMessage}`;
+            try {
+                return JSON.parse(body)?.message || defaultMessage;
+            } catch (e) {
+                return defaultMessage;
+            }
+        };
+        const message = getMessage();
+        return new RestClientCallError(message, statusCode, statusMessage, body);
+    }
 }

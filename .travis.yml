@@ -4,17 +4,17 @@ node_js:
     - 10
     - 12
 services:
-  - docker
+    - docker
 env:
-  global:
-    - DEV_BRANCH=dev
-    - RELEASE_BRANCH=main
-    - POST_RELEASE_BRANCH=main
-    - RELEASE_MESSAGE=release
+    global:
+        - DEV_BRANCH=dev
+        - RELEASE_BRANCH=main
+        - POST_RELEASE_BRANCH=main
+        - RELEASE_MESSAGE=release
 cache:
     npm: true
     directories:
-        - "node_modules"
+        - 'node_modules'
 before_script:
     - . ./travis/node-functions.sh
     - VERSION="$(node_load_version)"
@@ -22,42 +22,42 @@ before_script:
 script:
     - npm run build
 jobs:
-  include:
-    - stage: test
-      name: lint
-      script: npm run lint
-    - stage: test
-      name: openapi
-      script: npm run test:openapi
-    - stage: test
-      name: openapi typescript client generation
-      script: bash client/generate.sh
-    - stage: test
-      name: docker test build
-      script: /bin/bash travis/docker-functions.sh docker_build $VERSION
-      node_js: 10
-    - stage: publish
-      name: docker publish alpha
-      script: /bin/bash travis/docker-functions.sh docker_build $VERSION publish
-      if: branch = env(DEV_BRANCH) AND type = push
-      node_js: 10
-    - stage: publish
-      name: openapi typescript client alpha
-      script: bash client/generate.sh publish
-      if: branch = env(DEV_BRANCH) AND type = push
-      node_js: 10
-    - stage: release
-      name: docker publish release
-      script: /bin/bash travis/docker-functions.sh docker_build $VERSION release
-      if: branch = env(RELEASE_BRANCH) AND type = api AND commit_message = env(RELEASE_MESSAGE)
-      node_js: 10
-   -  stage: release
-      name: openapi typescript client release
-      script: bash client/generate.sh release
-      if: branch = env(RELEASE_BRANCH) AND type = api AND commit_message = env(RELEASE_MESSAGE)
-      node_js: 10
-    - stage: post release
-      name: tag and version upgrade
-      script: /bin/bash travis/node-functions.sh node_post_release
-      if: branch = env(RELEASE_BRANCH) AND type = api AND commit_message = env(RELEASE_MESSAGE)
-      node_js: 10
+    include:
+        - stage: test
+          name: lint
+          script: npm run lint
+        - stage: test
+          name: openapi
+          script: npm run test:openapi
+        - stage: test
+          name: openapi typescript client generation
+          script: bash client/generate.sh
+        - stage: test
+          name: docker test build
+          script: /bin/bash travis/docker-functions.sh docker_build $VERSION
+          node_js: 10
+        - stage: publish
+          name: docker publish alpha
+          script: /bin/bash travis/docker-functions.sh docker_build $VERSION publish
+          if: branch = env(DEV_BRANCH) AND type = push
+          node_js: 10
+        - stage: publish
+          name: openapi typescript client alpha
+          script: bash client/generate.sh publish
+          if: branch = env(DEV_BRANCH) AND type = push
+          node_js: 10
+        - stage: release
+          name: docker publish release
+          script: /bin/bash travis/docker-functions.sh docker_build $VERSION release
+          if: branch = env(RELEASE_BRANCH) AND type = api AND commit_message = env(RELEASE_MESSAGE)
+          node_js: 10
+        - stage: release
+          name: openapi typescript client release
+          script: bash client/generate.sh release
+          if: branch = env(RELEASE_BRANCH) AND type = api AND commit_message = env(RELEASE_MESSAGE)
+          node_js: 10
+        - stage: post release
+          name: tag and version upgrade
+          script: /bin/bash travis/node-functions.sh node_post_release
+          if: branch = env(RELEASE_BRANCH) AND type = api AND commit_message = env(RELEASE_MESSAGE)
+          node_js: 10
