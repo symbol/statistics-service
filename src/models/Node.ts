@@ -58,11 +58,11 @@ const NodeSchema: Schema = new Schema({
 					type: Boolean,
 					required: false,
 				},
-				isWssEnabled: {
+				wss: {
 					type: Boolean,
 					required: false,
 				},
-				webSocketUrl: {
+				url: {
 					type: String,
 					required: false,
 				},

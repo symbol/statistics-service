@@ -26,7 +26,7 @@ export class Routes {
 
 				Object.assign(searchCriteria.filter, {
 					'apiStatus.isHttpsEnabled': isSSL,
-					'apiStatus.webSocket.isWssEnabled': isSSL,
+					'apiStatus.webSocket.wss': isSSL,
 					'apiStatus.webSocket.isAvailable': true,
 				});
 			}

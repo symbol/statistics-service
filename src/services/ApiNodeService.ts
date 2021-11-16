@@ -20,8 +20,8 @@ interface FinalizedBlock {
 
 interface WebSocketStatus {
 	isAvailable: boolean;
-	isWssEnabled: boolean;
-	webSocketUrl: string | undefined;
+	wss: boolean;
+	url: string | undefined;
 }
 
 export interface ApiStatus {
@@ -139,8 +139,8 @@ export class ApiNodeService {
 				restGatewayUrl: `http://${host}:3000`,
 				webSocket: {
 					isAvailable: false,
-					isWssEnabled: false,
-					webSocketUrl: undefined,
+					wss: false,
+					url: undefined,
 				},
 				isAvailable: false,
 				lastStatusCheck: Date.now(),
@@ -202,12 +202,13 @@ export class ApiNodeService {
 	 * @param host - host domain
 	 * @param port - websocket port
 	 * @param protocol - websocket protocal wss or ws
+	 * @param timeout - default 1000
 	 * @returns boolean
 	 */
-	static webSocketHeartbeat = async (host: string, port: number, protocol: string): Promise<boolean> => {
-		return new Promise((resolve, reject) => {
+	static checkWebSocketHealth = async (host: string, port: number, protocol: string, timeout = 1000): Promise<boolean> => {
+		return new Promise((resolve) => {
 			const clientWS = new WebSocket(`${protocol}//${host}:${port}/ws`, {
-				timeout: 1000,
+				timeout,
 			});
 
 			clientWS.on('open', () => {
@@ -229,24 +230,23 @@ export class ApiNodeService {
 	 */
 	static webSocketStatus = async (host: string, isHttp?: boolean): Promise<WebSocketStatus> => {
 		let webSocketUrl = undefined;
-		let wssHeartbeat = false;
+		let wssHealth = false;
 
 		if (isHttp) {
-			wssHeartbeat = await ApiNodeService.webSocketHeartbeat(host, 3001, 'wss:');
+			wssHealth = await ApiNodeService.checkWebSocketHealth(host, 3001, 'wss:');
 		}
 
-		if (wssHeartbeat) {
+		if (wssHealth) {
 			webSocketUrl = `wss://${host}:3001/ws`;
 		} else {
-			const wsHeartbeat = await ApiNodeService.webSocketHeartbeat(host, 3000, 'ws:');
-
-			webSocketUrl = wsHeartbeat ? `ws://${host}:3000/ws` : undefined;
+			const wsHealth = await ApiNodeService.checkWebSocketHealth(host, 3000, 'ws:');
+			webSocketUrl = wsHealth ? `ws://${host}:3000/ws` : undefined;
 		}
 
 		return {
 			isAvailable: webSocketUrl ? true : false,
-			isWssEnabled: wssHeartbeat,
-			webSocketUrl,
+			wss: wssHealth,
+			url: webSocketUrl,
 		};
 	};
 }

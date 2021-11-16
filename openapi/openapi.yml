@@ -305,10 +305,10 @@ components:
                 isAvailable:
                     type: boolean
                     example: true
-                isWssEnabled:
+                wss:
                     type: boolean
                     example: true
-                webSocketUrl:
+                url:
                     type: string
                     example: wss://symbol.node.dev:3001/ws
         ApiStatus:
