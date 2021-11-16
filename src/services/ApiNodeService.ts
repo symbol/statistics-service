@@ -240,6 +240,7 @@ export class ApiNodeService {
 			webSocketUrl = `wss://${host}:3001/ws`;
 		} else {
 			const wsHealth = await ApiNodeService.checkWebSocketHealth(host, 3000, 'ws:');
+
 			webSocketUrl = wsHealth ? `ws://${host}:3000/ws` : undefined;
 		}
 
