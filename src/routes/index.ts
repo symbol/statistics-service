@@ -14,9 +14,7 @@ export class Routes {
 			const { filter, limit, ssl } = req.query;
 
 			let searchCriteria: NodeSearchCriteria = {
-				filter: {
-					version: { $gte: symbol.MIN_PARTNER_NODE_VERSION },
-				},
+				filter: {},
 				limit: Number(limit) || 0,
 			};
 
@@ -28,6 +26,7 @@ export class Routes {
 					'apiStatus.isHttpsEnabled': isSSL,
 					'apiStatus.webSocket.wss': isSSL,
 					'apiStatus.webSocket.isAvailable': true,
+					version: { $gte: symbol.MIN_PARTNER_NODE_VERSION },
 				});
 			}
 
@@ -44,6 +43,7 @@ export class Routes {
 					'apiStatus.isAvailable': true,
 					'apiStatus.nodeStatus.apiNode': 'up',
 					'apiStatus.nodeStatus.db': 'up',
+					version: { $gte: symbol.MIN_PARTNER_NODE_VERSION },
 				});
 			}
 
@@ -54,6 +54,7 @@ export class Routes {
 					'apiStatus.isAvailable': true,
 					'apiStatus.nodeStatus.apiNode': 'up',
 					'apiStatus.nodeStatus.db': 'up',
+					version: { $gte: symbol.MIN_PARTNER_NODE_VERSION },
 				});
 			}
 
