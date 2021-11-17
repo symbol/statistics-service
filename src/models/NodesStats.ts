@@ -5,12 +5,19 @@ export interface INodesStats {
 	nodeTypes: {
 		[key: string]: number;
 	};
+	nodeVersion: {
+		[key: string]: number;
+	};
 }
 
 export interface NodesStatsDocument extends INodesStats, Document {}
 
 const NodesStatsSchema: Schema = new Schema({
 	nodeTypes: {
+		type: Schema.Types.Mixed,
+		required: false,
+	},
+	nodeVersion: {
 		type: Schema.Types.Mixed,
 		required: false,
 	},
