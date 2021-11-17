@@ -212,6 +212,20 @@ const NodeSchema: Schema = new Schema({
 	},
 });
 
+NodeSchema.index(
+	{ 'apiStatus.isAvailable': 1, 'apiStatus.nodeStatus.apiNode': 1, 'apiStatus.nodeStatus.db': 1 },
+	{
+		name: 'inx_suggestedNode',
+	},
+);
+
+NodeSchema.index(
+	{ 'apiStatus.isHttpsEnabled': 1, 'apiStatus.webSocket.wss': 1, 'apiStatus.webSocket.isAvailable': 1 },
+	{
+		name: 'inx_sslNode',
+	},
+);
+
 NodeSchema.set('toObject', {
 	transform: (doc: Document, ret: Document) => {
 		delete ret._id;
