@@ -312,10 +312,23 @@ components:
                 hash:
                     type: string
                     example: 7C9BDF478CB18562A078F191867CB9B3FB12601AE0C69606A34C602A0F7D47EB
+        WebSocketStatus:
+            type: object
+            properties:
+                isAvailable:
+                    type: boolean
+                    example: true
+                wss:
+                    type: boolean
+                    example: true
+                url:
+                    type: string
+                    example: wss://symbol.node.dev:3001/ws
         ApiStatus:
             type: object
             description: The status of the API node. Information comes from the REST gateway.
             required:
+                - webSocket
                 - restGatewayUrl
                 - isAvailable
                 - lastStatusCheck
@@ -325,6 +338,8 @@ components:
                 - finalization
                 - restVersion
             properties:
+                webSocket:
+                    $ref: '#/components/schemas/WebSocketStatus'
                 restGatewayUrl:
                     type: string
                     description: The REST gateway URL ready to be connected to.

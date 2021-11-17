@@ -52,6 +52,23 @@ const NodeSchema: Schema = new Schema({
 		},
 	},
 	apiStatus: {
+		webSocket: {
+			type: {
+				isAvailable: {
+					type: Boolean,
+					required: false,
+				},
+				wss: {
+					type: Boolean,
+					required: false,
+				},
+				url: {
+					type: String,
+					required: false,
+				},
+			},
+			required: false,
+		},
 		restGatewayUrl: {
 			type: String,
 			required: false,
@@ -105,6 +122,7 @@ const NodeSchema: Schema = new Schema({
 		nodePublicKey: {
 			type: String,
 			required: false,
+			index: true,
 		},
 		restVersion: {
 			type: String,
@@ -120,6 +138,7 @@ const NodeSchema: Schema = new Schema({
 		type: String,
 		required: true,
 		unique: true,
+		index: true,
 	},
 	roles: {
 		type: Number,
@@ -192,6 +211,20 @@ const NodeSchema: Schema = new Schema({
 		required: false,
 	},
 });
+
+NodeSchema.index(
+	{ 'apiStatus.isAvailable': 1, 'apiStatus.nodeStatus.apiNode': 1, 'apiStatus.nodeStatus.db': 1 },
+	{
+		name: 'inx_suggestedNode',
+	},
+);
+
+NodeSchema.index(
+	{ 'apiStatus.isHttpsEnabled': 1, 'apiStatus.webSocket.wss': 1, 'apiStatus.webSocket.isAvailable': 1 },
+	{
+		name: 'inx_sslNode',
+	},
+);
 
 NodeSchema.set('toObject', {
 	transform: (doc: Document, ret: Document) => {
