@@ -80,20 +80,40 @@ export class ApiNodeService {
 
 			logger.info(`Getting node status for: ${protocol}//${host}:${port}`);
 
-			const [nodeInfo, chainInfo, nodeServer, nodeHealth] = await Promise.all([
-				ApiNodeService.getNodeInfo(host, port, protocol),
+			let apiStatus: ApiStatus = {
+				restGatewayUrl: `${protocol}//${host}:${port}`,
+				isAvailable: false,
+				lastStatusCheck: Date.now(),
+				webSocket: {
+					isAvailable: false,
+					wss: false,
+					url: undefined,
+				},
+			};
+
+			const nodeInfo = await ApiNodeService.getNodeInfo(host, port, protocol);
+
+			// Return default status, if we cannot get node info
+			if (!nodeInfo) {
+				return apiStatus;
+			}
+
+			const [chainInfo, nodeServer, nodeHealth] = await Promise.all([
 				ApiNodeService.getNodeChainInfo(host, port, protocol),
 				ApiNodeService.getNodeServer(host, port, protocol),
 				ApiNodeService.getNodeHealth(host, port, protocol),
 			]);
 
-			const webSocketStatus = await ApiNodeService.webSocketStatus(host, isHttps);
+			if (nodeInfo) {
+				Object.assign(apiStatus, {
+					isAvailable: true,
+					isHttpsEnabled: isHttps,
+					nodePublicKey: nodeInfo.nodePublicKey,
+					version: nodeInfo.version,
+				});
+			}
 
-			let apiStatus = {
-				restGatewayUrl: `${protocol}//${host}:${port}`,
-				isAvailable: true,
-				lastStatusCheck: Date.now(),
-			};
+			const webSocketStatus = await ApiNodeService.webSocketStatus(host, isHttps);
 
 			if (webSocketStatus) {
 				Object.assign(apiStatus, {
@@ -104,13 +124,6 @@ export class ApiNodeService {
 			if (nodeHealth) {
 				Object.assign(apiStatus, {
 					nodeStatus: nodeHealth,
-				});
-			}
-
-			if (nodeInfo) {
-				Object.assign(apiStatus, {
-					isHttpsEnabled: isHttps,
-					nodePublicKey: nodeInfo.nodePublicKey,
 				});
 			}
 
