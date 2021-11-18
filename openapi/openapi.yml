@@ -38,6 +38,13 @@ paths:
                   example: true
                   schema:
                       $ref: '#/components/schemas/NodeListSSL'
+                - name: order
+                  in: query
+                  required: false
+                  description: Sorts and samples the nodes to be returned
+                  example: random
+                  schema:
+                      $ref: '#/components/schemas/NodeListOrder'
             responses:
                 200:
                     description: The list of known nodes.
@@ -256,6 +263,15 @@ components:
                 - 'suggested'
                 - 'preferred'
             example: 'preferred'
+        NodeListOrder:
+            type: string
+            description: |
+                'natural': Nodes are returned in the order they are stored in the database.
+                `random`: Default list order when a limit is specified. Returns {limit} number of random nodes, ordering falls back to 'natural' when limit is not specified.
+            enum:
+                - 'natural'
+                - 'random'
+            example: 'random'
         NodeListSSL:
             description: When true, return only nodes which support HTTPS.
             type: boolean

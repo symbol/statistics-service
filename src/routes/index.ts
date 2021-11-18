@@ -1,5 +1,5 @@
 import { Express, Request, Response } from 'express';
-import { DataBase, NodeSearchCriteria } from '@src/services/DataBase';
+import { DataBase, NodeSearchCriteria, NodeListOrder } from '@src/services/DataBase';
 import { NotFoundError, InternalServerError, UnsupportedFilterError } from '@src/infrastructure/Error';
 import { symbol } from '@src/config';
 
@@ -11,13 +11,14 @@ enum NodeFilter {
 export class Routes {
 	static register = async (app: Express) => {
 		app.get('/nodes', async (req: Request, res: Response) => {
-			const { filter, limit, ssl } = req.query;
+			const { filter, limit, ssl, order } = req.query;
 
 			let searchCriteria: NodeSearchCriteria = {
 				filter: {
 					version: { $gte: symbol.MIN_PARTNER_NODE_VERSION },
 				},
 				limit: Number(limit) || 0,
+				order: order ? ((order as string).toLowerCase() as NodeListOrder) : NodeListOrder.Random,
 			};
 
 			// add ssl filter to query isHttpsEnabled nodes.
