@@ -6,17 +6,22 @@ export class NodesStats implements INodesStats {
 		[key: string]: number;
 	};
 
+	nodeVersion!: {
+		[key: string]: number;
+	};
+
 	constructor() {
 		this.clear();
 	}
 
-	private updateStats(nodeType: string) {
-		if (this.nodeTypes[nodeType] === undefined) this.nodeTypes[nodeType] = 1;
-		else this.nodeTypes[nodeType]++;
+	private updateStats(data: Record<string, number>, key: string) {
+		if (data[key] === undefined) data[key] = 1;
+		else data[key]++;
 	}
 
 	addToStats(node: INode) {
-		this.updateStats(String(node.roles));
+		this.updateStats(this.nodeTypes, String(node.roles));
+		this.updateStats(this.nodeVersion, String(node.version));
 	}
 
 	getTotal() {
@@ -37,5 +42,6 @@ export class NodesStats implements INodesStats {
 			'6': 0,
 			'7': 0,
 		};
+		this.nodeVersion = {};
 	}
 }

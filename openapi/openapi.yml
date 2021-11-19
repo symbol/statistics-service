@@ -243,14 +243,21 @@ components:
             additionalProperties: true
             # Note, we could have a large number of possible role types once IPv6 and IPv4 are introduced
             description: The number of nodes indexed by role type.
+        NodeStatsNodeVersion:
+            type: object
+            additionalProperties: true
+            description: The number of nodes indexed by version.
         NodeStats:
             description: The summary of the number of nodes per role type.
             type: object
             required:
                 - nodeTypes
+                - nodeVersion
             properties:
                 nodeTypes:
                     $ref: '#/components/schemas/NodeStatsNodeTypes'
+                nodeVersion:
+                    $ref: '#/components/schemas/NodeStatsNodeVersion'
         NodeListLimit:
             type: integer
             example: 30
