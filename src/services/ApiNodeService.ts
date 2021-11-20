@@ -109,7 +109,6 @@ export class ApiNodeService {
 					isAvailable: true,
 					isHttpsEnabled: isHttps,
 					nodePublicKey: nodeInfo.nodePublicKey,
-					version: nodeInfo.version,
 				});
 			}
 
