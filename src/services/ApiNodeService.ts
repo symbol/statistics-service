@@ -262,4 +262,17 @@ export class ApiNodeService {
 			url: webSocketUrl,
 		};
 	};
+
+	/**
+	 * Check on protocol (https / http), and build url from hostname.
+	 * @param hostname example: symbol.com
+	 * @returns string example: https://symbol.com:3001
+	 */
+	static buildHostUrl = async (hostname: string): Promise<string> => {
+		const isHttps = await ApiNodeService.isHttpsEnabled(hostname);
+		const protocol = isHttps ? 'https:' : 'http:';
+		const port = isHttps ? 3001 : 3000;
+
+		return `${protocol}//${hostname}:${port}`;
+	};
 }
