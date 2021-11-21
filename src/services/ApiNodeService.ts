@@ -32,7 +32,6 @@ export interface ApiStatus {
 	nodeStatus?: NodeStatus;
 	chainHeight?: number;
 	finalization?: FinalizedBlock;
-	nodePublicKey?: string;
 	restVersion?: string;
 	lastStatusCheck: number;
 }
@@ -75,12 +74,14 @@ export class ApiNodeService {
 	static getStatus = async (hostUrl: string): Promise<ApiStatus> => {
 		try {
 			const { protocol, hostname } = new URL(hostUrl);
+			const isHttps = protocol === 'https:';
 
 			logger.info(`Getting node status for: ${hostUrl}`);
 
 			let apiStatus: ApiStatus = {
 				restGatewayUrl: `${hostUrl}`,
 				isAvailable: false,
+				isHttpsEnabled: isHttps,
 				lastStatusCheck: Date.now(),
 				webSocket: {
 					isAvailable: false,
@@ -89,28 +90,32 @@ export class ApiNodeService {
 				},
 			};
 
-			const nodeInfo = await ApiNodeService.getNodeInfo(host, port, protocol);
+			const chainInfo = await ApiNodeService.getNodeChainInfo(hostUrl);
 
-			// Return default status, if we cannot get node info
-			if (!nodeInfo) {
+			// Return default status, if we cannot get chain info
+			if (!chainInfo) {
 				return apiStatus;
 			}
 
-			const [chainInfo, nodeServer, nodeHealth] = await Promise.all([
-				ApiNodeService.getNodeChainInfo(host, port, protocol),
-				ApiNodeService.getNodeServer(host, port, protocol),
-				ApiNodeService.getNodeHealth(host, port, protocol),
+			const [nodeServer, nodeHealth] = await Promise.all([
+				ApiNodeService.getNodeServer(hostUrl),
+				ApiNodeService.getNodeHealth(hostUrl),
 			]);
 
-			if (nodeInfo) {
+			if (chainInfo) {
 				Object.assign(apiStatus, {
 					isAvailable: true,
-					isHttpsEnabled: isHttps,
-					nodePublicKey: nodeInfo.nodePublicKey,
+					chainHeight: chainInfo.height,
+					finalization: {
+						height: Number(chainInfo.latestFinalizedBlock.height),
+						epoch: chainInfo.latestFinalizedBlock.finalizationEpoch,
+						point: chainInfo.latestFinalizedBlock.finalizationPoint,
+						hash: chainInfo.latestFinalizedBlock.hash,
+					},
 				});
 			}
 
-			const webSocketStatus = await ApiNodeService.webSocketStatus(host, isHttps);
+			const webSocketStatus = await ApiNodeService.webSocketStatus(hostname, isHttps);
 
 			if (webSocketStatus) {
 				Object.assign(apiStatus, {
@@ -121,18 +126,6 @@ export class ApiNodeService {
 			if (nodeHealth) {
 				Object.assign(apiStatus, {
 					nodeStatus: nodeHealth,
-				});
-			}
-
-			if (chainInfo) {
-				Object.assign(apiStatus, {
-					chainHeight: chainInfo.height,
-					finalization: {
-						height: Number(chainInfo.latestFinalizedBlock.height),
-						epoch: chainInfo.latestFinalizedBlock.finalizationEpoch,
-						point: chainInfo.latestFinalizedBlock.finalizationPoint,
-						hash: chainInfo.latestFinalizedBlock.hash,
-					},
 				});
 			}
 
