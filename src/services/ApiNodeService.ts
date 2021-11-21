@@ -72,16 +72,14 @@ export interface ServerInfo {
 }
 
 export class ApiNodeService {
-	static getStatus = async (host: string): Promise<ApiStatus> => {
+	static getStatus = async (hostUrl: string): Promise<ApiStatus> => {
 		try {
-			const isHttps = await ApiNodeService.isHttpsEnabled(host);
-			const protocol = isHttps ? 'https:' : 'http:';
-			const port = isHttps ? 3001 : 3000;
+			const { protocol, hostname } = new URL(hostUrl);
 
-			logger.info(`Getting node status for: ${protocol}//${host}:${port}`);
+			logger.info(`Getting node status for: ${hostUrl}`);
 
 			let apiStatus: ApiStatus = {
-				restGatewayUrl: `${protocol}//${host}:${port}`,
+				restGatewayUrl: `${hostUrl}`,
 				isAvailable: false,
 				lastStatusCheck: Date.now(),
 				webSocket: {
@@ -146,9 +144,9 @@ export class ApiNodeService {
 
 			return apiStatus;
 		} catch (e) {
-			logger.error(`Fail to request host node status: ${host}`, e);
+			logger.error(`Fail to request host node status: ${hostUrl}`, e);
 			return {
-				restGatewayUrl: `http://${host}:3000`,
+				restGatewayUrl: `${hostUrl}`,
 				webSocket: {
 					isAvailable: false,
 					wss: false,
@@ -160,42 +158,42 @@ export class ApiNodeService {
 		}
 	};
 
-	static getNodeInfo = async (host: string, port: number, protocol: string): Promise<NodeInfo | null> => {
+	static getNodeInfo = async (hostUrl: string): Promise<NodeInfo | null> => {
 		try {
-			return (await HTTP.get(`${protocol}//${host}:${port}/node/info`)).data;
+			return (await HTTP.get(`${hostUrl}/node/info`)).data;
 		} catch (e) {
-			logger.error(`Fail to request /node/info: ${host}`, e);
+			logger.error(`Fail to request /node/info: ${hostUrl}`, e);
 			return null;
 		}
 	};
 
-	static getNodeChainInfo = async (host: string, port: number, protocol: string): Promise<ChainInfo | null> => {
+	static getNodeChainInfo = async (hostUrl: string): Promise<ChainInfo | null> => {
 		try {
-			return (await HTTP.get(`${protocol}//${host}:${port}/chain/info`)).data;
+			return (await HTTP.get(`${hostUrl}/chain/info`)).data;
 		} catch (e) {
-			logger.error(`Fail to request /chain/info: ${host}`, e);
+			logger.error(`Fail to request /chain/info: ${hostUrl}`, e);
 			return null;
 		}
 	};
 
-	static getNodeServer = async (host: string, port: number, protocol: string): Promise<ServerInfo | null> => {
+	static getNodeServer = async (hostUrl: string): Promise<ServerInfo | null> => {
 		try {
-			const nodeServerInfo = (await HTTP.get(`${protocol}//${host}:${port}/node/server`)).data;
+			const nodeServerInfo = (await HTTP.get(`${hostUrl}/node/server`)).data;
 
 			return nodeServerInfo.serverInfo;
 		} catch (e) {
-			logger.error(`Fail to request /node/server: ${host}`, e);
+			logger.error(`Fail to request /node/server: ${hostUrl}`, e);
 			return null;
 		}
 	};
 
-	static getNodeHealth = async (host: string, port: number, protocol: string): Promise<NodeStatus | null> => {
+	static getNodeHealth = async (hostUrl: string): Promise<NodeStatus | null> => {
 		try {
-			const health = (await HTTP.get(`${protocol}//${host}:${port}/node/health`)).data;
+			const health = (await HTTP.get(`${hostUrl}/node/health`)).data;
 
 			return health.status;
 		} catch (e) {
-			logger.error(`Fail to request /node/health: ${host}`, e);
+			logger.error(`Fail to request /node/health: ${hostUrl}`, e);
 			return null;
 		}
 	};
