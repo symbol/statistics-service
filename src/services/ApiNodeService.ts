@@ -234,24 +234,24 @@ export class ApiNodeService {
 
 	/**
 	 * Get the status of the web socket connection
-	 * @param host - host domain
+	 * @param hostname - host domain
 	 * @param isHttp - ssl enable flag
 	 * @returns WebSocketStatus
 	 */
-	static webSocketStatus = async (host: string, isHttp?: boolean): Promise<WebSocketStatus> => {
+	static webSocketStatus = async (hostname: string, isHttp?: boolean): Promise<WebSocketStatus> => {
 		let webSocketUrl = undefined;
 		let wssHealth = false;
 
 		if (isHttp) {
-			wssHealth = await ApiNodeService.checkWebSocketHealth(host, 3001, 'wss:');
+			wssHealth = await ApiNodeService.checkWebSocketHealth(hostname, 3001, 'wss:');
 		}
 
 		if (wssHealth) {
-			webSocketUrl = `wss://${host}:3001/ws`;
+			webSocketUrl = `wss://${hostname}:3001/ws`;
 		} else {
-			const wsHealth = await ApiNodeService.checkWebSocketHealth(host, 3000, 'ws:');
+			const wsHealth = await ApiNodeService.checkWebSocketHealth(hostname, 3000, 'ws:');
 
-			webSocketUrl = wsHealth ? `ws://${host}:3000/ws` : undefined;
+			webSocketUrl = wsHealth ? `ws://${hostname}:3000/ws` : undefined;
 		}
 
 		return {
