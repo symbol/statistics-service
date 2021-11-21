@@ -61,7 +61,8 @@ export class GeolocationMonitor {
 		} catch (e) {
 			for (const node of symbol.NODES) {
 				const url = new URL(node);
-				const nodeInfo = await ApiNodeService.getNodeInfo(url.host, Number(url.port), url.protocol);
+				const hostUrl = await ApiNodeService.buildHostUrl(url.hostname);
+				const nodeInfo = await ApiNodeService.getNodeInfo(hostUrl);
 
 				if (nodeInfo) {
 					const status = await ApiNodeService.getStatus(nodeInfo.host);
