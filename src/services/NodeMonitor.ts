@@ -167,13 +167,15 @@ export class NodeMonitor {
 
 			if (isAPIRole(node.roles)) {
 				const hostUrl = await ApiNodeService.buildHostUrl(node.host);
-				const nodeStatus = await ApiNodeService.getNodeInfo(hostUrl);
+				// To fix version 0 issue return from `/node/peers`
 
-				if (nodeStatus) {
-					nodeWithInfo.version = nodeStatus.version;
-					nodeWithInfo.nodePublicKey = nodeStatus.nodePublicKey;
+				if (node.version === 0) {
+					const nodeStatus = await ApiNodeService.getNodeInfo(hostUrl);
+
+					if (nodeStatus) {
+						nodeWithInfo.version = nodeStatus.version;
+					}
 				}
-
 				nodeWithInfo.apiStatus = await ApiNodeService.getStatus(hostUrl);
 			}
 		} catch (e) {

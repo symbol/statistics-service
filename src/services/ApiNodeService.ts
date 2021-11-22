@@ -32,6 +32,7 @@ export interface ApiStatus {
 	nodeStatus?: NodeStatus;
 	chainHeight?: number;
 	finalization?: FinalizedBlock;
+	nodePublicKey?: string;
 	restVersion?: string;
 	lastStatusCheck: number;
 }
@@ -97,10 +98,17 @@ export class ApiNodeService {
 				return apiStatus;
 			}
 
-			const [nodeServer, nodeHealth] = await Promise.all([
+			const [nodeInfo, nodeServer, nodeHealth] = await Promise.all([
+				ApiNodeService.getNodeInfo(hostUrl),
 				ApiNodeService.getNodeServer(hostUrl),
 				ApiNodeService.getNodeHealth(hostUrl),
 			]);
+
+			if (nodeInfo) {
+				Object.assign(apiStatus, {
+					nodePublicKey: nodeInfo.nodePublicKey,
+				});
+			}
 
 			if (chainInfo) {
 				Object.assign(apiStatus, {
