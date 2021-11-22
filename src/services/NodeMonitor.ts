@@ -166,7 +166,17 @@ export class NodeMonitor {
 			}
 
 			if (isAPIRole(node.roles)) {
-				nodeWithInfo.apiStatus = await ApiNodeService.getStatus(node.host);
+				const hostUrl = await ApiNodeService.buildHostUrl(node.host);
+				// To fix version 0 issue return from `/node/peers`
+
+				if (node.version === 0) {
+					const nodeStatus = await ApiNodeService.getNodeInfo(hostUrl);
+
+					if (nodeStatus) {
+						nodeWithInfo.version = nodeStatus.version;
+					}
+				}
+				nodeWithInfo.apiStatus = await ApiNodeService.getStatus(hostUrl);
 			}
 		} catch (e) {
 			logger.error(`GetNodeInfo. Failed to fetch info for "${node}". ${e.message}`);
@@ -216,8 +226,9 @@ export class NodeMonitor {
 	private getNetworkType = async (): Promise<void> => {
 		for (const nodeUrl of symbol.NODES) {
 			const url = new URL(nodeUrl);
+			const hostUrl = await ApiNodeService.buildHostUrl(url.hostname);
 
-			const nodeInfo = await ApiNodeService.getNodeInfo(url.hostname, Number(url.port), url.protocol);
+			const nodeInfo = await ApiNodeService.getNodeInfo(hostUrl);
 
 			if (nodeInfo) {
 				this.networkIdentifier = nodeInfo.networkIdentifier;

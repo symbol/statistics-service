@@ -64,7 +64,8 @@ export class ChainHeightMonitor {
 			logger.error('Failed to get node list. Use nodes from config');
 			for (const node of symbol.NODES) {
 				const url = new URL(node);
-				const nodeInfo = await ApiNodeService.getNodeInfo(url.host, Number(url.port), url.protocol);
+				const hostUrl = await ApiNodeService.buildHostUrl(url.hostname);
+				const nodeInfo = await ApiNodeService.getNodeInfo(hostUrl);
 
 				if (nodeInfo) {
 					const status = await ApiNodeService.getStatus(nodeInfo.host);
@@ -85,7 +86,9 @@ export class ChainHeightMonitor {
 			const protocol = isHttps ? 'https:' : 'http:';
 			const port = isHttps ? 3001 : 3000;
 
-			return ApiNodeService.getNodeChainInfo(node.host, port, protocol);
+			const hostUrl = `${protocol}//${node.host}:${port}`;
+
+			return ApiNodeService.getNodeChainInfo(hostUrl);
 		});
 		const nodeChainInfoList = await Promise.all(nodeChainInfoPromises);
 
