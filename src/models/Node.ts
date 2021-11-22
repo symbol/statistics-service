@@ -13,7 +13,6 @@ export interface INode {
 	publicKey: string;
 	roles: number;
 	version: number;
-	nodePublicKey?: string;
 	peerStatus?: PeerStatus;
 	apiStatus?: ApiStatus;
 	hostDetail?: IHostDetail;
@@ -120,6 +119,11 @@ const NodeSchema: Schema = new Schema({
 			},
 			required: false,
 		},
+		nodePublicKey: {
+			type: String,
+			required: false,
+			index: true,
+		},
 		restVersion: {
 			type: String,
 			required: false,
@@ -143,11 +147,6 @@ const NodeSchema: Schema = new Schema({
 	version: {
 		type: Number,
 		required: true,
-	},
-	nodePublicKey: {
-		type: String,
-		required: false,
-		index: true,
 	},
 	hostDetail: {
 		type: {
