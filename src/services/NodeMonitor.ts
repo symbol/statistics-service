@@ -59,8 +59,7 @@ export class NodeMonitor {
 			await this.getNetworkInfo(); // Read network Type and generated hash seed from provided nodes.
 
 			await this.getNodeList(); // Fetch node from peers
-			await this.getNodeList();
-			await this.getNodeListInfo(); //HostInfo.getInfoForListOfNodes(this.nodeList);
+			await this.getNodeListInfo();
 
 			if (this.isRunning) {
 				await this.updateCollection();
@@ -131,7 +130,7 @@ export class NodeMonitor {
 	};
 
 	private getNodeListInfo = async () => {
-		logger.info(`Getting node info total for ${this.nodeList.length} nodes`);
+		logger.info(`Getting node from peers total ${this.nodeList.length} nodes`);
 		const nodeListChunks = splitArray(this.nodeList, this.nodeInfoChunks);
 
 		this.nodeList = [];
@@ -139,7 +138,7 @@ export class NodeMonitor {
 		for (const nodes of nodeListChunks) {
 			logger.info(`Getting node info for chunk of ${nodes.length} nodes`);
 
-			const nodeInfoPromises = [...nodes].map(this.getNodeInfo);
+			const nodeInfoPromises = [...nodes].map((node) => this.getNodeInfo(node));
 
 			this.addNodesToList((await Promise.all(nodeInfoPromises)) as INode[]);
 			await sleep(this.nodeInfoDelay);
@@ -155,25 +154,30 @@ export class NodeMonitor {
 
 			if (hostDetail) nodeWithInfo.hostDetail = hostDetail;
 
-			if (isPeerRole(node.roles)) {
+			if (isPeerRole(nodeWithInfo.roles)) {
 				nodeWithInfo.peerStatus = await PeerNodeService.getStatus(node.host, node.port);
 			}
 
-			if (isAPIRole(node.roles)) {
-				const hostUrl = await ApiNodeService.buildHostUrl(node.host);
-				// To fix version 0 issue return from `/node/peers`
+			if (isAPIRole(nodeWithInfo.roles)) {
+				const hostUrl = await ApiNodeService.buildHostUrl(nodeWithInfo.host);
 
-				if (node.version === 0) {
-					const nodeStatus = await ApiNodeService.getNodeInfo(hostUrl);
+				// Get node info and overwrite info from /node/peers
+				const nodeStatus = await ApiNodeService.getNodeInfo(hostUrl);
 
-					if (nodeStatus) {
-						nodeWithInfo.version = nodeStatus.version;
-					}
+				if (nodeStatus) {
+					Object.assign(nodeWithInfo, nodeStatus);
 				}
-				nodeWithInfo.apiStatus = await ApiNodeService.getStatus(hostUrl);
+
+				// Request API Status, if node belong to the network
+				if (
+					nodeWithInfo.networkIdentifier === this.networkIdentifier &&
+					nodeWithInfo.networkGenerationHashSeed === this.generationHashSeed
+				) {
+					nodeWithInfo.apiStatus = await ApiNodeService.getStatus(hostUrl);
+				}
 			}
 		} catch (e) {
-			logger.error(`GetNodeInfo. Failed to fetch info for "${node}". ${e.message}`);
+			logger.error(`GetNodeInfo. Failed to fetch info for "${nodeWithInfo.host}". ${e.message}`);
 		}
 
 		return nodeWithInfo;
