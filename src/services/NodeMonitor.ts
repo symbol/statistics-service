@@ -240,6 +240,7 @@ export class NodeMonitor {
 		nodes.forEach((node: INode) => {
 			if (
 				node.networkIdentifier !== this.networkIdentifier ||
+				node.networkGenerationHashSeed !== this.generationHashSeed ||
 				!!this.nodeList.find((addedNode) => addedNode.publicKey === node.publicKey) ||
 				!validateNodeModel(node)
 			)
