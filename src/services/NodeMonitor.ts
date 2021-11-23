@@ -58,6 +58,7 @@ export class NodeMonitor {
 
 			await this.getNetworkInfo(); // Read network Type and generated hash seed from provided nodes.
 
+			await this.getNodeList(); // Fetch node from peers
 			await this.getNodeList();
 			await this.getNodeListInfo(); //HostInfo.getInfoForListOfNodes(this.nodeList);
 
@@ -83,8 +84,9 @@ export class NodeMonitor {
 		// Init fetch node list from config nodes
 		logger.info(`Getting node list`);
 
+		// Fetch node list from config nodes
 		for (const nodeUrl of symbol.NODES) {
-			const peers = await this.fetchNodesByURL(nodeUrl, true);
+			const peers = await this.fetchNodePeersByURL(nodeUrl);
 
 			this.addNodesToList(peers);
 		}
@@ -92,7 +94,8 @@ export class NodeMonitor {
 		// Nested fetch node list from current nodeList[]
 		const nodeListPromises = this.nodeList.map(async (node) => {
 			if (isAPIRole(node.roles)) {
-				return this.fetchNodesByURL(getNodeURL(node, monitor.API_NODE_PORT));
+				const hostUrl = await ApiNodeService.buildHostUrl(node.host);
+				return this.fetchNodePeersByURL(hostUrl);
 			}
 
 			return [];
@@ -106,33 +109,22 @@ export class NodeMonitor {
 		return Promise.resolve();
 	};
 
-	private fetchNodesByURL = async (nodeUrl: string, includeCurrent: boolean = false): Promise<Array<INode>> => {
-		let nodeList = [];
-
-		if (includeCurrent) {
-			try {
-				const nodeInfo = await HTTP.get(nodeUrl + '/node/info', {
-					timeout: monitor.REQUEST_TIMEOUT,
-				});
-				const host = new URL(nodeUrl).hostname;
-
-				nodeList.push({
-					...nodeInfo.data,
-					host,
-				});
-			} catch (e) {
-				logger.error(`FetchNodesByURL. Failed to get /node/info from "${nodeUrl}". ${e.message}`);
-			}
-		}
+	/**
+	 * Fetch nodes from peers.
+	 * @param hostUrl
+	 * @returns INode[]
+	 */
+	private fetchNodePeersByURL = async (hostUrl: string): Promise<Array<INode>> => {
+		let nodeList: INode[] = [];
 
 		try {
-			const nodePeers = await HTTP.get(nodeUrl + '/node/peers', {
+			const nodePeers = await HTTP.get(hostUrl + '/node/peers', {
 				timeout: monitor.REQUEST_TIMEOUT,
 			});
 
-			if (Array.isArray(nodePeers.data)) nodeList = [...nodeList, ...nodePeers.data];
+			if (Array.isArray(nodePeers.data)) nodeList = [...nodePeers.data];
 		} catch (e) {
-			logger.error(`FetchNodesByURL. Failed to get /node/peers from "${nodeUrl}". ${e.message}`);
+			logger.error(`FetchNodePeersByURL. Failed to get /node/peers from "${hostUrl}". ${e.message}`);
 		}
 
 		return nodeList;
