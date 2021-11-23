@@ -26,6 +26,7 @@ export class NodeMonitor {
 	private nodeInfoChunks: number;
 	private nodeInfoDelay: number;
 	private networkIdentifier: number;
+	private generationHashSeed: string;
 
 	constructor(_interval: number) {
 		this.nodesStats = new NodesStats();
@@ -39,7 +40,8 @@ export class NodeMonitor {
 		this.interval = _interval || 300000;
 		this.nodeInfoChunks = monitor.NUMBER_OF_NODE_REQUEST_CHUNK;
 		this.nodeInfoDelay = 1000;
-		this.networkIdentifier = 152; // default Testnet
+		this.generationHashSeed = '';
+
 		this.cacheCollection();
 	}
 
@@ -232,7 +234,9 @@ export class NodeMonitor {
 
 			if (nodeInfo) {
 				this.networkIdentifier = nodeInfo.networkIdentifier;
+				this.generationHashSeed = nodeInfo.networkGenerationHashSeed;
 				logger.info(`Found network identifier ${nodeInfo.networkIdentifier}`);
+				logger.info(`Found network hash ${nodeInfo.networkGenerationHashSeed}`);
 				return;
 			}
 		}
