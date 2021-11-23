@@ -56,7 +56,7 @@ export class NodeMonitor {
 			this.isRunning = true;
 			this.clear();
 
-			await this.getNetworkType(); // Read network Type from provided nodes.
+			await this.getNetworkInfo(); // Read network Type and generated hash seed from provided nodes.
 
 			await this.getNodeList();
 			await this.getNodeListInfo(); //HostInfo.getInfoForListOfNodes(this.nodeList);
@@ -225,7 +225,7 @@ export class NodeMonitor {
 		}
 	};
 
-	private getNetworkType = async (): Promise<void> => {
+	private getNetworkInfo = async (): Promise<void> => {
 		for (const nodeUrl of symbol.NODES) {
 			const url = new URL(nodeUrl);
 			const hostUrl = await ApiNodeService.buildHostUrl(url.hostname);
