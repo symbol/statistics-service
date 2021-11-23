@@ -57,7 +57,7 @@ export class NodeMonitor {
 			this.isRunning = true;
 			this.clear();
 
-			await this.getNetworkInfo(); // Read network Type and generated hash seed from provided nodes.
+			await this.fetchAndSetNetworkInfo(); // Read network Type and generated hash seed from provided nodes.
 
 			await this.getNodeList(); // Fetch node from peers
 			await this.getNodeListInfo();
@@ -222,7 +222,7 @@ export class NodeMonitor {
 		}
 	};
 
-	private getNetworkInfo = async (): Promise<void> => {
+	private fetchAndSetNetworkInfo = async (): Promise<void> => {
 		for (const nodeUrl of symbol.NODES) {
 			const url = new URL(nodeUrl);
 			const hostUrl = await ApiNodeService.buildHostUrl(url.hostname);
