@@ -13,7 +13,7 @@ import { Logger } from '@src/infrastructure';
 
 import { INode, validateNodeModel } from '@src/models/Node';
 import { symbol, monitor } from '@src/config';
-import { isAPIRole, isPeerRole, getNodeURL, basename, splitArray, sleep } from '@src/utils';
+import { isAPIRole, isPeerRole, basename, splitArray, sleep } from '@src/utils';
 
 const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
@@ -40,6 +40,7 @@ export class NodeMonitor {
 		this.interval = _interval || 300000;
 		this.nodeInfoChunks = monitor.NUMBER_OF_NODE_REQUEST_CHUNK;
 		this.nodeInfoDelay = 1000;
+		this.networkIdentifier = 0;
 		this.generationHashSeed = '';
 
 		this.cacheCollection();
@@ -80,7 +81,6 @@ export class NodeMonitor {
 	};
 
 	private getNodeList = async (): Promise<any> => {
-		// Init fetch node list from config nodes
 		logger.info(`Getting node list`);
 
 		// Fetch node list from config nodes
@@ -94,6 +94,7 @@ export class NodeMonitor {
 		const nodeListPromises = this.nodeList.map(async (node) => {
 			if (isAPIRole(node.roles)) {
 				const hostUrl = await ApiNodeService.buildHostUrl(node.host);
+
 				return this.fetchNodePeersByURL(hostUrl);
 			}
 
