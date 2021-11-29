@@ -3,6 +3,27 @@ All notable changes to this project will be documented in this file.
 
 The changelog format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [v1.1.3][v1.1.3] - 30-Nov-2021
+
+Package  | Version  | Link
+---|---|---
+REST Core| v2.4.0 | [catapult-rest][catapult-rest@v2.4.0]
+SDK Core| v1.0.3 | [symbol-sdk][symbol-sdk@v1.0.3]
+
+### Add
+- Add endpoint that will allow get node by nodePublicKey [#95](https://github.com/symbol/statistics-service/issues/95)
+- Add web socket filter option in nodes. [#106](https://github.com/symbol/statistics-service/issues/106)
+- Add typescript-fetch generated client [#107](https://github.com/symbol/statistics-service/pull/107)
+- Add node version stats [#110](https://github.com/symbol/statistics-service/pull/110)
+- Add node list ordering[random, natural] [#111](https://github.com/symbol/statistics-service/pull/111)
+- Add symbol-sdk 1.0.3
+
+### Fix
+- Fix node mix from different network [#113](https://github.com/symbol/statistics-service/pull/113)
+
+### Remove
+- Remove default version filter [#109](https://github.com/symbol/statistics-service/pull/109)
+
 ## [v1.1.2][v1.1.2] - 5-Nov-2021
 
 Package  | Version  | Link
@@ -124,6 +145,9 @@ REST Core| v2.1.0 | [catapult-rest](https://github.com/nemtech/catapult-rest/rel
 [v1.1.2]: https://github.com/symbol/statistics-service/releases/tag/v1.1.2
 [v1.1.1]: https://github.com/symbol/statistics-service/releases/tag/v1.1.1
 [v1.1.0]: https://github.com/symbol/statistics-service/releases/tag/v1.1.0
+[v1.1.1]: https://github.com/symbol/statistics-service/releases/tag/v1.1.1
+[v1.1.2]: https://github.com/symbol/statistics-service/releases/tag/v1.1.2
+[v1.1.3]: https://github.com/symbol/statistics-service/releases/tag/v1.1.3
 
 [v1.0.1]: https://github.com/nemfoundation/symbol-statistics-service/releases/tag/v1.0.1
 [v1.0.0]: https://github.com/nemfoundation/symbol-statistics-service/releases/tag/v1.0.0
@@ -139,7 +163,9 @@ REST Core| v2.1.0 | [catapult-rest](https://github.com/nemtech/catapult-rest/rel
 [symbol-sdk@v0.23.3]: https://www.npmjs.com/package/symbol-sdk/v/0.23.3
 [symbol-sdk@v1.0.0]: https://www.npmjs.com/package/symbol-sdk/v/1.0.0
 [symbol-sdk@v1.0.1]: https://www.npmjs.com/package/symbol-sdk/v/1.0.1
+[symbol-sdk@v1.0.3]: https://www.npmjs.com/package/symbol-sdk/v/1.0.3
 
 [catapult-rest@v2.3.3]: https://github.com/nemtech/catapult-rest/releases/tag/v2.3.3
 [catapult-rest@v2.3.4]: https://github.com/nemtech/catapult-rest/releases/tag/v2.3.4
 [catapult-rest@v2.3.6]: https://github.com/nemtech/catapult-rest/releases/tag/v2.3.6
+[catapult-rest@v2.4.0]: https://github.com/symbol/catapult-rest/releases/tag/v2.4.0
