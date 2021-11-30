@@ -50,11 +50,11 @@ When the search completes, all node information is updated on the `Node` collect
 
 ### Chain Height Monitor Task
 
-To prevent chain forks happening, the finalization height from each node is gathered and height statistics are produced.
+The finalized height from each node is gathered and height statistics are produced. This can help monitoring chain forks, for example.
 
 ### Geolocation Monitor Task
 
-A 3rd party service (`ip-api.com`) is used to obtain geolocalization for each node.
+A 3rd party service (`ip-api.com`) is used to obtain geolocalization for each node. This can be used by users to select a nearby access node, for example.
 
 ### Source Code Structure
 
