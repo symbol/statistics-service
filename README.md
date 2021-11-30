@@ -42,7 +42,7 @@ The project uses Typescript, Node Express, and MongoDB as database.
 
 To discover nodes on the network, a request is made to the catapult-rest endpoint `/node/peer`. This returns the list of peers known to that node, which the task then explores recursively.
 
-To start the process, the task uses the nodes maintained by NEM Group.
+To start the process, the task uses the nodes maintained by the community.
 
 Once the whole list of nodes is known, additional information is gathered from each one of them such as `/node/info` and `/chain/info`.
 
