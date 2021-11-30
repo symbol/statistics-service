@@ -95,13 +95,13 @@ export class Routes {
 				.catch((error) => InternalServerError.send(res, error));
 		});
 
-		app.get('/nodeStats', (req: Request, res: Response) => {
+		app.get('/nodesStats', (req: Request, res: Response) => {
 			return DataBase.getNodesStats()
 				.then((stats) => res.send(stats))
 				.catch((error) => InternalServerError.send(res, error));
 		});
 
-		app.get('/nodeHeightStats', (req: Request, res: Response) => {
+		app.get('/nodesHeightStats', (req: Request, res: Response) => {
 			return DataBase.getNodeHeightStats()
 				.then((stats) => res.send(stats))
 				.catch((error) => InternalServerError.send(res, error));

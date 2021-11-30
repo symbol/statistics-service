@@ -26,13 +26,11 @@ jobs:
         - stage: test
           name: lint
           script: npm run lint
-        - stage: test
           name: openapi
           script: npm run test:openapi
-        - stage: test
           name: openapi typescript client generation
           script: bash client/generate.sh
-        - stage: test
+        - stage: build
           name: docker test build
           script: /bin/bash travis/docker-functions.sh docker_build $VERSION
           node_js: 10
