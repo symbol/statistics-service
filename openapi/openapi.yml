@@ -125,7 +125,7 @@ paths:
                                 type: array
                                 items:
                                     $ref: '#/components/schemas/HostDetail'
-    /nodeStats:
+    /nodesStats:
         get:
             summary: Returns the summary of the number of nodes per role type.
             tags:
@@ -138,7 +138,7 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/NodeStats'
-    /nodeHeightStats:
+    /nodesHeightStats:
         get:
             summary: Returns the summary of the number of nodes per height and finalized height.
             tags:
