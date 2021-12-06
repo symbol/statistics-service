@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Symbol Statistic Service API Documentation</title>
+		<!-- needed for adaptive design -->
+		<meta charset="utf-8" />
+		<meta content="width=device-width, initial-scale=1" name="viewport" />
+		<style>
+			body {
+				margin: 0;
+				padding: 0;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="redoc"></div>
+		<script src="https://cdn.jsdelivr.net/npm/redoc@latest/bundles/redoc.standalone.js"></script>
+		<script>
+			Redoc.init(
+				'./openapi.yml',
+				{
+					theme: {},
+				},
+				document.getElementById('redoc'),
+			);
+		</script>
+	</body>
+</html>

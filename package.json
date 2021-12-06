@@ -4,14 +4,15 @@
     "description": "",
     "scripts": {
         "dev": "nodemon",
-        "build": "rimraf ./dist/ && tsc",
+        "build": "shx rm -rf ./dist/ && tsc && shx cp -r openapi dist/openapi",
         "build:clients": "bash scripts/build-clients.sh",
         "start": "node dist/app.js",
         "version": "echo $npm_package_version",
         "prettier": "prettier --write ./src",
         "lint": "eslint --cache src/ --ext .ts",
         "lint:fix": "eslint src/ --ext .ts --fix",
-        "style:fix": "npm run prettier && npm run lint:fix"
+        "style:fix": "npm run prettier && npm run lint:fix",
+        "test:openapi": "swagger-cli validate openapi/openapi.yml"
     },
     "main": "dist/app.js",
     "typings": "dist/index.d.ts",
@@ -19,10 +20,11 @@
         "@src": "dist"
     },
     "devDependencies": {
-        "@openapitools/openapi-generator-cli": "^2.2.6",
+        "@openapitools/openapi-generator-cli": "^2.4.15",
         "@types/mongoose": "^5.7.14",
         "@types/node": "^14.14.10",
         "@types/winston": "^2.4.4",
+        "@types/ws": "^8.2.0",
         "@typescript-eslint/eslint-plugin": "^4.4.0",
         "@typescript-eslint/parser": "^4.4.0",
         "eslint": "^7.10.0",
@@ -31,11 +33,12 @@
         "nodemon": "^2.0.3",
         "openapi-to-postmanv2": "^2.6.0",
         "prettier": "^2.1.2",
-        "rimraf": "^3.0.2",
+        "shx": "^0.3.3",
         "swagger-cli": "^4.0.4",
         "ts-node": "^8.10.1",
         "tslint": "^6.1.2",
-        "typescript": "^3.8.3"
+        "typescript": "^3.8.3",
+        "ws": "^8.2.3"
     },
     "dependencies": {
         "@types/cors": "^2.8.6",
@@ -48,7 +51,7 @@
         "express": "^4.17.1",
         "module-alias": "^2.2.2",
         "mongoose": "^5.9.16",
-        "symbol-sdk": "^1.0.1",
+        "symbol-sdk": "^1.0.3",
         "tcp-ping": "^0.1.1",
         "utf8": "^3.0.0",
         "uuid": "^8.0.0",

@@ -2,6 +2,7 @@ import { HTTP } from '@src/services/Http';
 import * as winston from 'winston';
 import { basename } from '@src/utils';
 import { Logger } from '@src/infrastructure';
+import { WebSocket } from 'ws';
 
 const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
@@ -17,7 +18,14 @@ interface FinalizedBlock {
 	hash: string;
 }
 
+interface WebSocketStatus {
+	isAvailable: boolean;
+	wss: boolean;
+	url: string | undefined;
+}
+
 export interface ApiStatus {
+	webSocket?: WebSocketStatus;
 	restGatewayUrl: string;
 	isAvailable: boolean;
 	isHttpsEnabled?: boolean;
@@ -64,42 +72,47 @@ export interface ServerInfo {
 }
 
 export class ApiNodeService {
-	static getStatus = async (host: string): Promise<ApiStatus> => {
+	static getStatus = async (hostUrl: string): Promise<ApiStatus> => {
 		try {
-			const isHttps = await ApiNodeService.isHttpsEnabled(host);
-			const protocol = isHttps ? 'https:' : 'http:';
-			const port = isHttps ? 3001 : 3000;
+			const { protocol, hostname } = new URL(hostUrl);
+			const isHttps = protocol === 'https:';
 
-			logger.info(`Getting node status for: ${protocol}//${host}:${port}`);
+			logger.info(`Getting node status for: ${hostUrl}`);
 
-			const [nodeInfo, chainInfo, nodeServer, nodeHealth] = await Promise.all([
-				ApiNodeService.getNodeInfo(host, port, protocol),
-				ApiNodeService.getNodeChainInfo(host, port, protocol),
-				ApiNodeService.getNodeServer(host, port, protocol),
-				ApiNodeService.getNodeHealth(host, port, protocol),
-			]);
-
-			let apiStatus = {
-				restGatewayUrl: `${protocol}//${host}:${port}`,
-				isAvailable: true,
+			let apiStatus: ApiStatus = {
+				restGatewayUrl: `${hostUrl}`,
+				isAvailable: false,
+				isHttpsEnabled: isHttps,
 				lastStatusCheck: Date.now(),
+				webSocket: {
+					isAvailable: false,
+					wss: false,
+					url: undefined,
+				},
 			};
 
-			if (nodeHealth) {
-				Object.assign(apiStatus, {
-					nodeStatus: nodeHealth,
-				});
+			const chainInfo = await ApiNodeService.getNodeChainInfo(hostUrl);
+
+			// Return default status, if we cannot get chain info
+			if (!chainInfo) {
+				return apiStatus;
 			}
+
+			const [nodeInfo, nodeServer, nodeHealth] = await Promise.all([
+				ApiNodeService.getNodeInfo(hostUrl),
+				ApiNodeService.getNodeServer(hostUrl),
+				ApiNodeService.getNodeHealth(hostUrl),
+			]);
 
 			if (nodeInfo) {
 				Object.assign(apiStatus, {
-					isHttpsEnabled: isHttps,
 					nodePublicKey: nodeInfo.nodePublicKey,
 				});
 			}
 
 			if (chainInfo) {
 				Object.assign(apiStatus, {
+					isAvailable: true,
 					chainHeight: chainInfo.height,
 					finalization: {
 						height: Number(chainInfo.latestFinalizedBlock.height),
@@ -107,6 +120,20 @@ export class ApiNodeService {
 						point: chainInfo.latestFinalizedBlock.finalizationPoint,
 						hash: chainInfo.latestFinalizedBlock.hash,
 					},
+				});
+			}
+
+			const webSocketStatus = await ApiNodeService.webSocketStatus(hostname, isHttps);
+
+			if (webSocketStatus) {
+				Object.assign(apiStatus, {
+					webSocket: webSocketStatus,
+				});
+			}
+
+			if (nodeHealth) {
+				Object.assign(apiStatus, {
+					nodeStatus: nodeHealth,
 				});
 			}
 
@@ -118,51 +145,56 @@ export class ApiNodeService {
 
 			return apiStatus;
 		} catch (e) {
-			logger.error(`Fail to request host node status: ${host}`, e);
+			logger.error(`Fail to request host node status: ${hostUrl}`, e);
 			return {
-				restGatewayUrl: `http://${host}:3000`,
+				restGatewayUrl: `${hostUrl}`,
+				webSocket: {
+					isAvailable: false,
+					wss: false,
+					url: undefined,
+				},
 				isAvailable: false,
 				lastStatusCheck: Date.now(),
 			};
 		}
 	};
 
-	static getNodeInfo = async (host: string, port: number, protocol: string): Promise<NodeInfo | null> => {
+	static getNodeInfo = async (hostUrl: string): Promise<NodeInfo | null> => {
 		try {
-			return (await HTTP.get(`${protocol}//${host}:${port}/node/info`)).data;
+			return (await HTTP.get(`${hostUrl}/node/info`)).data;
 		} catch (e) {
-			logger.error(`Fail to request /node/info: ${host}`, e);
+			logger.error(`Fail to request /node/info: ${hostUrl}`, e);
 			return null;
 		}
 	};
 
-	static getNodeChainInfo = async (host: string, port: number, protocol: string): Promise<ChainInfo | null> => {
+	static getNodeChainInfo = async (hostUrl: string): Promise<ChainInfo | null> => {
 		try {
-			return (await HTTP.get(`${protocol}//${host}:${port}/chain/info`)).data;
+			return (await HTTP.get(`${hostUrl}/chain/info`)).data;
 		} catch (e) {
-			logger.error(`Fail to request /chain/info: ${host}`, e);
+			logger.error(`Fail to request /chain/info: ${hostUrl}`, e);
 			return null;
 		}
 	};
 
-	static getNodeServer = async (host: string, port: number, protocol: string): Promise<ServerInfo | null> => {
+	static getNodeServer = async (hostUrl: string): Promise<ServerInfo | null> => {
 		try {
-			const nodeServerInfo = (await HTTP.get(`${protocol}//${host}:${port}/node/server`)).data;
+			const nodeServerInfo = (await HTTP.get(`${hostUrl}/node/server`)).data;
 
 			return nodeServerInfo.serverInfo;
 		} catch (e) {
-			logger.error(`Fail to request /node/server: ${host}`, e);
+			logger.error(`Fail to request /node/server: ${hostUrl}`, e);
 			return null;
 		}
 	};
 
-	static getNodeHealth = async (host: string, port: number, protocol: string): Promise<NodeStatus | null> => {
+	static getNodeHealth = async (hostUrl: string): Promise<NodeStatus | null> => {
 		try {
-			const health = (await HTTP.get(`${protocol}//${host}:${port}/node/health`)).data;
+			const health = (await HTTP.get(`${hostUrl}/node/health`)).data;
 
 			return health.status;
 		} catch (e) {
-			logger.error(`Fail to request /node/health: ${host}`, e);
+			logger.error(`Fail to request /node/health: ${hostUrl}`, e);
 			return null;
 		}
 	};
@@ -174,5 +206,72 @@ export class ApiNodeService {
 		} catch (e) {
 			return false;
 		}
+	};
+
+	/**
+	 * Get the heartbeat of the web socket connection
+	 * @param host - host domain
+	 * @param port - websocket port
+	 * @param protocol - websocket protocal wss or ws
+	 * @param timeout - default 1000
+	 * @returns boolean
+	 */
+	static checkWebSocketHealth = async (host: string, port: number, protocol: string, timeout = 1000): Promise<boolean> => {
+		return new Promise((resolve) => {
+			const clientWS = new WebSocket(`${protocol}//${host}:${port}/ws`, {
+				timeout,
+			});
+
+			clientWS.on('open', () => {
+				resolve(true);
+			});
+
+			clientWS.on('error', (e) => {
+				logger.error(`Fail to request web socket heartbeat: ${protocol}//${host}:${port}/ws`, e);
+				resolve(false);
+			});
+		});
+	};
+
+	/**
+	 * Get the status of the web socket connection
+	 * @param hostname - host domain
+	 * @param isHttp - ssl enable flag
+	 * @returns WebSocketStatus
+	 */
+	static webSocketStatus = async (hostname: string, isHttp?: boolean): Promise<WebSocketStatus> => {
+		let webSocketUrl = undefined;
+		let wssHealth = false;
+
+		if (isHttp) {
+			wssHealth = await ApiNodeService.checkWebSocketHealth(hostname, 3001, 'wss:');
+		}
+
+		if (wssHealth) {
+			webSocketUrl = `wss://${hostname}:3001/ws`;
+		} else {
+			const wsHealth = await ApiNodeService.checkWebSocketHealth(hostname, 3000, 'ws:');
+
+			webSocketUrl = wsHealth ? `ws://${hostname}:3000/ws` : undefined;
+		}
+
+		return {
+			isAvailable: webSocketUrl ? true : false,
+			wss: wssHealth,
+			url: webSocketUrl,
+		};
+	};
+
+	/**
+	 * Check on protocol (https / http), and build url from hostname.
+	 * @param hostname example: symbol.com
+	 * @returns string example: https://symbol.com:3001
+	 */
+	static buildHostUrl = async (hostname: string): Promise<string> => {
+		const isHttps = await ApiNodeService.isHttpsEnabled(hostname);
+		const protocol = isHttps ? 'https:' : 'http:';
+		const port = isHttps ? 3001 : 3000;
+
+		return `${protocol}//${hostname}:${port}`;
 	};
 }

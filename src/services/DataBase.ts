@@ -12,9 +12,14 @@ import { SearchCriteria, Pagination, PaginationResponse } from '@src/infrastruct
 
 const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
+export enum NodeListOrder {
+	Natural = 'natural',
+	Random = 'random',
+}
 export interface NodeSearchCriteria {
 	filter: object;
 	limit: number;
+	order: NodeListOrder;
 }
 
 export class DataBase {
@@ -28,7 +33,13 @@ export class DataBase {
 		logger.info(`DataBase Connected to MongoDB`);
 	};
 
-	static getNodeList = ({ filter, limit }: NodeSearchCriteria = { filter: {}, limit: 0 }): Promise<NodeDocument[]> => {
+	static getNodeList = (
+		{ filter, limit, order }: NodeSearchCriteria = { filter: {}, limit: 0, order: NodeListOrder.Random },
+	): Promise<NodeDocument[]> => {
+		if (limit > 0 && order === NodeListOrder.Random) {
+			return Node.aggregate([{ $match: { ...filter } }, { $sample: { size: limit } }]).exec();
+		}
+
 		// prettier-ignore
 		return Node
 			.find(filter)
@@ -42,6 +53,10 @@ export class DataBase {
 
 	static getNodeByPublicKey = (publicKey: string): Promise<NodeDocument | null> => {
 		return Node.findOne({ publicKey }).exec();
+	};
+
+	static getNodeByNodePublicKey = (nodePublicKey: string): Promise<NodeDocument | null> => {
+		return Node.findOne({ 'apiStatus.nodePublicKey': nodePublicKey }).exec();
 	};
 
 	static getNodeByHost = (host: string): Promise<NodeDocument | null> => {

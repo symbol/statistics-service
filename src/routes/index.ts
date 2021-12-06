@@ -1,5 +1,5 @@
 import { Express, Request, Response } from 'express';
-import { DataBase, NodeSearchCriteria } from '@src/services/DataBase';
+import { DataBase, NodeSearchCriteria, NodeListOrder } from '@src/services/DataBase';
 import { NotFoundError, InternalServerError, UnsupportedFilterError } from '@src/infrastructure/Error';
 import { symbol } from '@src/config';
 
@@ -11,13 +11,12 @@ enum NodeFilter {
 export class Routes {
 	static register = async (app: Express) => {
 		app.get('/nodes', async (req: Request, res: Response) => {
-			const { filter, limit, ssl } = req.query;
+			const { filter, limit, ssl, order } = req.query;
 
 			let searchCriteria: NodeSearchCriteria = {
-				filter: {
-					version: { $gte: symbol.MIN_PARTNER_NODE_VERSION },
-				},
+				filter: {},
 				limit: Number(limit) || 0,
+				order: order ? ((order as string).toLowerCase() as NodeListOrder) : NodeListOrder.Random,
 			};
 
 			// add ssl filter to query isHttpsEnabled nodes.
@@ -26,6 +25,9 @@ export class Routes {
 
 				Object.assign(searchCriteria.filter, {
 					'apiStatus.isHttpsEnabled': isSSL,
+					'apiStatus.webSocket.wss': isSSL,
+					'apiStatus.webSocket.isAvailable': true,
+					version: { $gte: symbol.MIN_PARTNER_NODE_VERSION },
 				});
 			}
 
@@ -42,6 +44,7 @@ export class Routes {
 					'apiStatus.isAvailable': true,
 					'apiStatus.nodeStatus.apiNode': 'up',
 					'apiStatus.nodeStatus.db': 'up',
+					version: { $gte: symbol.MIN_PARTNER_NODE_VERSION },
 				});
 			}
 
@@ -52,6 +55,7 @@ export class Routes {
 					'apiStatus.isAvailable': true,
 					'apiStatus.nodeStatus.apiNode': 'up',
 					'apiStatus.nodeStatus.db': 'up',
+					version: { $gte: symbol.MIN_PARTNER_NODE_VERSION },
 				});
 			}
 
@@ -77,13 +81,27 @@ export class Routes {
 				.catch((error) => InternalServerError.send(res, error));
 		});
 
-		app.get('/nodeStats', (req: Request, res: Response) => {
+		app.get('/nodes/nodePublicKey/:nodePublicKey', (req: Request, res: Response) => {
+			const nodePublicKey = req.params.nodePublicKey;
+
+			return DataBase.getNodeByNodePublicKey(nodePublicKey)
+				.then((node) => {
+					if (node) {
+						res.send(node);
+					} else {
+						NotFoundError.send(res, 'nodePublicKey', nodePublicKey);
+					}
+				})
+				.catch((error) => InternalServerError.send(res, error));
+		});
+
+		app.get('/nodesStats', (req: Request, res: Response) => {
 			return DataBase.getNodesStats()
 				.then((stats) => res.send(stats))
 				.catch((error) => InternalServerError.send(res, error));
 		});
 
-		app.get('/nodeHeightStats', (req: Request, res: Response) => {
+		app.get('/nodesHeightStats', (req: Request, res: Response) => {
 			return DataBase.getNodeHeightStats()
 				.then((stats) => res.send(stats))
 				.catch((error) => InternalServerError.send(res, error));
