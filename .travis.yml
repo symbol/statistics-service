@@ -23,33 +23,35 @@ script:
     - npm run build
 jobs:
     include:
-        - stage: test
+        - stage: lint
           name: lint
           script: npm run lint
-          name: openapi
+        - stage: test openapi
+          name: test-openapi
           script: npm run test:openapi
+        - stage: generate openapi
           name: openapi typescript client generation
           script: bash client/generate.sh
         - stage: build
           name: docker test build
           script: /bin/bash travis/docker-functions.sh docker_build $VERSION
           node_js: 10
-        - stage: publish
+        - stage: publish alpha docker
           name: docker publish alpha
           script: /bin/bash travis/docker-functions.sh docker_build $VERSION publish
           if: branch = env(DEV_BRANCH) AND type = push
           node_js: 10
-        - stage: publish
+        - stage: publish alpha npm
           name: openapi typescript client alpha
           script: bash client/generate.sh publish
           if: branch = env(DEV_BRANCH) AND type = push
           node_js: 10
-        - stage: release
+        - stage: release docker
           name: docker publish release
           script: /bin/bash travis/docker-functions.sh docker_build $VERSION release
           if: branch = env(RELEASE_BRANCH) AND type = api AND commit_message = env(RELEASE_MESSAGE)
           node_js: 10
-        - stage: release
+        - stage: release npm
           name: openapi typescript client release
           script: bash client/generate.sh release
           if: branch = env(RELEASE_BRANCH) AND type = api AND commit_message = env(RELEASE_MESSAGE)
