@@ -61,7 +61,7 @@ export class ChainHeightMonitor {
 		try {
 			this.nodeList = (await DataBase.getNodeList()).filter((node) => isAPIRole(node.roles));
 		} catch (e) {
-			logger.error('Failed to get node list. Use nodes from config');
+			logger.error('[getNodeList] Failed to get node list. Use nodes from config');
 			for (const node of symbol.NODES) {
 				const url = new URL(node);
 				const hostUrl = await ApiNodeService.buildHostUrl(url.hostname);

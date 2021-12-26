@@ -50,6 +50,7 @@ const NodeSchema: Schema = new Schema({
 			type: Number,
 			required: false,
 		},
+		required: false,
 	},
 	apiStatus: {
 		webSocket: {
@@ -236,7 +237,9 @@ NodeSchema.set('toObject', {
 export const Node = mongoose.model<NodeDocument>('Node', NodeSchema);
 
 export const validateNodeModel = (node: any): boolean => {
-	if (!node || typeof node !== 'object') return false;
+	if (!node || typeof node !== 'object') {
+		return false;
+	}
 
 	return !new Node(node).validateSync();
 };

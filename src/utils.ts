@@ -1,5 +1,6 @@
 import { INode } from '@src/models/Node';
 import * as path from 'path';
+import * as humanizeDuration from 'humanize-duration';
 
 export const stringToArray = (str: string | undefined): Array<any> => {
 	let result = null;
@@ -58,3 +59,7 @@ export const splitArray = (array: Array<any>, chunks: number): Array<any> =>
 		all[ch] = [].concat(all[ch] || [], one);
 		return all;
 	}, []);
+
+export const showDuration = (durationMs: number): string => {
+	return humanizeDuration(durationMs);
+};
