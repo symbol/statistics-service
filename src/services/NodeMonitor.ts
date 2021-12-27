@@ -55,6 +55,8 @@ export class NodeMonitor {
 
 	public start = async () => {
 		logger.info(`Start`);
+		const startTime = new Date().getTime();
+
 		try {
 			this.isRunning = true;
 			this.clear();
@@ -69,8 +71,13 @@ export class NodeMonitor {
 				await this.cacheCollection();
 				setTimeout(() => this.start(), this.interval);
 			}
+			logger.info(`[start] Node monitor task finished, time elapsed: [${showDuration(startTime - new Date().getTime())}]`);
 		} catch (e) {
-			logger.error(`Unhandled error during a loop. ${e.message}. Restarting NodeMonitor..`);
+			logger.error(
+				`[start] Node monitor task failed [error: ${e.message}], time elapsed: [${showDuration(
+					startTime - new Date().getTime(),
+				)}], Restarting Node monitor task...`,
+			);
 			this.stop();
 			this.start();
 		}
@@ -278,12 +285,18 @@ export class NodeMonitor {
 			if (
 				node.networkIdentifier !== this.networkIdentifier ||
 				node.networkGenerationHashSeed !== this.generationHashSeed ||
-				!!this.nodeList.find((addedNode) => addedNode.publicKey === node.publicKey) ||
 				!validateNodeModel(node)
 			) {
 				return;
 			}
-			this.nodeList.push(node);
+			const nodeInx = this.nodeList.findIndex((addedNode) => addedNode.publicKey === node.publicKey);
+
+			if (nodeInx > -1) {
+				// already in the list then update
+				this.nodeList[nodeInx] = node;
+			} else {
+				this.nodeList.push(node);
+			}
 		});
 	};
 }

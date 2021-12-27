@@ -93,7 +93,7 @@ export class ChainHeightMonitor {
 			});
 			const nodeChainInfoList = await Promise.all(nodeChainInfoPromises);
 
-			for (let chainInfo of nodeChainInfoList) {
+			for (const chainInfo of nodeChainInfoList) {
 				try {
 					if (chainInfo) {
 						this.heights[chainInfo.height] = (this.heights[chainInfo.height] || 0) + 1;

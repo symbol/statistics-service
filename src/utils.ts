@@ -72,11 +72,18 @@ export const runTaskInChunks = async <T>(
 	loggingMethod: string,
 	asyncTask: (subList: T[]) => Promise<any[]>,
 ) => {
+	if (!list?.length) {
+		return [];
+	}
+	if (chunkSize < 1) {
+		throw new Error(`Invalid chunkSize value[${chunkSize}]`);
+	}
 	const chunks: T[][] = splitArray(list, chunkSize);
+	const listSize = list.length;
 
 	logger.info(
-		`[${loggingMethod}] Running the task for chunks, Total Size: ${list.length}, Chunk size: ${chunkSize}, Chunk count: ${Math.ceil(
-			list.length / chunkSize,
+		`[${loggingMethod}] Running the task for chunks, Total Size: ${listSize}, Chunk size: ${chunkSize}, Chunk count: ${Math.ceil(
+			listSize / chunkSize,
 		)}`,
 	);
 
@@ -85,9 +92,9 @@ export const runTaskInChunks = async <T>(
 
 	for (const chunk of chunks) {
 		logger.info(
-			`[${loggingMethod}] Working on chunk #${++i}/${chunks.length}, size: ${chunk.length}, progress: ${numOfNodesProcessed}/${
-				list.length
-			}`,
+			`[${loggingMethod}] Working on chunk #${++i}/${chunks.length}, size: ${
+				chunk.length
+			}, progress: ${numOfNodesProcessed}/${listSize}`,
 		);
 		const arrayOfTaskResults = await asyncTask(chunk);
 
