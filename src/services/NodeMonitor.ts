@@ -13,7 +13,7 @@ import { Logger } from '@src/infrastructure';
 
 import { INode, validateNodeModel } from '@src/models/Node';
 import { symbol, monitor } from '@src/config';
-import { isAPIRole, isPeerRole, basename, splitArray, showDuration } from '@src/utils';
+import { isAPIRole, isPeerRole, basename, showDuration, runTaskInChunks } from '@src/utils';
 
 const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
@@ -139,25 +139,16 @@ export class NodeMonitor {
 		logger.info(
 			`[fetchAndAddNodeListPeers] Getting peers from nodes, total nodes: ${this.nodeList.length}, api nodes: ${apiNodeList.length}`,
 		);
-		const nodeListChunks = splitArray(apiNodeList, this.nodePeersChunkSize);
 
-		let numOfNodesProcessed = 0;
-
-		for (const nodes of nodeListChunks) {
-			logger.info(
-				`[fetchAndAddNodeListPeers] Getting peer list for chunk of ${nodes.length} nodes, progress: ${
-					numOfNodesProcessed + '/' + apiNodeList.length
-				}`,
+		await runTaskInChunks(this.nodeList, this.nodePeersChunkSize, logger, 'fetchAndAddNodeListPeers', async (nodes) => {
+			const arrayOfPeerList = await Promise.all(
+				[...nodes].map(async (node) => this.fetchNodePeersByURL(await ApiNodeService.buildHostUrl(node.host))),
 			);
-			const nodePeersPromises = [...nodes].map(async (node) =>
-				this.fetchNodePeersByURL(await ApiNodeService.buildHostUrl(node.host)),
-			);
-			const arrayOfPeerList = await Promise.all(nodePeersPromises);
 			const peers: INode[] = arrayOfPeerList.reduce((accumulator, value) => accumulator.concat(value), []);
 
 			this.addNodesToList(peers);
-			numOfNodesProcessed += nodes.length;
-		}
+			return peers;
+		});
 	};
 
 	private getNodeListInfo = async () => {
@@ -165,27 +156,15 @@ export class NodeMonitor {
 		const nodeCount = this.nodeList.length;
 
 		logger.info(`[getNodeListInfo] Getting node from peers, total nodes: ${nodeCount}`);
-		const nodeListChunks = splitArray(this.nodeList, this.nodeInfoChunks);
 
-		this.nodeList = [];
-
-		let numOfNodesProcessed = 0;
-
-		for (const nodes of nodeListChunks) {
-			logger.info(
-				`[getNodeListInfo] Getting node info for chunk of ${nodes.length} nodes, progress: ${
-					numOfNodesProcessed + '/' + nodeCount
-				}`,
-			);
+		await runTaskInChunks(this.nodeList, this.nodeInfoChunks, logger, 'getNodeListInfo', async (nodes) => {
 			const nodeInfoPromises = [...nodes].map((node) => this.getNodeInfo(node));
 			const arrayOfNodeInfo = await Promise.all(nodeInfoPromises);
 
-			logger.info(`[getNodeListInfo] Number of nodeInfo:${arrayOfNodeInfo.length}  in the chunk of ${nodes.length}`);
 			this.addNodesToList(arrayOfNodeInfo);
-			numOfNodesProcessed += nodes.length;
+			return arrayOfNodeInfo;
+		});
 
-			//await sleep(this.nodeInfoDelay);
-		}
 		this.nodeList.forEach((node) => this.nodesStats.addToStats(node));
 		logger.info(
 			`[getNodeListInfo] Total node count(after nodeInfo): ${this.nodeList.length}, time elapsed: [${showDuration(
@@ -233,9 +212,7 @@ export class NodeMonitor {
 		} catch (e) {
 			logger.error(`[getNodeInfo] Failed to fetch info for "${nodeWithInfo.host}". ${e.message}`);
 		}
-		logger.info(
-			`[getNodeInfo] NodeHost values before:${nodeHost} and after:${nodeWithInfo.host} and hostDetail.host:${nodeWithInfo.hostDetail?.host}`,
-		);
+
 		return nodeWithInfo;
 	}
 

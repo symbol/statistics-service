@@ -1,6 +1,7 @@
 import { INode } from '@src/models/Node';
 import * as path from 'path';
 import * as humanizeDuration from 'humanize-duration';
+import winston = require('winston');
 
 export const stringToArray = (str: string | undefined): Array<any> => {
 	let result = null;
@@ -62,4 +63,35 @@ export const splitArray = (array: Array<any>, chunks: number): Array<any> =>
 
 export const showDuration = (durationMs: number): string => {
 	return humanizeDuration(durationMs);
+};
+
+export const runTaskInChunks = async <T>(
+	list: T[],
+	chunkSize: number,
+	logger: winston.Logger,
+	loggingMethod: string,
+	asyncTask: (subList: T[]) => Promise<any[]>,
+) => {
+	const chunks: T[][] = splitArray(list, chunkSize);
+
+	logger.info(
+		`[${loggingMethod}] Running the task for chunks, Total Size: ${list.length}, Chunk size: ${chunkSize}, Chunk count: ${Math.ceil(
+			list.length / chunkSize,
+		)}`,
+	);
+
+	let numOfNodesProcessed = 0,
+		i = 0;
+
+	for (const chunk of chunks) {
+		logger.info(
+			`[${loggingMethod}] Working on chunk #${++i}/${chunks.length}, size: ${chunk.length}, progress: ${numOfNodesProcessed}/${
+				list.length
+			}`,
+		);
+		const arrayOfTaskResults = await asyncTask(chunk);
+
+		logger.info(`[${loggingMethod}] Number of results:${arrayOfTaskResults.length}  in the chunk of ${chunk.length}`);
+		numOfNodesProcessed += chunk.length;
+	}
 };
