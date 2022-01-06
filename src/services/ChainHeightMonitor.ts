@@ -5,8 +5,8 @@ import { Logger } from '@src/infrastructure';
 
 import { INode } from '@src/models/Node';
 import { INodeHeightStats } from '@src/models/NodeHeightStats';
-import { symbol } from '@src/config';
-import { isAPIRole, basename, sleep } from '@src/utils';
+import { symbol, monitor } from '@src/config';
+import { isAPIRole, basename, sleep, runTaskInChunks } from '@src/utils';
 
 const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
@@ -61,7 +61,7 @@ export class ChainHeightMonitor {
 		try {
 			this.nodeList = (await DataBase.getNodeList()).filter((node) => isAPIRole(node.roles));
 		} catch (e) {
-			logger.error('Failed to get node list. Use nodes from config');
+			logger.error('[getNodeList] Failed to get node list. Use nodes from config');
 			for (const node of symbol.NODES) {
 				const url = new URL(node);
 				const hostUrl = await ApiNodeService.buildHostUrl(url.hostname);
@@ -80,32 +80,32 @@ export class ChainHeightMonitor {
 
 	private getNodeChainHeight = async () => {
 		logger.info(`Getting height stats for ${this.nodeList.length} nodes`);
-		const nodes: INode[] = this.nodeList;
-		const nodeChainInfoPromises = nodes.map((node) => {
-			const isHttps = node.apiStatus?.isHttpsEnabled;
-			const protocol = isHttps ? 'https:' : 'http:';
-			const port = isHttps ? 3001 : 3000;
 
-			const hostUrl = `${protocol}//${node.host}:${port}`;
+		await runTaskInChunks(this.nodeList, monitor.CHAIN_HEIGHT_REQUEST_CHUNK_SIZE, logger, 'getNodeChainHeight', async (nodes) => {
+			const nodeChainInfoPromises = nodes.map((node) => {
+				const isHttps = node.apiStatus?.isHttpsEnabled;
+				const protocol = isHttps ? 'https:' : 'http:';
+				const port = isHttps ? 3001 : 3000;
 
-			return ApiNodeService.getNodeChainInfo(hostUrl);
-		});
-		const nodeChainInfoList = await Promise.all(nodeChainInfoPromises);
+				const hostUrl = `${protocol}//${node.host}:${port}`;
 
-		for (let chainInfo of nodeChainInfoList) {
-			try {
-				if (chainInfo) {
-					if (this.heights[chainInfo.height]) this.heights[chainInfo.height]++;
-					else this.heights[chainInfo.height] = 1;
+				return ApiNodeService.getNodeChainInfo(hostUrl);
+			});
+			const nodeChainInfoList = await Promise.all(nodeChainInfoPromises);
 
-					if (this.finalizedHeights[chainInfo.latestFinalizedBlock.height])
-						this.finalizedHeights[chainInfo.latestFinalizedBlock.height]++;
-					else this.finalizedHeights[chainInfo.latestFinalizedBlock.height] = 1;
+			for (const chainInfo of nodeChainInfoList) {
+				try {
+					if (chainInfo) {
+						this.heights[chainInfo.height] = (this.heights[chainInfo.height] || 0) + 1;
+						this.finalizedHeights[chainInfo.latestFinalizedBlock.height] =
+							(this.finalizedHeights[chainInfo.latestFinalizedBlock.height] || 0) + 1;
+					}
+				} catch (e) {
+					logger.error(`Node chain height monitor failed. ${e.message}`);
 				}
-			} catch (e) {
-				logger.error(`Node chain height monitor failed. ${e.message}`);
 			}
-		}
+			return nodeChainInfoList;
+		});
 	};
 
 	private clear = () => {

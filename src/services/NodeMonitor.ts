@@ -13,7 +13,7 @@ import { Logger } from '@src/infrastructure';
 
 import { INode, validateNodeModel } from '@src/models/Node';
 import { symbol, monitor } from '@src/config';
-import { isAPIRole, isPeerRole, basename, splitArray, sleep } from '@src/utils';
+import { isAPIRole, isPeerRole, basename, showDuration, runTaskInChunks } from '@src/utils';
 
 const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
@@ -24,6 +24,7 @@ export class NodeMonitor {
 	private isRunning: boolean;
 	private interval: number;
 	private nodeInfoChunks: number;
+	private nodePeersChunkSize: number;
 	private nodeInfoDelay: number;
 	private networkIdentifier: number;
 	private generationHashSeed: string;
@@ -39,6 +40,7 @@ export class NodeMonitor {
 		this.isRunning = false;
 		this.interval = _interval || 300000;
 		this.nodeInfoChunks = monitor.NUMBER_OF_NODE_REQUEST_CHUNK;
+		this.nodePeersChunkSize = monitor.NODE_PEERS_REQUEST_CHUNK_SIZE;
 		this.nodeInfoDelay = 1000;
 		this.networkIdentifier = 0;
 		this.generationHashSeed = '';
@@ -53,6 +55,8 @@ export class NodeMonitor {
 
 	public start = async () => {
 		logger.info(`Start`);
+		const startTime = new Date().getTime();
+
 		try {
 			this.isRunning = true;
 			this.clear();
@@ -67,8 +71,13 @@ export class NodeMonitor {
 				await this.cacheCollection();
 				setTimeout(() => this.start(), this.interval);
 			}
+			logger.info(`[start] Node monitor task finished, time elapsed: [${showDuration(startTime - new Date().getTime())}]`);
 		} catch (e) {
-			logger.error(`Unhandled error during a loop. ${e.message}. Restarting NodeMonitor..`);
+			logger.error(
+				`[start] Node monitor task failed [error: ${e.message}], time elapsed: [${showDuration(
+					startTime - new Date().getTime(),
+				)}], Restarting Node monitor task...`,
+			);
 			this.stop();
 			this.start();
 		}
@@ -81,31 +90,29 @@ export class NodeMonitor {
 	};
 
 	private getNodeList = async (): Promise<any> => {
-		logger.info(`Getting node list`);
+		logger.info(`[getNodeList] Getting node list...`);
+		const startTime = new Date().getTime();
 
 		// Fetch node list from config nodes
+		logger.info(`[getNodeList] Initial node list: ${symbol.NODES.join(', ')}`);
 		for (const nodeUrl of symbol.NODES) {
 			const peers = await this.fetchNodePeersByURL(nodeUrl);
 
 			this.addNodesToList(peers);
 		}
 
-		// Nested fetch node list from current nodeList[]
-		const nodeListPromises = this.nodeList.map(async (node) => {
-			if (isAPIRole(node.roles)) {
-				const hostUrl = await ApiNodeService.buildHostUrl(node.host);
+		// Fetch node list from database
+		const nodesFromDb = (await DataBase.getNodeList().then((nodes) => nodes.map((n) => n.toJSON()))) || [];
 
-				return this.fetchNodePeersByURL(hostUrl);
-			}
+		logger.info(`[getNodeList] Nodes count from DB: ${nodesFromDb.length}`);
+		// adding the nodes from DB to the node list
+		this.addNodesToList(nodesFromDb);
 
-			return [];
-		});
+		await this.fetchAndAddNodeListPeers();
 
-		const arrayOfNodeList = await Promise.all(nodeListPromises);
-		const nodeList: INode[] = arrayOfNodeList.reduce((accumulator, value) => accumulator.concat(value), []);
-
-		this.addNodesToList(nodeList);
-
+		logger.info(
+			`[getNodeList] Total node count: ${this.nodeList.length}, time elapsed: [${showDuration(startTime - new Date().getTime())}]`,
+		);
 		return Promise.resolve();
 	};
 
@@ -124,49 +131,81 @@ export class NodeMonitor {
 
 			if (Array.isArray(nodePeers.data)) nodeList = [...nodePeers.data];
 		} catch (e) {
-			logger.error(`FetchNodePeersByURL. Failed to get /node/peers from "${hostUrl}". ${e.message}`);
+			logger.error(`[FetchNodePeersByURL] Failed to get /node/peers from "${hostUrl}". ${e.message}`);
 		}
 
 		return nodeList;
 	};
 
+	/**
+	 * Fetch peers from current node list and add them to the node list.
+	 */
+	private fetchAndAddNodeListPeers = async (): Promise<void> => {
+		const apiNodeList = this.nodeList.filter((node) => isAPIRole(node.roles));
+
+		logger.info(
+			`[fetchAndAddNodeListPeers] Getting peers from nodes, total nodes: ${this.nodeList.length}, api nodes: ${apiNodeList.length}`,
+		);
+
+		await runTaskInChunks(apiNodeList, this.nodePeersChunkSize, logger, 'fetchAndAddNodeListPeers', async (nodes) => {
+			const arrayOfPeerList = await Promise.all(
+				[...nodes].map(async (node) => this.fetchNodePeersByURL(await ApiNodeService.buildHostUrl(node.host))),
+			);
+			const peers: INode[] = arrayOfPeerList.reduce((accumulator, value) => accumulator.concat(value), []);
+
+			this.addNodesToList(peers);
+			return peers;
+		});
+	};
+
 	private getNodeListInfo = async () => {
-		logger.info(`Getting node from peers total ${this.nodeList.length} nodes`);
-		const nodeListChunks = splitArray(this.nodeList, this.nodeInfoChunks);
+		const startTime = new Date().getTime();
+		const nodeCount = this.nodeList.length;
 
-		this.nodeList = [];
+		logger.info(`[getNodeListInfo] Getting node from peers, total nodes: ${nodeCount}`);
 
-		for (const nodes of nodeListChunks) {
-			logger.info(`Getting node info for chunk of ${nodes.length} nodes`);
-
+		await runTaskInChunks(this.nodeList, this.nodeInfoChunks, logger, 'getNodeListInfo', async (nodes) => {
 			const nodeInfoPromises = [...nodes].map((node) => this.getNodeInfo(node));
+			const arrayOfNodeInfo = await Promise.all(nodeInfoPromises);
 
-			this.addNodesToList((await Promise.all(nodeInfoPromises)) as INode[]);
-			await sleep(this.nodeInfoDelay);
-		}
+			this.addNodesToList(arrayOfNodeInfo);
+			return arrayOfNodeInfo;
+		});
+
 		this.nodeList.forEach((node) => this.nodesStats.addToStats(node));
+		logger.info(
+			`[getNodeListInfo] Total node count(after nodeInfo): ${this.nodeList.length}, time elapsed: [${showDuration(
+				startTime - new Date().getTime(),
+			)}]`,
+		);
 	};
 
 	private async getNodeInfo(node: INode): Promise<INode> {
 		let nodeWithInfo: INode = { ...node };
+		const nodeHost = node.host;
 
 		try {
-			const hostDetail = await HostInfo.getHostDetailCached(node.host);
+			const hostDetail = await HostInfo.getHostDetailCached(nodeHost);
 
-			if (hostDetail) nodeWithInfo.hostDetail = hostDetail;
+			if (hostDetail) {
+				nodeWithInfo.hostDetail = hostDetail;
+			}
 
 			if (isPeerRole(nodeWithInfo.roles)) {
-				nodeWithInfo.peerStatus = await PeerNodeService.getStatus(node.host, node.port);
+				nodeWithInfo.peerStatus = await PeerNodeService.getStatus(nodeHost, node.port);
 			}
 
 			if (isAPIRole(nodeWithInfo.roles)) {
-				const hostUrl = await ApiNodeService.buildHostUrl(nodeWithInfo.host);
+				const hostUrl = await ApiNodeService.buildHostUrl(nodeHost);
 
 				// Get node info and overwrite info from /node/peers
 				const nodeStatus = await ApiNodeService.getNodeInfo(hostUrl);
 
 				if (nodeStatus) {
 					Object.assign(nodeWithInfo, nodeStatus);
+					if (!nodeWithInfo.host) {
+						nodeWithInfo.host = nodeHost;
+					}
 				}
 
 				// Request API Status, if node belong to the network
@@ -178,7 +217,7 @@ export class NodeMonitor {
 				}
 			}
 		} catch (e) {
-			logger.error(`GetNodeInfo. Failed to fetch info for "${nodeWithInfo.host}". ${e.message}`);
+			logger.error(`[getNodeInfo] Failed to fetch info for "${nodeWithInfo.host}". ${e.message}`);
 		}
 
 		return nodeWithInfo;
@@ -246,12 +285,18 @@ export class NodeMonitor {
 			if (
 				node.networkIdentifier !== this.networkIdentifier ||
 				node.networkGenerationHashSeed !== this.generationHashSeed ||
-				!!this.nodeList.find((addedNode) => addedNode.publicKey === node.publicKey) ||
 				!validateNodeModel(node)
-			)
+			) {
 				return;
+			}
+			const nodeInx = this.nodeList.findIndex((addedNode) => addedNode.publicKey === node.publicKey);
 
-			this.nodeList.push(node);
+			if (nodeInx > -1) {
+				// already in the list then update
+				this.nodeList[nodeInx] = node;
+			} else {
+				this.nodeList.push(node);
+			}
 		});
 	};
 }

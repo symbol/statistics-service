@@ -43,7 +43,7 @@ export class HostInfo {
 				zip: data.zip,
 			};
 		} catch (e) {
-			logger.error(`Failed to get host ${host} info ${e.message}`);
+			logger.error(`[getHostDetail] Failed to get host ${host} info ${e.message}`);
 			return null;
 		}
 	};

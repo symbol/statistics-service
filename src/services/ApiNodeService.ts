@@ -163,7 +163,7 @@ export class ApiNodeService {
 		try {
 			return (await HTTP.get(`${hostUrl}/node/info`)).data;
 		} catch (e) {
-			logger.error(`Fail to request /node/info: ${hostUrl}`, e);
+			logger.error(`[getNodeInfo] Fail to request /node/info: ${hostUrl}`, e);
 			return null;
 		}
 	};
@@ -172,7 +172,7 @@ export class ApiNodeService {
 		try {
 			return (await HTTP.get(`${hostUrl}/chain/info`)).data;
 		} catch (e) {
-			logger.error(`Fail to request /chain/info: ${hostUrl}`, e);
+			logger.error(`[getNodeChainInfo] Fail to request /chain/info: ${hostUrl}`, e);
 			return null;
 		}
 	};
@@ -183,7 +183,7 @@ export class ApiNodeService {
 
 			return nodeServerInfo.serverInfo;
 		} catch (e) {
-			logger.error(`Fail to request /node/server: ${hostUrl}`, e);
+			logger.error(`[getNodeServer] Fail to request /node/server: ${hostUrl}`, e);
 			return null;
 		}
 	};
@@ -194,7 +194,7 @@ export class ApiNodeService {
 
 			return health.status;
 		} catch (e) {
-			logger.error(`Fail to request /node/health: ${hostUrl}`, e);
+			logger.error(`[getNodeHealth] Fail to request /node/health: ${hostUrl}`, e);
 			return null;
 		}
 	};
