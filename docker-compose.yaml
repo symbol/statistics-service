@@ -1,0 +1,25 @@
+version: "3"
+services:
+    mongo:
+        container_name: stats-srv-mongo
+        image: mongo:latest
+        ports:
+        - "27017:27017"
+    app:
+        container_name: stats-srv-app
+        restart: always
+        image: symbolplatform/symbol-statistics-service:1.1.4-alpha
+        #        env_file:
+        #- ./.env
+        environment:
+        - NUMBER_OF_NODE_REQUEST_CHUNK=100
+        - NETWORK_IDENTIFIER=104
+        - MONGODB_ENDPOINT=mongodb://stats-srv-mongo:27017/test
+        - NODES=["https://wolf.importance.jp:3001","https://41506.xym.stir-hosyu.com:3001","https://00b3424a.xym.stir-hosyu.com:3001","http://xym10.allnodes.me:3000","http://xym108.allnodes.me:3000","http://xym122.allnodes.me:3000"]
+        - PREFERRED_NODES= # leave it empty for now, prevent centralized node list
+        - MIN_PARTNER_NODE_VERSION=16777984 # use v1.0.3.0
+        - REQUEST_TIMEOUT=10000
+        ports:
+        - "4001:4001"
+        depends_on:
+        - mongo
