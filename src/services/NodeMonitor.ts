@@ -270,11 +270,22 @@ export class NodeMonitor {
 	}
 
 	private checkNodeAvailable = (node: INode): boolean => {
-		return !(
-			isAPIRole(node.roles) &&
-			!node.apiStatus?.isAvailable &&
-			node.lastAvailable &&
-			new Date().getTime() > node.lastAvailable.getTime() + monitor.KEEP_STALE_NODES_FOR_HOURS * 1000 * 60 * 60
+		let available = true;
+
+		if (isAPIRole(node.roles) && isPeerRole(node.roles)) {
+			// in dual node mode, we consider the node is available if any of the two (REST and Peer) is available
+			available = !!node.apiStatus?.isAvailable || !!node.peerStatus?.isAvailable;
+		} else if (isAPIRole(node.roles)) {
+			available = !!node.apiStatus?.isAvailable;
+		} else if (isPeerRole(node.roles)) {
+			available = !!node.peerStatus?.isAvailable;
+		}
+		return (
+			available ||
+			!(
+				!!node.lastAvailable &&
+				new Date().getTime() > node.lastAvailable.getTime() + monitor.KEEP_STALE_NODES_FOR_HOURS * Constants.TIME_UNIT_HOUR
+			)
 		);
 	};
 
