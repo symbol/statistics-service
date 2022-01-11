@@ -13,16 +13,18 @@
         "importHelpers": true,
         "types": [
             "node",
+            "mocha"
         ],
         "typeRoots": [
             "node_modules/@types"
         ],
         "paths": {
-            "@src/*": [ "src/*" ],
+            "@src/*": [ "src/*" ]
         }
     },
     "include": [
-        "./src/**/*.ts"
+        "./src/**/*.ts",
+        "./test/**/*.test.ts"
     ],
     "exclude": [
         "./src/public/"
