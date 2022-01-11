@@ -4,6 +4,7 @@
     "description": "",
     "scripts": {
         "dev": "nodemon",
+        "debug": "node --inspect-brk=0.0.0.0:9229 --require ts-node/register src/app.ts",
         "build": "shx rm -rf ./dist/ && tsc && shx cp -r openapi dist/openapi",
         "build:clients": "bash scripts/build-clients.sh",
         "start": "node dist/app.js",
