@@ -25,6 +25,7 @@ interface Monitor {
 	API_NODE_PORT: number;
 	PEER_NODE_PORT: number;
 	REQUEST_TIMEOUT: number;
+	KEEP_STALE_NODES_FOR_HOURS: number;
 }
 
 export interface Config {
@@ -60,6 +61,7 @@ export const monitor: Monitor = {
 	API_NODE_PORT: Number(process.env.API_NODE_PORT) || config.API_NODE_PORT,
 	PEER_NODE_PORT: Number(process.env.PEER_NODE_PORT) || config.PEER_NODE_PORT,
 	REQUEST_TIMEOUT: Number(process.env.REQUEST_TIMEOUT) || config.REQUEST_TIMEOUT,
+	KEEP_STALE_NODES_FOR_HOURS: Number(process.env.KEEP_STALE_NODES_FOR_HOURS) || config.KEEP_STALE_NODES_FOR_HOURS,
 };
 
 export const verifyConfig = (cfg: Config): boolean => {

@@ -14,6 +14,8 @@ import { Logger } from '@src/infrastructure';
 import { INode, validateNodeModel } from '@src/models/Node';
 import { symbol, monitor } from '@src/config';
 import { isAPIRole, isPeerRole, basename, showDuration, runTaskInChunks } from '@src/utils';
+import humanizeDuration = require('humanize-duration');
+import { Constants } from '@src/constants';
 
 const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
@@ -241,6 +243,7 @@ export class NodeMonitor {
 			logger.info(`Update collection`);
 			const prevNodeList = await DataBase.getNodeList();
 
+			this.nodeList = this.removeUnavailableNodes(this.nodeList);
 			try {
 				await DataBase.updateNodeList(this.nodeList);
 				await DataBase.updateNodesStats(this.nodesStats);
@@ -251,7 +254,42 @@ export class NodeMonitor {
 		} else logger.error(`Failed to update collection. Collection length = ${this.nodeList.length}`);
 	};
 
-	private cacheCollection = async (): Promise<any> => {
+	private removeUnavailableNodes(nodes: INode[]): INode[] {
+		const unavailableNodes = nodes.filter((n) => !this.checkNodeAvailable(n));
+
+		logger.info(
+			`[updateCollection] Removing unavailable nodes[${unavailableNodes
+				.map((n) => n.host)
+				.join(', ')}], available ones in the last ${humanizeDuration(
+				monitor.KEEP_STALE_NODES_FOR_HOURS * Constants.TIME_UNIT_HOUR,
+			)} are kept.`,
+		);
+		return nodes
+			.filter((n) => !unavailableNodes.some((un) => un.publicKey === n.publicKey))
+			.map((n) => ({ ...n, lastAvailable: new Date() }));
+	}
+
+	private checkNodeAvailable = (node: INode): boolean => {
+		let available = true;
+
+		if (isAPIRole(node.roles) && isPeerRole(node.roles)) {
+			// in dual node mode, we consider the node is available if any of the two (REST and Peer) is available
+			available = !!node.apiStatus?.isAvailable || !!node.peerStatus?.isAvailable;
+		} else if (isAPIRole(node.roles)) {
+			available = !!node.apiStatus?.isAvailable;
+		} else if (isPeerRole(node.roles)) {
+			available = !!node.peerStatus?.isAvailable;
+		}
+		return (
+			available ||
+			!(
+				!!node.lastAvailable &&
+				new Date().getTime() > node.lastAvailable.getTime() + monitor.KEEP_STALE_NODES_FOR_HOURS * Constants.TIME_UNIT_HOUR
+			)
+		);
+	};
+
+	private async cacheCollection(): Promise<any> {
 		try {
 			const nodeList = await DataBase.getNodeList();
 
@@ -259,9 +297,9 @@ export class NodeMonitor {
 		} catch (e) {
 			logger.error('Failed to cache Node collection to memory. ' + e.message);
 		}
-	};
+	}
 
-	private fetchAndSetNetworkInfo = async (): Promise<void> => {
+	private async fetchAndSetNetworkInfo(): Promise<void> {
 		for (const nodeUrl of symbol.NODES) {
 			const url = new URL(nodeUrl);
 			const hostUrl = await ApiNodeService.buildHostUrl(url.hostname);
@@ -278,7 +316,7 @@ export class NodeMonitor {
 		}
 
 		logger.info(`Network identifier not found in ${symbol.NODES}, using default ${this.networkIdentifier}`);
-	};
+	}
 
 	private addNodesToList = (nodes: INode[]) => {
 		nodes.forEach((node: INode) => {

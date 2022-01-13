@@ -26,6 +26,9 @@ jobs:
         - stage: lint
           name: lint
           script: npm run lint
+        - stage: test
+          name: test
+          script: npm run test
         - stage: test openapi
           name: test-openapi
           script: npm run test:openapi

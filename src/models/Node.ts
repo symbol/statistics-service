@@ -16,6 +16,7 @@ export interface INode {
 	peerStatus?: PeerStatus;
 	apiStatus?: ApiStatus;
 	hostDetail?: IHostDetail;
+	lastAvailable?: Date;
 }
 
 export interface NodeDocument extends INode, Document {}
@@ -209,6 +210,10 @@ const NodeSchema: Schema = new Schema({
 				required: true,
 			},
 		},
+		required: false,
+	},
+	lastAvailable: {
+		type: Date,
 		required: false,
 	},
 });
