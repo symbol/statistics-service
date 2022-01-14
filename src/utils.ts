@@ -102,3 +102,13 @@ export const runTaskInChunks = async <T>(
 		numOfNodesProcessed += chunk.length;
 	}
 };
+
+export const splitByPredicate = <T>(predicate: (item: T) => boolean, arr: T[]): { filtered: T[]; unfiltered: T[] } => {
+	return arr.reduce(
+		(res, item: T) => {
+			res[predicate(item) ? 'filtered' : 'unfiltered'].push(item);
+			return res;
+		},
+		{ filtered: [] as T[], unfiltered: [] as T[] },
+	);
+};
