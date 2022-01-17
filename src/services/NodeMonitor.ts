@@ -13,7 +13,7 @@ import { Logger } from '@src/infrastructure';
 
 import { INode, validateNodeModel } from '@src/models/Node';
 import { symbol, monitor } from '@src/config';
-import { isAPIRole, isPeerRole, basename, showDuration, runTaskInChunks } from '@src/utils';
+import { isAPIRole, isPeerRole, basename, showDuration, runTaskInChunks, splitByPredicate } from '@src/utils';
 import humanizeDuration = require('humanize-duration');
 import { Constants } from '@src/constants';
 
@@ -95,6 +95,13 @@ export class NodeMonitor {
 		logger.info(`[getNodeList] Getting node list...`);
 		const startTime = new Date().getTime();
 
+		// Fetch node list from database
+		const nodesFromDb = (await DataBase.getNodeList().then((nodes) => nodes.map((n) => n.toJSON()))) || [];
+
+		logger.info(`[getNodeList] Nodes count from DB: ${nodesFromDb.length}`);
+		// adding the nodes from DB to the node list
+		this.addNodesToList(nodesFromDb);
+
 		// Fetch node list from config nodes
 		logger.info(`[getNodeList] Initial node list: ${symbol.NODES.join(', ')}`);
 		for (const nodeUrl of symbol.NODES) {
@@ -102,13 +109,6 @@ export class NodeMonitor {
 
 			this.addNodesToList(peers);
 		}
-
-		// Fetch node list from database
-		const nodesFromDb = (await DataBase.getNodeList().then((nodes) => nodes.map((n) => n.toJSON()))) || [];
-
-		logger.info(`[getNodeList] Nodes count from DB: ${nodesFromDb.length}`);
-		// adding the nodes from DB to the node list
-		this.addNodesToList(nodesFromDb);
 
 		await this.fetchAndAddNodeListPeers();
 
@@ -243,7 +243,7 @@ export class NodeMonitor {
 			logger.info(`Update collection`);
 			const prevNodeList = await DataBase.getNodeList();
 
-			this.nodeList = this.removeUnavailableNodes(this.nodeList);
+			this.nodeList = this.removeStaleNodesAndUpdateLastAvailable(this.nodeList);
 			try {
 				await DataBase.updateNodeList(this.nodeList);
 				await DataBase.updateNodesStats(this.nodesStats);
@@ -254,20 +254,31 @@ export class NodeMonitor {
 		} else logger.error(`Failed to update collection. Collection length = ${this.nodeList.length}`);
 	};
 
-	private removeUnavailableNodes(nodes: INode[]): INode[] {
-		const unavailableNodes = nodes.filter((n) => !this.checkNodeAvailable(n));
+	private removeStaleNodesAndUpdateLastAvailable(nodes: INode[]): INode[] {
+		let { filtered: availableNodes, unfiltered: unavailableNodes } = splitByPredicate((n) => this.checkNodeAvailable(n), nodes);
+
+		// set last available time for available nodes
+		availableNodes = availableNodes.map((n) => ({ ...n, lastAvailable: new Date() }));
+
+		let { filtered: staleNodes, unfiltered: soonTobeStaleNodes } = splitByPredicate((n) => this.checkNodeStale(n), unavailableNodes);
 
 		logger.info(
-			`[updateCollection] Removing unavailable nodes[${unavailableNodes
+			`[updateCollection] Removing stale nodes[${staleNodes
 				.map((n) => n.host)
 				.join(', ')}], available ones in the last ${humanizeDuration(
 				monitor.KEEP_STALE_NODES_FOR_HOURS * Constants.TIME_UNIT_HOUR,
 			)} are kept.`,
 		);
-		return nodes
-			.filter((n) => !unavailableNodes.some((un) => un.publicKey === n.publicKey))
-			.map((n) => ({ ...n, lastAvailable: new Date() }));
+		return [...availableNodes, ...soonTobeStaleNodes];
 	}
+
+	private checkNodeStale = (node: INode): boolean => {
+		return (
+			!this.checkNodeAvailable(node) &&
+			!!node.lastAvailable &&
+			new Date().getTime() > node.lastAvailable.getTime() + monitor.KEEP_STALE_NODES_FOR_HOURS * Constants.TIME_UNIT_HOUR
+		);
+	};
 
 	private checkNodeAvailable = (node: INode): boolean => {
 		let available = true;
@@ -280,13 +291,7 @@ export class NodeMonitor {
 		} else if (isPeerRole(node.roles)) {
 			available = !!node.peerStatus?.isAvailable;
 		}
-		return (
-			available ||
-			!(
-				!!node.lastAvailable &&
-				new Date().getTime() > node.lastAvailable.getTime() + monitor.KEEP_STALE_NODES_FOR_HOURS * Constants.TIME_UNIT_HOUR
-			)
-		);
+		return available;
 	};
 
 	private async cacheCollection(): Promise<any> {
@@ -330,9 +335,18 @@ export class NodeMonitor {
 			const nodeInx = this.nodeList.findIndex((addedNode) => addedNode.publicKey === node.publicKey);
 
 			if (nodeInx > -1) {
-				// already in the list then update
-				this.nodeList[nodeInx] = node;
+				// already in the list then update and keep the last available time
+				let lastAvailable = this.nodeList[nodeInx].lastAvailable || node.lastAvailable;
+
+				if (lastAvailable === undefined && !this.checkNodeAvailable(node)) {
+					lastAvailable = new Date();
+				}
+
+				this.nodeList[nodeInx] = { ...node, lastAvailable };
 			} else {
+				if (!node.lastAvailable && !this.checkNodeAvailable(node)) {
+					node.lastAvailable = new Date();
+				}
 				this.nodeList.push(node);
 			}
 		});

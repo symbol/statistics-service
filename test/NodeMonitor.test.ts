@@ -6,18 +6,19 @@ import { stub } from 'sinon';
 import { RoleType } from 'symbol-sdk';
 
 describe('NodeMonitor', () => {
-	describe('removeUnavailableNodes when KEEP_STALE_NODES_FOR_HOURS is 3 days', () => {
+	describe('removeStaleNodesAndUpdateLastAvailable when KEEP_STALE_NODES_FOR_HOURS is 3 days', () => {
 		stub(NodeMonitor.prototype, 'cacheCollection' as any);
 		stub(monitor, 'KEEP_STALE_NODES_FOR_HOURS').value(72); // 3 days
 
 		const nodeMonitor = new NodeMonitor(0);
 
 		it('should remove stale nodes and keep fresh ones', () => {
+			const freshNodeLastAvailable = new Date(new Date().getTime() - 1 * Constants.TIME_UNIT_DAY);
 			const nodes = [
 				{
 					publicKey: 'pkFresh',
 					host: 'hostFresh',
-					lastAvailable: new Date(new Date().getTime() - 1 * Constants.TIME_UNIT_DAY),
+					lastAvailable: freshNodeLastAvailable,
 					roles: RoleType.ApiNode + RoleType.PeerNode,
 					apiStatus: {
 						isAvailable: false,
@@ -33,10 +34,11 @@ describe('NodeMonitor', () => {
 					},
 				},
 			];
-			const result = (nodeMonitor as any).removeUnavailableNodes(nodes);
+			const result = (nodeMonitor as any).removeStaleNodesAndUpdateLastAvailable(nodes);
 
 			expect(result.length).to.be.equal(1);
 			expect(result[0].publicKey).to.be.equal('pkFresh');
+			expect(result[0].lastAvailable).to.be.eq(freshNodeLastAvailable);
 		});
 
 		it("dual node - should refresh the stale node if at least one of two(API, Peer)'s status is available else remove the node", () => {
@@ -54,22 +56,25 @@ describe('NodeMonitor', () => {
 					},
 				},
 			];
-			const resultApiOK_PeerNOT = (nodeMonitor as any).removeUnavailableNodes(getNode(true, false));
+			const resultApiOK_PeerNOT = (nodeMonitor as any).removeStaleNodesAndUpdateLastAvailable(getNode(true, false));
 
 			expect(resultApiOK_PeerNOT.length).to.be.equal(1);
 			expect(resultApiOK_PeerNOT[0].publicKey).to.be.equal('pkFresh');
+			expect(resultApiOK_PeerNOT[0].lastAvailable).to.be.greaterThan(new Date(new Date().getTime() - 1 * Constants.TIME_UNIT_MINUTE));
 
-			const resultApiNOT_PeerOK = (nodeMonitor as any).removeUnavailableNodes(getNode(false, true));
+			const resultApiNOT_PeerOK = (nodeMonitor as any).removeStaleNodesAndUpdateLastAvailable(getNode(false, true));
 
 			expect(resultApiNOT_PeerOK.length).to.be.equal(1);
 			expect(resultApiNOT_PeerOK[0].publicKey).to.be.equal('pkFresh');
+			expect(resultApiNOT_PeerOK[0].lastAvailable).to.be.greaterThan(new Date(new Date().getTime() - 1 * Constants.TIME_UNIT_MINUTE));
 
-			const resultApiOK_PeerOK = (nodeMonitor as any).removeUnavailableNodes(getNode(true, true));
+			const resultApiOK_PeerOK = (nodeMonitor as any).removeStaleNodesAndUpdateLastAvailable(getNode(true, true));
 
 			expect(resultApiOK_PeerOK.length).to.be.equal(1);
 			expect(resultApiOK_PeerOK[0].publicKey).to.be.equal('pkFresh');
+			expect(resultApiOK_PeerOK[0].lastAvailable).to.be.greaterThan(new Date(new Date().getTime() - 1 * Constants.TIME_UNIT_MINUTE));
 
-			const resultApiNOT_PeerNOT = (nodeMonitor as any).removeUnavailableNodes(getNode(false, false));
+			const resultApiNOT_PeerNOT = (nodeMonitor as any).removeStaleNodesAndUpdateLastAvailable(getNode(false, false));
 
 			expect(resultApiNOT_PeerNOT.length).to.be.equal(0);
 		});
@@ -86,7 +91,7 @@ describe('NodeMonitor', () => {
 					},
 				},
 			];
-			const result = (nodeMonitor as any).removeUnavailableNodes(nodes);
+			const result = (nodeMonitor as any).removeStaleNodesAndUpdateLastAvailable(nodes);
 
 			expect(result.length).to.be.equal(1);
 			expect(result[0].publicKey).to.be.equal('pkApiOnly');
@@ -104,7 +109,7 @@ describe('NodeMonitor', () => {
 					},
 				},
 			];
-			const result = (nodeMonitor as any).removeUnavailableNodes(nodes);
+			const result = (nodeMonitor as any).removeStaleNodesAndUpdateLastAvailable(nodes);
 
 			expect(result.length).to.be.equal(1);
 			expect(result[0].publicKey).to.be.equal('pkPeerOnly');
@@ -119,7 +124,7 @@ describe('NodeMonitor', () => {
 					roles: RoleType.VotingNode,
 				},
 			];
-			const result = (nodeMonitor as any).removeUnavailableNodes(nodes);
+			const result = (nodeMonitor as any).removeStaleNodesAndUpdateLastAvailable(nodes);
 
 			expect(result.length).to.be.equal(1);
 			expect(result[0].publicKey).to.be.equal('pkVotingOnly');
@@ -146,7 +151,7 @@ describe('NodeMonitor', () => {
 					},
 				},
 			];
-			const result = (nodeMonitor as any).removeUnavailableNodes(nodes);
+			const result = (nodeMonitor as any).removeStaleNodesAndUpdateLastAvailable(nodes);
 
 			expect(result.length).to.be.equal(1);
 			expect(result[0].publicKey).to.be.equal('pkFresh');
