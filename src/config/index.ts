@@ -18,11 +18,14 @@ interface Symbol {
 interface Monitor {
 	NODE_MONITOR_SCHEDULE_INTERVAL: number;
 	NUMBER_OF_NODE_REQUEST_CHUNK: number;
+	NODE_PEERS_REQUEST_CHUNK_SIZE: number;
+	CHAIN_HEIGHT_REQUEST_CHUNK_SIZE: number;
 	CHAIN_HEIGHT_MONITOR_SCHEDULE_INTERVAL: number;
 	GEOLOCATION_MONITOR_SCHEDULE_INTERVAL: number;
 	API_NODE_PORT: number;
 	PEER_NODE_PORT: number;
 	REQUEST_TIMEOUT: number;
+	KEEP_STALE_NODES_FOR_HOURS: number;
 }
 
 export interface Config {
@@ -49,6 +52,8 @@ export const symbol: Symbol = {
 export const monitor: Monitor = {
 	NODE_MONITOR_SCHEDULE_INTERVAL: Number(process.env.NODE_MONITOR_SCHEDULE_INTERVAL) || config.NODE_MONITOR_SCHEDULE_INTERVAL,
 	NUMBER_OF_NODE_REQUEST_CHUNK: Number(process.env.NUMBER_OF_NODE_REQUEST_CHUNK) || config.NUMBER_OF_NODE_REQUEST_CHUNK,
+	NODE_PEERS_REQUEST_CHUNK_SIZE: Number(process.env.NODE_PEERS_REQUEST_CHUNK_SIZE) || config.NODE_PEERS_REQUEST_CHUNK_SIZE,
+	CHAIN_HEIGHT_REQUEST_CHUNK_SIZE: Number(process.env.CHAIN_HEIGHT_REQUEST_CHUNK_SIZE) || config.CHAIN_HEIGHT_REQUEST_CHUNK_SIZE,
 	CHAIN_HEIGHT_MONITOR_SCHEDULE_INTERVAL:
 		Number(process.env.CHAIN_HEIGHT_MONITOR_SCHEDULE_INTERVAL) || config.CHAIN_HEIGHT_MONITOR_SCHEDULE_INTERVAL,
 	GEOLOCATION_MONITOR_SCHEDULE_INTERVAL:
@@ -56,6 +61,7 @@ export const monitor: Monitor = {
 	API_NODE_PORT: Number(process.env.API_NODE_PORT) || config.API_NODE_PORT,
 	PEER_NODE_PORT: Number(process.env.PEER_NODE_PORT) || config.PEER_NODE_PORT,
 	REQUEST_TIMEOUT: Number(process.env.REQUEST_TIMEOUT) || config.REQUEST_TIMEOUT,
+	KEEP_STALE_NODES_FOR_HOURS: Number(process.env.KEEP_STALE_NODES_FOR_HOURS) || config.KEEP_STALE_NODES_FOR_HOURS,
 };
 
 export const verifyConfig = (cfg: Config): boolean => {
@@ -77,13 +83,17 @@ export const verifyConfig = (cfg: Config): boolean => {
 		error = 'Invalid "NODES"';
 	}
 
-	if (cfg.symbol.PREFERRED_NODES.length === 0) error = 'Invalid "PREFERRED NODES"';
-
 	if (isNaN(cfg.monitor.NODE_MONITOR_SCHEDULE_INTERVAL) || cfg.monitor.NODE_MONITOR_SCHEDULE_INTERVAL < 0)
 		error = 'Invalid "NODE_MONITOR_SCHEDULE_INTERVAL"';
 
 	if (isNaN(cfg.monitor.NUMBER_OF_NODE_REQUEST_CHUNK) || cfg.monitor.NUMBER_OF_NODE_REQUEST_CHUNK < 0)
 		error = 'Invalid "NUMBER_OF_NODE_REQUEST_CHUNK"';
+
+	if (isNaN(cfg.monitor.NODE_PEERS_REQUEST_CHUNK_SIZE) || cfg.monitor.NODE_PEERS_REQUEST_CHUNK_SIZE < 0)
+		error = 'Invalid "NODE_PEERS_REQUEST_CHUNK_SIZE"';
+
+	if (isNaN(cfg.monitor.CHAIN_HEIGHT_REQUEST_CHUNK_SIZE) || cfg.monitor.CHAIN_HEIGHT_REQUEST_CHUNK_SIZE < 0)
+		error = 'Invalid "CHAIN_HEIGHT_REQUEST_CHUNK_SIZE"';
 
 	if (isNaN(cfg.monitor.API_NODE_PORT) || cfg.monitor.API_NODE_PORT <= 0 || cfg.monitor.API_NODE_PORT >= 10000)
 		error = 'Invalid "API_NODE_PORT"';
