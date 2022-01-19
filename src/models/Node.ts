@@ -16,6 +16,7 @@ export interface INode {
 	peerStatus?: PeerStatus;
 	apiStatus?: ApiStatus;
 	hostDetail?: IHostDetail;
+	lastAvailable?: Date;
 }
 
 export interface NodeDocument extends INode, Document {}
@@ -50,6 +51,7 @@ const NodeSchema: Schema = new Schema({
 			type: Number,
 			required: false,
 		},
+		required: false,
 	},
 	apiStatus: {
 		webSocket: {
@@ -210,6 +212,10 @@ const NodeSchema: Schema = new Schema({
 		},
 		required: false,
 	},
+	lastAvailable: {
+		type: Date,
+		required: false,
+	},
 });
 
 NodeSchema.index(
@@ -236,7 +242,9 @@ NodeSchema.set('toObject', {
 export const Node = mongoose.model<NodeDocument>('Node', NodeSchema);
 
 export const validateNodeModel = (node: any): boolean => {
-	if (!node || typeof node !== 'object') return false;
+	if (!node || typeof node !== 'object') {
+		return false;
+	}
 
 	return !new Node(node).validateSync();
 };

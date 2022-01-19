@@ -37,10 +37,13 @@ export class Routes {
 			}
 
 			// ?filter=preferred
-			// it filter by host / domain name config by admin.
+			// it filters by host / domain name config by admin.
 			if (filter === NodeFilter.Preferred) {
+				if (!symbol.PREFERRED_NODES?.length) {
+					return Promise.resolve(res.send([]));
+				}
 				Object.assign(searchCriteria.filter, {
-					host: { $in: symbol.PREFERRED_NODES.map((node) => new RegExp(`^.${node}`, 'i')) },
+					host: { $in: symbol.PREFERRED_NODES.map((node) => new RegExp(`^${node}`, 'i')) },
 					'apiStatus.isAvailable': true,
 					'apiStatus.nodeStatus.apiNode': 'up',
 					'apiStatus.nodeStatus.db': 'up',
