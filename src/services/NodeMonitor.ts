@@ -170,7 +170,7 @@ export class NodeMonitor {
 			const nodeInfoPromises = [...nodes].map((node) => this.getNodeInfo(node));
 			const arrayOfNodeInfo = await Promise.all(nodeInfoPromises);
 
-			this.addNodesToList(arrayOfNodeInfo);
+			this.addNodesToList(arrayOfNodeInfo.filter((node) => !!node) as INode[]);
 			return arrayOfNodeInfo;
 		});
 
@@ -182,7 +182,7 @@ export class NodeMonitor {
 		);
 	};
 
-	private async getNodeInfo(node: INode): Promise<INode> {
+	private async getNodeInfo(node: INode): Promise<INode | undefined> {
 		let nodeWithInfo: INode = { ...node };
 		const nodeHost = node.host;
 
@@ -204,6 +204,14 @@ export class NodeMonitor {
 				const nodeStatus = await ApiNodeService.getNodeInfo(hostUrl);
 
 				if (nodeStatus) {
+					// if the values we got is different than the node/info then remove the node from the list
+					if (
+						nodeStatus.publicKey !== node.publicKey ||
+						nodeStatus.networkIdentifier !== this.networkIdentifier ||
+						nodeStatus.networkGenerationHashSeed !== this.generationHashSeed
+					) {
+						return undefined;
+					}
 					Object.assign(nodeWithInfo, nodeStatus);
 					if (!nodeWithInfo.host) {
 						nodeWithInfo.host = nodeHost;
