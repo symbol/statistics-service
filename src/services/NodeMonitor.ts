@@ -23,11 +23,11 @@ export class NodeMonitor {
 	private nodesStats: NodesStats;
 	private nodeCountTimeSeriesService: TimeSeriesService<AbstractTimeSeries, AbstractTimeSeriesDocument>;
 	private nodeList: INode[];
+	private nodeInfoList: INode[];
 	private isRunning: boolean;
 	private interval: number;
 	private nodeInfoChunks: number;
 	private nodePeersChunkSize: number;
-	private nodeInfoDelay: number;
 	private networkIdentifier: number;
 	private generationHashSeed: string;
 
@@ -39,11 +39,11 @@ export class NodeMonitor {
 			NodeCountSeries,
 		);
 		this.nodeList = [];
+		this.nodeInfoList = [];
 		this.isRunning = false;
 		this.interval = _interval || 300000;
 		this.nodeInfoChunks = monitor.NUMBER_OF_NODE_REQUEST_CHUNK;
 		this.nodePeersChunkSize = monitor.NODE_PEERS_REQUEST_CHUNK_SIZE;
-		this.nodeInfoDelay = 1000;
 		this.networkIdentifier = 0;
 		this.generationHashSeed = '';
 
@@ -170,13 +170,13 @@ export class NodeMonitor {
 			const nodeInfoPromises = [...nodes].map((node) => this.getNodeInfo(node));
 			const arrayOfNodeInfo = await Promise.all(nodeInfoPromises);
 
-			this.addNodesToList(arrayOfNodeInfo.filter((node) => !!node) as INode[]);
+			this.addNodesToNodeInfoList(arrayOfNodeInfo.filter((node) => !!node) as INode[]);
 			return arrayOfNodeInfo;
 		});
 
-		this.nodeList.forEach((node) => this.nodesStats.addToStats(node));
+		this.nodeInfoList.forEach((node) => this.nodesStats.addToStats(node));
 		logger.info(
-			`[getNodeListInfo] Total node count(after nodeInfo): ${this.nodeList.length}, time elapsed: [${showDuration(
+			`[getNodeListInfo] Total node count(after nodeInfo): ${this.nodeInfoList.length}, time elapsed: [${showDuration(
 				startTime - new Date().getTime(),
 			)}]`,
 		);
@@ -204,7 +204,7 @@ export class NodeMonitor {
 				const nodeStatus = await ApiNodeService.getNodeInfo(hostUrl);
 
 				if (nodeStatus) {
-					// if the values we got is different than the node/info then remove the node from the list
+					// if the values we got are different than the node/info then remove the node from the list
 					if (
 						nodeStatus.publicKey !== node.publicKey ||
 						nodeStatus.networkIdentifier !== this.networkIdentifier ||
@@ -236,6 +236,7 @@ export class NodeMonitor {
 	private clear = () => {
 		logger.info(`Clear`);
 		this.nodeList = [];
+		this.nodeInfoList = [];
 		this.nodesStats.clear();
 	};
 
@@ -247,19 +248,19 @@ export class NodeMonitor {
 				total: this.nodesStats.getTotal(),
 			},
 		});
-		if (this.nodeList.length > 0) {
+		if (this.nodeInfoList.length > 0) {
 			logger.info(`Update collection`);
 			const prevNodeList = await DataBase.getNodeList();
 
-			this.nodeList = this.removeStaleNodesAndUpdateLastAvailable(this.nodeList);
+			this.nodeInfoList = this.removeStaleNodesAndUpdateLastAvailable(this.nodeInfoList);
 			try {
-				await DataBase.updateNodeList(this.nodeList);
+				await DataBase.updateNodeList(this.nodeInfoList);
 				await DataBase.updateNodesStats(this.nodesStats);
 			} catch (e) {
 				logger.error(`Failed to update collection. ${e.message}`);
 				await DataBase.updateNodeList(prevNodeList);
 			}
-		} else logger.error(`Failed to update collection. Collection length = ${this.nodeList.length}`);
+		} else logger.error(`Failed to update collection. Collection length = ${this.nodeInfoList.length}`);
 	};
 
 	private removeStaleNodesAndUpdateLastAvailable(nodes: INode[]): INode[] {
@@ -358,5 +359,9 @@ export class NodeMonitor {
 				this.nodeList.push(node);
 			}
 		});
+	};
+
+	private addNodesToNodeInfoList = (nodes: INode[]) => {
+		this.nodeInfoList = this.nodeInfoList.concat(nodes);
 	};
 }
