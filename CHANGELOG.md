@@ -3,6 +3,16 @@ All notable changes to this project will be documented in this file.
 
 The changelog format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [v1.1.5][v1.1.5] - 24-Jan-2022
+
+Package  | Version  | Link
+---|---|---
+REST Core| v2.4.0 | [catapult-rest][catapult-rest@v2.4.0]
+SDK Core| v1.0.3 | [symbol-sdk][symbol-sdk@v1.0.3]
+
+### Fix
+- Fixed duplicate nodes and nodes from the wrong networks removal issue [#134](https://github.com/symbol/statistics-service/pull/134)
+
 ## [v1.1.4][v1.1.4] - 18-Jan-2022
 
 Package  | Version  | Link
@@ -155,6 +165,7 @@ REST Core| v2.1.0 | [catapult-rest](https://github.com/nemtech/catapult-rest/rel
 ### Fixes
 - Cors error. [#13](https://github.com/nemgrouplimited/symbol-statistics-service/issues/13)
 
+[v1.1.5]: https://github.com/symbol/statistics-service/releases/tag/v1.1.5
 [v1.1.4]: https://github.com/symbol/statistics-service/releases/tag/v1.1.4
 [v1.1.3]: https://github.com/symbol/statistics-service/releases/tag/v1.1.3
 [v1.1.2]: https://github.com/symbol/statistics-service/releases/tag/v1.1.2
