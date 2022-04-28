@@ -1,17 +1,17 @@
 import axios, { AxiosResponse, AxiosRequestConfig } from 'axios';
 import { monitor } from '@src/config';
 
-const REQEST_TIMEOUT = monitor.REQUEST_TIMEOUT;
-
 export class HTTP {
+	static TIMEOUT_MSG = `HTTP get request failed. Timeout error`;
 	static get(url: string, config?: AxiosRequestConfig | undefined): Promise<AxiosResponse<any>> {
 		return new Promise<AxiosResponse<any>>((resolve, reject) => {
+			const options = { timeout: monitor.REQUEST_TIMEOUT, ...config };
 			const timeout = setTimeout(() => {
-				reject(Error(`HTTP get request failed. Timeout error`));
-			}, REQEST_TIMEOUT + REQEST_TIMEOUT * 0.1);
+				reject(Error(HTTP.TIMEOUT_MSG));
+			}, options.timeout * 1.1);
 
 			axios
-				.get(url, { timeout: REQEST_TIMEOUT, ...config })
+				.get(url, options)
 				.then((response) => {
 					clearTimeout(timeout);
 					resolve(response);

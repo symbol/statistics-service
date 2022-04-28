@@ -11,10 +11,10 @@ export class Logger {
 		filename: 'error.log',
 	});
 
-	static getLogger(name: string): winston.Logger {
+	static getLogger(name: string, fileTransport = true): winston.Logger {
 		return winston.createLogger({
 			format: winston.format.combine(winston.format.label({ label: name })),
-			transports: [Logger.transportsConsole, Logger.transportsFile],
+			transports: [Logger.transportsConsole, ...(fileTransport ? [Logger.transportsFile] : [])],
 		});
 	}
 
