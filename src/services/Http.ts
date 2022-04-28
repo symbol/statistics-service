@@ -3,6 +3,7 @@ import { monitor } from '@src/config';
 
 export class HTTP {
 	static TIMEOUT_MSG = `HTTP get request failed. Timeout error`;
+
 	static get(url: string, config?: AxiosRequestConfig | undefined): Promise<AxiosResponse<any>> {
 		return new Promise<AxiosResponse<any>>((resolve, reject) => {
 			const options = { timeout: monitor.REQUEST_TIMEOUT, ...config };
