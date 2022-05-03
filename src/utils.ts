@@ -112,3 +112,22 @@ export const splitByPredicate = <T>(predicate: (item: T) => boolean, arr: T[]): 
 		{ filtered: [] as T[], unfiltered: [] as T[] },
 	);
 };
+
+const promiseTimeout = (ms: number, timeoutVal: any, logger: winston.Logger, loggingMethod: string) => {
+	return new Promise((resolve) =>
+		setTimeout(() => {
+			logger.info(`[${loggingMethod}] Promise timeout reached, returning ${timeoutVal}`);
+			resolve(timeoutVal);
+		}, ms),
+	);
+};
+
+export const promiseAllTimeout = (
+	promises: Promise<any>[],
+	timeout: number,
+	logger: winston.Logger,
+	loggingMethod: string,
+	timeOutVal?: any,
+): Promise<any> => {
+	return Promise.all(promises.map((promise) => Promise.race([promise, promiseTimeout(timeout, timeOutVal, logger, loggingMethod)])));
+};
