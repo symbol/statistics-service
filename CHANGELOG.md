@@ -3,6 +3,15 @@ All notable changes to this project will be documented in this file.
 
 The changelog format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [v1.1.7][v1.1.7] - 12-May-2022
+
+Package  | Version | Link
+---|---------|---
+REST Core| v2.4.0  | [catapult-rest][catapult-rest@v2.4.0]
+SDK Core| v2.0.0  | [symbol-sdk][symbol-sdk@v2.0.0]
+
+- Fixed node monitoring scheduled job hanging after a while issue [#145](https://github.com/symbol/statistics-service/pull/145)
+
 ## [v1.1.6][v1.1.6] - 23-Mar-2022
 
 Package  | Version | Link
@@ -175,6 +184,7 @@ REST Core| v2.1.0 | [catapult-rest](https://github.com/symbol/catapult-rest/rele
 ### Fixes
 - Cors error. [#13](https://github.com/symbol/statistics-service/issues/13)
 
+[v1.1.7]: https://github.com/symbol/statistics-service/releases/tag/v1.1.7
 [v1.1.6]: https://github.com/symbol/statistics-service/releases/tag/v1.1.6
 [v1.1.5]: https://github.com/symbol/statistics-service/releases/tag/v1.1.5
 [v1.1.4]: https://github.com/symbol/statistics-service/releases/tag/v1.1.4
