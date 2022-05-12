@@ -1,10 +1,13 @@
 import { HTTP } from '@src/services/Http';
 import * as winston from 'winston';
-import { basename } from '@src/utils';
+import { basename, promiseAllTimeout } from '@src/utils';
 import { Logger } from '@src/infrastructure';
 import { WebSocket } from 'ws';
+import { monitor } from '@src/config';
 
-const logger: winston.Logger = Logger.getLogger(basename(__filename));
+const REQUEST_TIMEOUT = monitor.REQUEST_TIMEOUT;
+
+const logger: winston.Logger = Logger.getLogger(basename(__filename), false);
 
 interface NodeStatus {
 	apiNode: string;
@@ -98,11 +101,12 @@ export class ApiNodeService {
 				return apiStatus;
 			}
 
-			const [nodeInfo, nodeServer, nodeHealth] = await Promise.all([
-				ApiNodeService.getNodeInfo(hostUrl),
-				ApiNodeService.getNodeServer(hostUrl),
-				ApiNodeService.getNodeHealth(hostUrl),
-			]);
+			const [nodeInfo, nodeServer, nodeHealth] = await promiseAllTimeout(
+				[ApiNodeService.getNodeInfo(hostUrl), ApiNodeService.getNodeServer(hostUrl), ApiNodeService.getNodeHealth(hostUrl)],
+				REQUEST_TIMEOUT,
+				logger,
+				'getStatus',
+			);
 
 			if (nodeInfo) {
 				Object.assign(apiStatus, {

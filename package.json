@@ -1,6 +1,6 @@
 {
     "name": "symbol-statistics-service",
-    "version": "1.1.6",
+    "version": "1.1.7",
     "description": "",
     "scripts": {
         "dev": "nodemon",
@@ -24,6 +24,7 @@
     "devDependencies": {
         "@openapitools/openapi-generator-cli": "^2.4.15",
         "@types/chai": "^4.3.0",
+        "@types/chai-as-promised": "^7.1.5",
         "@types/humanize-duration": "^3.27.0",
         "@types/mocha": "^9.0.0",
         "@types/mongoose": "^5.7.14",
@@ -33,6 +34,7 @@
         "@typescript-eslint/eslint-plugin": "^4.4.0",
         "@typescript-eslint/parser": "^4.4.0",
         "chai": "^4.3.4",
+        "chai-as-promised": "^7.1.1",
         "eslint": "^7.10.0",
         "eslint-config-prettier": "^6.12.0",
         "eslint-plugin-prettier": "^3.1.4",
