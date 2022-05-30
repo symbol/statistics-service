@@ -39,7 +39,7 @@
         "eslint-config-prettier": "^6.12.0",
         "eslint-plugin-prettier": "^3.1.4",
         "mocha": "^8.4.0",
-        "nodemon": "^2.0.3",
+        "nodemon": "^2.0.16",
         "openapi-to-postmanv2": "^2.6.0",
         "prettier": "^2.1.2",
         "shx": "^0.3.3",
