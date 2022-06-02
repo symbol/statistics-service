@@ -2,4 +2,4 @@
 
 set -ex
 
-npm ci
+npm install
