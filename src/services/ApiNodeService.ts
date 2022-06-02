@@ -75,7 +75,7 @@ export interface ServerInfo {
 }
 
 export class ApiNodeService {
-	static getStatus = async (hostUrl: string): Promise<ApiStatus> => {
+	static getStatus = async (hostUrl: string, promisesTimeout = REQUEST_TIMEOUT * 1.2): Promise<ApiStatus> => {
 		try {
 			const { protocol, hostname } = new URL(hostUrl);
 			const isHttps = protocol === 'https:';
@@ -103,7 +103,7 @@ export class ApiNodeService {
 
 			const [nodeInfo, nodeServer, nodeHealth] = await promiseAllTimeout(
 				[ApiNodeService.getNodeInfo(hostUrl), ApiNodeService.getNodeServer(hostUrl), ApiNodeService.getNodeHealth(hostUrl)],
-				REQUEST_TIMEOUT,
+				promisesTimeout,
 				logger,
 				'getStatus',
 			);
@@ -212,6 +212,11 @@ export class ApiNodeService {
 		}
 	};
 
+	static createWebSocketClient = (address: string, timeout: number): WebSocket =>
+		new WebSocket(address, {
+			timeout,
+		});
+
 	/**
 	 * Get the heartbeat of the web socket connection
 	 * @param host - host domain
@@ -222,16 +227,17 @@ export class ApiNodeService {
 	 */
 	static checkWebSocketHealth = async (host: string, port: number, protocol: string, timeout = 1000): Promise<boolean> => {
 		return new Promise((resolve) => {
-			const clientWS = new WebSocket(`${protocol}//${host}:${port}/ws`, {
-				timeout,
-			});
+			const address = `${protocol}//${host}:${port}/ws`;
+			const clientWS = ApiNodeService.createWebSocketClient(address, timeout);
 
 			clientWS.on('open', () => {
+				clientWS.close();
 				resolve(true);
 			});
 
 			clientWS.on('error', (e) => {
-				logger.error(`Fail to request web socket heartbeat: ${protocol}//${host}:${port}/ws`, e);
+				logger.error(`Fail to request web socket heartbeat: ${address}`, e);
+				clientWS.close();
 				resolve(false);
 			});
 		});
@@ -240,17 +246,18 @@ export class ApiNodeService {
 	/**
 	 * Get the status of the web socket connection
 	 * @param hostname - host domain
-	 * @param isHttp - ssl enable flag
+	 * @param isHttps - ssl enable flag
 	 * @returns WebSocketStatus
 	 */
-	static webSocketStatus = async (hostname: string, isHttp?: boolean): Promise<WebSocketStatus> => {
+	static webSocketStatus = async (hostname: string, isHttps?: boolean): Promise<WebSocketStatus> => {
 		let webSocketUrl = undefined;
 		let wssHealth = false;
 
-		if (isHttp) {
+		if (isHttps) {
 			wssHealth = await ApiNodeService.checkWebSocketHealth(hostname, 3001, 'wss:');
 		}
 
+		// if wss is not available, try ws
 		if (wssHealth) {
 			webSocketUrl = `wss://${hostname}:3001/ws`;
 		} else {
