@@ -147,10 +147,7 @@ export const promiseAllTimeout = (
 			const timer = new TimeoutTimer(timeout, timeoutVal, logger, loggingMethod);
 			const result = await Promise.race([promise, timer.start()]);
 
-			if (result !== timeoutVal) {
-				// task promise resolved on time, let's stop timeout timer
-				timer.stop();
-			}
+			timer.stop();
 			return result;
 		}),
 	);
