@@ -113,21 +113,45 @@ export const splitByPredicate = <T>(predicate: (item: T) => boolean, arr: T[]): 
 	);
 };
 
-const promiseTimeout = (ms: number, timeoutVal: any, logger: winston.Logger, loggingMethod: string) => {
-	return new Promise((resolve) =>
-		setTimeout(() => {
-			logger.info(`[${loggingMethod}] Promise timeout reached, returning ${timeoutVal}`);
-			resolve(timeoutVal);
-		}, ms),
-	);
-};
+class TimeoutTimer {
+	private timeoutId?: NodeJS.Timeout;
+
+	constructor(private timeoutMs: number, private timeoutVal: any, private logger: winston.Logger, private loggingMethod: string) {}
+
+	public start(): Promise<any> {
+		return new Promise(
+			(resolve) =>
+				(this.timeoutId = setTimeout(() => {
+					this.logger.info(`[${this.loggingMethod}] Promise timeout reached, returning ${this.timeoutVal}`);
+					resolve(this.timeoutVal);
+				}, this.timeoutMs)),
+		);
+	}
+
+	public stop(): void {
+		if (this.timeoutId) {
+			clearTimeout(this.timeoutId);
+		}
+	}
+}
 
 export const promiseAllTimeout = (
 	promises: Promise<any>[],
 	timeout: number,
 	logger: winston.Logger,
 	loggingMethod: string,
-	timeOutVal?: any,
+	timeoutVal?: any,
 ): Promise<any> => {
-	return Promise.all(promises.map((promise) => Promise.race([promise, promiseTimeout(timeout, timeOutVal, logger, loggingMethod)])));
+	return Promise.all(
+		promises.map(async (promise) => {
+			const timer = new TimeoutTimer(timeout, timeoutVal, logger, loggingMethod);
+			const result = await Promise.race([promise, timer.start()]);
+
+			if (result !== timeoutVal) {
+				// task promise resolved on time, let's stop timeout timer
+				timer.stop();
+			}
+			return result;
+		}),
+	);
 };

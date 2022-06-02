@@ -1,6 +1,7 @@
 import { expect } from 'chai';
 import { stub, restore } from 'sinon';
 import { ApiNodeService } from '@src/services/ApiNodeService';
+import { WebSocket } from 'ws';
 
 describe('ApiNodeService', () => {
 	const host = 'localhost';
@@ -82,6 +83,7 @@ describe('ApiNodeService', () => {
 
 	it('getStatus proceeds even if some of the api calls hang', async () => {
 		// Arrange:
+		const requestTimeout = 2_000;
 		const webSocketStatus = { isAvailable: false, wss: false, url: undefined };
 
 		stub(ApiNodeService, 'getNodeChainInfo').returns(Promise.resolve(chainInfo));
@@ -101,7 +103,7 @@ describe('ApiNodeService', () => {
 		stub(ApiNodeService, 'getNodeServer').returns(Promise.resolve(serverInfo));
 
 		// Act:
-		const apiStatus = await ApiNodeService.getStatus(hostURL);
+		const apiStatus = await ApiNodeService.getStatus(hostURL, requestTimeout);
 
 		// Assert:
 		expect(apiStatus.nodePublicKey).to.be.undefined;
@@ -110,4 +112,25 @@ describe('ApiNodeService', () => {
 		expect(apiStatus.restVersion).to.be.equal(serverInfo.restVersion);
 		expect(apiStatus.chainHeight).to.be.equal(chainInfo.height);
 	}).timeout(10_000);
+
+	it('closes websocket connection after checking websocket health', async () => {
+		// Arrange:
+		const close = stub();
+		const clientWsMock = ({
+			on: (event: string, callback: any) => {
+				if (event === 'open' || event === 'error') {
+					callback();
+				}
+			},
+			close,
+		} as unknown) as WebSocket;
+
+		stub(ApiNodeService, 'createWebSocketClient').returns(clientWsMock);
+
+		// Act:
+		await ApiNodeService.checkWebSocketHealth(host, 3000, 'wss');
+
+		// Assert:
+		expect(close.calledTwice).to.be.eq(true);
+	});
 });
