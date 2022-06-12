@@ -30,7 +30,7 @@
         "@types/mongoose": "^5.7.14",
         "@types/sinon": "^10.0.6",
         "@types/winston": "^2.4.4",
-        "@types/ws": "^8.2.0",
+        "@types/ws": "^8.5.3",
         "@typescript-eslint/eslint-plugin": "^4.4.0",
         "@typescript-eslint/parser": "^4.33.0",
         "chai": "^4.3.4",
@@ -48,7 +48,7 @@
         "ts-mocha": "^10.0.0",
         "ts-node": "^8.10.1",
         "typescript": "^3.8.3",
-        "ws": "^8.2.3"
+        "ws": "^8.8.0"
     },
     "dependencies": {
         "@types/cors": "^2.8.12",
