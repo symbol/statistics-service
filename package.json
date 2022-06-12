@@ -26,7 +26,7 @@
         "@types/chai": "^4.3.0",
         "@types/chai-as-promised": "^7.1.5",
         "@types/humanize-duration": "^3.27.1",
-        "@types/mocha": "^9.0.0",
+        "@types/mocha": "^9.1.1",
         "@types/mongoose": "^5.7.14",
         "@types/sinon": "^10.0.6",
         "@types/winston": "^2.4.4",
