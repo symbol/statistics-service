@@ -41,7 +41,7 @@
         "mocha": "^10.0.0",
         "nodemon": "^2.0.16",
         "openapi-to-postmanv2": "^3.2.0",
-        "prettier": "^2.1.2",
+        "prettier": "^2.7.1",
         "shx": "^0.3.4",
         "sinon": "^14.0.0",
         "swagger-cli": "^4.0.4",
