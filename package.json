@@ -40,7 +40,7 @@
         "eslint-plugin-prettier": "^4.2.1",
         "mocha": "^10.0.0",
         "nodemon": "^2.0.19",
-        "openapi-to-postmanv2": "^4.0.0",
+        "openapi-to-postmanv2": "^4.1.0",
         "prettier": "^2.7.1",
         "shx": "^0.3.4",
         "sinon": "^14.0.0",
