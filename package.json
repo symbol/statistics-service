@@ -1,6 +1,6 @@
 {
     "name": "symbol-statistics-service",
-    "version": "1.1.8",
+    "version": "1.1.9",
     "description": "",
     "scripts": {
         "dev": "nodemon",
@@ -63,7 +63,7 @@
         "humanize-duration": "^3.27.2",
         "module-alias": "^2.2.2",
         "mongoose": "^5.9.16",
-        "symbol-sdk": "^2.0.0",
+        "symbol-sdk": "^2.0.3",
         "tcp-ping": "^0.1.1",
         "utf8": "^3.0.0",
         "uuid": "^8.0.0",
