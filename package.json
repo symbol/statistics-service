@@ -62,7 +62,7 @@
         "humanize-duration": "^3.27.3",
         "module-alias": "^2.2.2",
         "mongoose": "^5.9.16",
-        "symbol-sdk": "^2.0.2",
+        "symbol-sdk": "^2.0.3",
         "tcp-ping": "^0.1.1",
         "utf8": "^3.0.0",
         "uuid": "^9.0.0",
