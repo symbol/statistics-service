@@ -22,7 +22,7 @@
         "@src": "dist"
     },
     "devDependencies": {
-        "@openapitools/openapi-generator-cli": "^2.5.2",
+        "@openapitools/openapi-generator-cli": "^2.6.0",
         "@types/chai": "^4.3.4",
         "@types/chai-as-promised": "^7.1.5",
         "@types/humanize-duration": "^3.27.1",
