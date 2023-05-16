@@ -29,7 +29,10 @@ class App {
 		app.use(express.json());
 		app.use(express.urlencoded({ extended: false }));
 		app.use(cors());
-		app.use('/openapi', express.static('openapi'));
+		const openapiHandler = express.static('openapi');
+
+		app.use('/', openapiHandler);
+		app.use('/openapi', openapiHandler);
 
 		/**
 		 * -------------- Start services --------------
