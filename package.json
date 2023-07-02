@@ -47,7 +47,7 @@
         "swagger-cli": "^4.0.4",
         "ts-mocha": "^10.0.0",
         "ts-node": "^10.9.1",
-        "typescript": "^3.8.3",
+        "typescript": "^5.1.6",
         "ws": "^8.11.0"
     },
     "dependencies": {
