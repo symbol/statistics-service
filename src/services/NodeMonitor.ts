@@ -187,50 +187,27 @@ export class NodeMonitor {
 		const nodeHost = node.host;
 
 		try {
+			// Checking node info from `node/peers`
+			if (!this.isNodeBelongToNetwork(nodeWithInfo)) return;
+
+			// Query host geo info
 			const hostDetail = await HostInfo.getHostDetailCached(nodeHost);
 
-			if (hostDetail) {
-				nodeWithInfo.hostDetail = hostDetail;
-			}
+			if (hostDetail) nodeWithInfo.hostDetail = hostDetail;
 
-			if (isPeerRole(nodeWithInfo.roles)) {
-				nodeWithInfo.peerStatus = await PeerNodeService.getStatus(nodeHost, node.port);
-			}
+			// Query Peer status
+			nodeWithInfo.peerStatus = await PeerNodeService.getStatus(nodeHost, node.port);
 
-			if (isAPIRole(nodeWithInfo.roles)) {
-				const hostUrl = await ApiNodeService.buildHostUrl(nodeHost);
+			// Query API status
+			const hostUrl = await ApiNodeService.buildHostUrl(nodeHost);
+			const apiStatus = await ApiNodeService.getStatus(hostUrl);
 
-				// Get node info and overwrite info from /node/peers
-				const nodeStatus = await ApiNodeService.getNodeInfo(hostUrl);
+			if (apiStatus.isAvailable) nodeWithInfo.apiStatus = apiStatus;
 
-				if (nodeStatus) {
-					// if the values we got are different than the node/info then remove the node from the list
-					if (
-						nodeStatus.publicKey !== node.publicKey ||
-						nodeStatus.networkIdentifier !== this.networkIdentifier ||
-						nodeStatus.networkGenerationHashSeed !== this.generationHashSeed
-					) {
-						return undefined;
-					}
-					Object.assign(nodeWithInfo, nodeStatus);
-					if (!nodeWithInfo.host) {
-						nodeWithInfo.host = nodeHost;
-					}
-				}
-
-				// Request API Status, if node belong to the network
-				if (
-					nodeWithInfo.networkIdentifier === this.networkIdentifier &&
-					nodeWithInfo.networkGenerationHashSeed === this.generationHashSeed
-				) {
-					nodeWithInfo.apiStatus = await ApiNodeService.getStatus(hostUrl);
-				}
-			}
+			return nodeWithInfo;
 		} catch (e) {
 			logger.error(`[getNodeInfo] Failed to fetch info for "${nodeWithInfo.host}". ${e.message}`);
 		}
-
-		return nodeWithInfo;
 	}
 
 	private clear = () => {
@@ -363,5 +340,9 @@ export class NodeMonitor {
 
 	private addNodesToNodeInfoList = (nodes: INode[]) => {
 		this.nodeInfoList = this.nodeInfoList.concat(nodes);
+	};
+
+	private isNodeBelongToNetwork = (node: INode): boolean => {
+		return node.networkIdentifier === this.networkIdentifier && node.networkGenerationHashSeed === this.generationHashSeed;
 	};
 }
