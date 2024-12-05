@@ -194,16 +194,11 @@ describe('NodeMonitor', () => {
 			isAvailable: true,
 			lastStatusCheck: 1000,
 		};
-		const mockApiStatus = {
+		const mockLightApiStatus = {
 			restGatewayUrl: 'https://abc.com:3001',
 			isAvailable: true,
 			isHttpsEnabled: true,
 			lastStatusCheck: 1000,
-			webSocket: {
-				isAvailable: true,
-				wss: true,
-				url: 'wss://abc.com:3001/ws',
-			},
 			nodePublicKey: 'node public key',
 			chainHeight: 10,
 			finalization: {
@@ -213,6 +208,18 @@ describe('NodeMonitor', () => {
 				hash: 'hash',
 			},
 			restVersion: '1.0.0',
+		};
+		const mockFullApiStatus = {
+			...mockLightApiStatus,
+			nodeStatus: {
+				apiNode: 'up',
+				db: 'up',
+			},
+			webSocket: {
+				isAvailable: true,
+				wss: true,
+				url: 'wss://abc.com:3001/ws',
+			},
 		};
 
 		let stubHostDetailCached: any;
@@ -280,7 +287,7 @@ describe('NodeMonitor', () => {
 			// Arrange:
 			stubHostDetailCached.returns(Promise.resolve(mockGeoInfo));
 			stubPeerStatus.returns(Promise.resolve(mockPeerStatus));
-			stubApiStatus.returns(Promise.resolve(mockApiStatus) as any);
+			stubApiStatus.returns(Promise.resolve(mockLightApiStatus) as any);
 
 			// Act:
 			const result = await (nodeMonitor as any).getNodeInfo(mockNodeInfo);
@@ -290,7 +297,7 @@ describe('NodeMonitor', () => {
 				...mockNodeInfo,
 				hostDetail: mockGeoInfo,
 				peerStatus: mockPeerStatus,
-				apiStatus: mockApiStatus,
+				apiStatus: mockLightApiStatus,
 			});
 		});
 
@@ -298,15 +305,7 @@ describe('NodeMonitor', () => {
 			// Arrange:
 			stubHostDetailCached.returns(Promise.resolve(mockGeoInfo));
 			stubPeerStatus.returns(Promise.resolve(mockPeerStatus));
-			stubApiStatus.returns(
-				Promise.resolve({
-					...mockApiStatus,
-					nodeStatus: {
-						apiNode: 'up',
-						db: 'up',
-					},
-				}) as any,
-			);
+			stubApiStatus.returns(Promise.resolve(mockFullApiStatus) as any);
 
 			// Act:
 			const result = await (nodeMonitor as any).getNodeInfo(mockNodeInfo);
@@ -316,13 +315,7 @@ describe('NodeMonitor', () => {
 				...mockNodeInfo,
 				hostDetail: mockGeoInfo,
 				peerStatus: mockPeerStatus,
-				apiStatus: {
-					...mockApiStatus,
-					nodeStatus: {
-						apiNode: 'up',
-						db: 'up',
-					},
-				},
+				apiStatus: mockFullApiStatus,
 			});
 		});
 	});
