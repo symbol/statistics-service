@@ -1,9 +1,10 @@
 defaultCiPipeline {
-	operatingSystem = ['ubuntu']
-	instanceSize = 'medium'
+    operatingSystem = ['ubuntu']
+    instanceSize = 'medium'
 
-	ciBuildDockerfile = 'javascript.Dockerfile'
+    ciBuildDockerfile = 'javascript.Dockerfile'
+    packageId = 'statistics-service'
 
-	publisher = 'docker'
-	dockerImageName = 'symbolplatform/symbol-statistics-service'
+    publisher = 'docker'
+    dockerImageName = 'symbolplatform/symbol-statistics-service'
 }
