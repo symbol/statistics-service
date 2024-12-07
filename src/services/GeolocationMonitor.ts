@@ -41,7 +41,7 @@ export class GeolocationMonitor {
 				await sleep(this.interval);
 				this.start();
 			}
-		} catch (e) {
+		} catch (e: any) {
 			logger.error(`Unhandled error during a loop. ${e.message}. Restarting Monitor..`);
 			await sleep(this.interval);
 			this.stop();
@@ -92,7 +92,7 @@ export class GeolocationMonitor {
 				}
 
 				// await this.updateCollection();
-			} catch (e) {
+			} catch (e: any) {
 				logger.error(`Error getting host info. ${e.message}`);
 			}
 		}
@@ -115,7 +115,7 @@ export class GeolocationMonitor {
 				await DataBase.insertNodeHostDetail(hostDetail);
 				logger.info(`New host info added to collection`);
 			}
-		} catch (e) {
+		} catch (e: any) {
 			logger.error(`Failed to add new host info to collection`, e.message);
 		}
 	};
@@ -132,7 +132,7 @@ export class GeolocationMonitor {
 			const nodesHostDetail = await DataBase.getNodesHostDetail();
 
 			memoryCache.setArray('nodesHostDetail', nodesHostDetail, ['host']);
-		} catch (e) {
+		} catch (e: any) {
 			logger.error('Failed to cache "nodesHostDetail" collection to memory. ' + e.message);
 		}
 	};

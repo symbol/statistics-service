@@ -74,7 +74,7 @@ export class NodeMonitor {
 				setTimeout(() => this.start(), this.interval);
 			}
 			logger.info(`[start] Node monitor task finished, time elapsed: [${showDuration(startTime - new Date().getTime())}]`);
-		} catch (e) {
+		} catch (e: any) {
 			logger.error(
 				`[start] Node monitor task failed [error: ${e.message}], time elapsed: [${showDuration(
 					startTime - new Date().getTime(),
@@ -96,7 +96,7 @@ export class NodeMonitor {
 		const startTime = new Date().getTime();
 
 		// Fetch node list from database
-		const nodesFromDb = (await DataBase.getNodeList().then((nodes) => nodes.map((n) => n.toJSON()))) || [];
+		const nodesFromDb = (await DataBase.getNodeList().then((nodes) => nodes.map((n) => n.toJSON() as INode))) || [];
 
 		logger.info(`[getNodeList] Nodes count from DB: ${nodesFromDb.length}`);
 		// adding the nodes from DB to the node list
@@ -132,7 +132,7 @@ export class NodeMonitor {
 			});
 
 			if (Array.isArray(nodePeers.data)) nodeList = [...nodePeers.data];
-		} catch (e) {
+		} catch (e: any) {
 			logger.error(`[FetchNodePeersByURL] Failed to get /node/peers from "${hostUrl}". ${e.message}`);
 		}
 
@@ -205,7 +205,7 @@ export class NodeMonitor {
 			if (apiStatus.isAvailable) nodeWithInfo.apiStatus = apiStatus;
 
 			return nodeWithInfo;
-		} catch (e) {
+		} catch (e: any) {
 			logger.error(`[getNodeInfo] Failed to fetch info for "${nodeWithInfo.host}". ${e.message}`);
 		}
 	}
@@ -233,7 +233,7 @@ export class NodeMonitor {
 			try {
 				await DataBase.updateNodeList(this.nodeInfoList);
 				await DataBase.updateNodesStats(this.nodesStats);
-			} catch (e) {
+			} catch (e: any) {
 				logger.error(`Failed to update collection. ${e.message}`);
 				await DataBase.updateNodeList(prevNodeList);
 			}
@@ -285,7 +285,7 @@ export class NodeMonitor {
 			const nodeList = await DataBase.getNodeList();
 
 			memoryCache.set('nodeList', nodeList);
-		} catch (e) {
+		} catch (e: any) {
 			logger.error('Failed to cache Node collection to memory. ' + e.message);
 		}
 	}

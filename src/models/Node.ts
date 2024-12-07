@@ -24,7 +24,6 @@ export interface NodeDocument extends INode, Document {}
 const NodeSchema: Schema = new Schema({
 	friendlyName: {
 		type: String,
-		required: false,
 	},
 	host: {
 		type: String,
@@ -45,96 +44,73 @@ const NodeSchema: Schema = new Schema({
 	peerStatus: {
 		isAvailable: {
 			type: Boolean,
-			required: false,
 		},
 		lastStatusCheck: {
 			type: Number,
-			required: false,
 		},
-		required: false,
 	},
 	apiStatus: {
 		webSocket: {
 			type: {
 				isAvailable: {
 					type: Boolean,
-					required: false,
 				},
 				wss: {
 					type: Boolean,
-					required: false,
 				},
 				url: {
 					type: String,
-					required: false,
 				},
 			},
-			required: false,
 		},
 		restGatewayUrl: {
 			type: String,
-			required: false,
 		},
 		isAvailable: {
 			type: Boolean,
-			required: false,
 		},
 		isHttpsEnabled: {
 			type: Boolean,
-			required: false,
 		},
 		nodeStatus: {
 			type: {
 				apiNode: {
 					type: String,
-					required: false,
 				},
 				db: {
 					type: String,
-					required: false,
 				},
 			},
-			required: false,
 		},
 		chainHeight: {
 			type: Number,
-			required: false,
 		},
 		finalization: {
 			type: {
 				height: {
 					type: Number,
-					required: false,
 				},
 				epoch: {
 					type: Number,
-					required: false,
 				},
 				point: {
 					type: Number,
-					required: false,
 				},
 				hash: {
 					type: String,
-					required: false,
 				},
 			},
-			required: false,
 		},
 		nodePublicKey: {
 			type: String,
-			required: false,
 			index: true,
 		},
 		restVersion: {
 			type: String,
-			required: false,
 		},
 		lastStatusCheck: {
 			type: Number,
-			required: false,
 		},
-		required: false,
 	},
 	publicKey: {
 		type: String,
@@ -167,7 +143,6 @@ const NodeSchema: Schema = new Schema({
 						required: true,
 					},
 				},
-				required: false,
 			},
 			location: {
 				type: String,
@@ -187,7 +162,6 @@ const NodeSchema: Schema = new Schema({
 			},
 			continent: {
 				type: String,
-				required: false,
 			},
 			country: {
 				type: String,
@@ -210,11 +184,9 @@ const NodeSchema: Schema = new Schema({
 				required: true,
 			},
 		},
-		required: false,
 	},
 	lastAvailable: {
 		type: Date,
-		required: false,
 	},
 });
 
@@ -233,7 +205,7 @@ NodeSchema.index(
 );
 
 NodeSchema.set('toObject', {
-	transform: (doc: Document, ret: Document) => {
+	transform: (doc: Document, ret) => {
 		delete ret._id;
 		delete ret.__v;
 	},

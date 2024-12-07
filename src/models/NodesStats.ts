@@ -15,16 +15,14 @@ export interface NodesStatsDocument extends INodesStats, Document {}
 const NodesStatsSchema: Schema = new Schema({
 	nodeTypes: {
 		type: Schema.Types.Mixed,
-		required: false,
 	},
 	nodeVersion: {
 		type: Schema.Types.Mixed,
-		required: false,
 	},
 });
 
 NodesStatsSchema.set('toObject', {
-	transform: (doc: Document, ret: Document) => {
+	transform: (doc: Document, ret) => {
 		delete ret._id;
 		delete ret.__v;
 	},

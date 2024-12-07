@@ -42,7 +42,7 @@ export class HostInfo {
 				district: data.district,
 				zip: data.zip,
 			};
-		} catch (e) {
+		} catch (e: any) {
 			logger.error(`[getHostDetail] Failed to get host ${host} info ${e.message}`);
 			return null;
 		}
