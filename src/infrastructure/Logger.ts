@@ -18,7 +18,7 @@ export class Logger {
 		});
 	}
 
-	static logTemplate(info: { level: string; message: string; [key: string]: any }): string {
+	static logTemplate(info: winston.Logform.TransformableInfo): string {
 		return `${info.timestamp} ${info.level}: [${info.label}] ${info.message}`;
 	}
 }

@@ -46,7 +46,6 @@ const HostDetailSchema: Schema = new Schema({
 				required: true,
 			},
 		},
-		required: false,
 	},
 	location: {
 		type: String,
@@ -58,40 +57,32 @@ const HostDetailSchema: Schema = new Schema({
 	},
 	organization: {
 		type: String,
-		required: false,
 	},
 	as: {
 		type: String,
-		required: false,
 	},
 	continent: {
 		type: String,
-		required: false,
 	},
 	country: {
 		type: String,
-		required: false,
 	},
 	region: {
 		type: String,
-		required: false,
 	},
 	city: {
 		type: String,
-		required: false,
 	},
 	district: {
 		type: String,
-		required: false,
 	},
 	zip: {
 		type: String,
-		required: false,
 	},
 });
 
 HostDetailSchema.set('toObject', {
-	transform: (doc: Document, ret: Document) => {
+	transform: (doc: Document, ret) => {
 		delete ret._id;
 		delete ret.__v;
 	},

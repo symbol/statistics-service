@@ -74,7 +74,7 @@ export class NodeMonitor {
 				setTimeout(() => this.start(), this.interval);
 			}
 			logger.info(`[start] Node monitor task finished, time elapsed: [${showDuration(startTime - new Date().getTime())}]`);
-		} catch (e) {
+		} catch (e: any) {
 			logger.error(
 				`[start] Node monitor task failed [error: ${e.message}], time elapsed: [${showDuration(
 					startTime - new Date().getTime(),
@@ -96,7 +96,7 @@ export class NodeMonitor {
 		const startTime = new Date().getTime();
 
 		// Fetch node list from database
-		const nodesFromDb = (await DataBase.getNodeList().then((nodes) => nodes.map((n) => n.toJSON()))) || [];
+		const nodesFromDb = (await DataBase.getNodeList().then((nodes) => nodes.map((n) => n.toJSON() as INode))) || [];
 
 		logger.info(`[getNodeList] Nodes count from DB: ${nodesFromDb.length}`);
 		// adding the nodes from DB to the node list
@@ -132,7 +132,7 @@ export class NodeMonitor {
 			});
 
 			if (Array.isArray(nodePeers.data)) nodeList = [...nodePeers.data];
-		} catch (e) {
+		} catch (e: any) {
 			logger.error(`[FetchNodePeersByURL] Failed to get /node/peers from "${hostUrl}". ${e.message}`);
 		}
 
@@ -187,50 +187,27 @@ export class NodeMonitor {
 		const nodeHost = node.host;
 
 		try {
+			// Checking node info from `node/peers`
+			if (!this.isNodeBelongToNetwork(nodeWithInfo)) return;
+
+			// Query host geo info
 			const hostDetail = await HostInfo.getHostDetailCached(nodeHost);
 
-			if (hostDetail) {
-				nodeWithInfo.hostDetail = hostDetail;
-			}
+			if (hostDetail) nodeWithInfo.hostDetail = hostDetail;
 
-			if (isPeerRole(nodeWithInfo.roles)) {
-				nodeWithInfo.peerStatus = await PeerNodeService.getStatus(nodeHost, node.port);
-			}
+			// Query Peer status
+			nodeWithInfo.peerStatus = await PeerNodeService.getStatus(nodeHost, node.port);
 
-			if (isAPIRole(nodeWithInfo.roles)) {
-				const hostUrl = await ApiNodeService.buildHostUrl(nodeHost);
+			// Query API status
+			const hostUrl = await ApiNodeService.buildHostUrl(nodeHost);
+			const apiStatus = await ApiNodeService.getStatus(hostUrl);
 
-				// Get node info and overwrite info from /node/peers
-				const nodeStatus = await ApiNodeService.getNodeInfo(hostUrl);
+			if (apiStatus.isAvailable) nodeWithInfo.apiStatus = apiStatus;
 
-				if (nodeStatus) {
-					// if the values we got are different than the node/info then remove the node from the list
-					if (
-						nodeStatus.publicKey !== node.publicKey ||
-						nodeStatus.networkIdentifier !== this.networkIdentifier ||
-						nodeStatus.networkGenerationHashSeed !== this.generationHashSeed
-					) {
-						return undefined;
-					}
-					Object.assign(nodeWithInfo, nodeStatus);
-					if (!nodeWithInfo.host) {
-						nodeWithInfo.host = nodeHost;
-					}
-				}
-
-				// Request API Status, if node belong to the network
-				if (
-					nodeWithInfo.networkIdentifier === this.networkIdentifier &&
-					nodeWithInfo.networkGenerationHashSeed === this.generationHashSeed
-				) {
-					nodeWithInfo.apiStatus = await ApiNodeService.getStatus(hostUrl);
-				}
-			}
-		} catch (e) {
+			return nodeWithInfo;
+		} catch (e: any) {
 			logger.error(`[getNodeInfo] Failed to fetch info for "${nodeWithInfo.host}". ${e.message}`);
 		}
-
-		return nodeWithInfo;
 	}
 
 	private clear = () => {
@@ -256,7 +233,7 @@ export class NodeMonitor {
 			try {
 				await DataBase.updateNodeList(this.nodeInfoList);
 				await DataBase.updateNodesStats(this.nodesStats);
-			} catch (e) {
+			} catch (e: any) {
 				logger.error(`Failed to update collection. ${e.message}`);
 				await DataBase.updateNodeList(prevNodeList);
 			}
@@ -308,7 +285,7 @@ export class NodeMonitor {
 			const nodeList = await DataBase.getNodeList();
 
 			memoryCache.set('nodeList', nodeList);
-		} catch (e) {
+		} catch (e: any) {
 			logger.error('Failed to cache Node collection to memory. ' + e.message);
 		}
 	}
@@ -363,5 +340,9 @@ export class NodeMonitor {
 
 	private addNodesToNodeInfoList = (nodes: INode[]) => {
 		this.nodeInfoList = this.nodeInfoList.concat(nodes);
+	};
+
+	private isNodeBelongToNetwork = (node: INode): boolean => {
+		return node.networkIdentifier === this.networkIdentifier && node.networkGenerationHashSeed === this.generationHashSeed;
 	};
 }
