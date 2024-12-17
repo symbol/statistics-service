@@ -43,7 +43,7 @@ export class ChainHeightMonitor {
 				await sleep(this.interval);
 				this.start();
 			}
-		} catch (e) {
+		} catch (e: any) {
 			logger.error(`Unhandled error during a loop. ${e.message}. Restarting Monitor..`);
 			await sleep(this.interval);
 			this.stop();
@@ -100,7 +100,7 @@ export class ChainHeightMonitor {
 						this.finalizedHeights[chainInfo.latestFinalizedBlock.height] =
 							(this.finalizedHeights[chainInfo.latestFinalizedBlock.height] || 0) + 1;
 					}
-				} catch (e) {
+				} catch (e: any) {
 					logger.error(`Node chain height monitor failed. ${e.message}`);
 				}
 			}

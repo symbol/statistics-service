@@ -110,7 +110,7 @@ export class TimeSeriesService<T extends AbstractTimeSeries, D extends AbstractT
 		try {
 			await document.save();
 			logger.info(`insertToDayCollection. Document has been inserted into ${collection.name}`);
-		} catch (e) {
+		} catch (e: any) {
 			logger.error(`insertToDayCollection. Document could not be saved into ${collection.name}. Error: ${e.message}`);
 			logger.error(e);
 		}
@@ -123,7 +123,7 @@ export class TimeSeriesService<T extends AbstractTimeSeries, D extends AbstractT
 		try {
 			await document.save();
 			logger.info(`insertToMainCollection. Document has been inserted into ${collection.name}`);
-		} catch (e) {
+		} catch (e: any) {
 			logger.error(`insertToMainCollection. Document could not be saved into ${collection.name}. Error: ${e.message}`);
 			logger.error(e);
 		}
@@ -140,7 +140,7 @@ export class TimeSeriesService<T extends AbstractTimeSeries, D extends AbstractT
 						values: el.values,
 					} as T),
 			);
-		} catch (e) {
+		} catch (e: any) {
 			logger.error(`Failed getDayCollection. Error: ${e.message}`);
 			await new Promise((resolve) =>
 				setTimeout(() => {
@@ -154,7 +154,7 @@ export class TimeSeriesService<T extends AbstractTimeSeries, D extends AbstractT
 		try {
 			await this.dayModel.deleteMany();
 			this.dayCollection = [];
-		} catch (e) {
+		} catch (e: any) {
 			logger.error(`Failed clearDayCollection. Error: ${e.message}`);
 			await new Promise((resolve) =>
 				setTimeout(() => {

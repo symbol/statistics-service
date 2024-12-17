@@ -52,7 +52,7 @@ const NodeHeightStatsSchema: Schema = new Schema({
 });
 
 NodeHeightStatsSchema.set('toObject', {
-	transform: (doc: Document, ret: Document) => {
+	transform: (doc: Document, ret) => {
 		delete ret._id;
 		delete ret.__v;
 	},

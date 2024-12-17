@@ -9,7 +9,6 @@ const schema: Schema = new Schema({
 	},
 	values: {
 		type: Schema.Types.Mixed,
-		required: false,
 	},
 });
 

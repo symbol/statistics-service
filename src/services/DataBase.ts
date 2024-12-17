@@ -25,7 +25,7 @@ export interface NodeSearchCriteria {
 export class DataBase {
 	static connect = async (url: string) => {
 		try {
-			await mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
+			await mongoose.connect(url);
 		} catch (err) {
 			logger.error(`DataBase Failed to connect MongoDB`);
 			throw err;
@@ -112,7 +112,7 @@ export class DataBase {
 
 		try {
 			await model.deleteMany();
-		} catch (e) {
+		} catch (e: any) {
 			const msg = `Update collection "${collectionName}" failed. Error during "model.deleteMany()". ${e.message}`;
 
 			logger.error(msg);
@@ -121,7 +121,7 @@ export class DataBase {
 
 		try {
 			await model.insertMany(documents);
-		} catch (e) {
+		} catch (e: any) {
 			const msg = `Update collection "${collectionName}" failed. Error during "model.insertMany()". ${e.message}`;
 
 			logger.error(msg);
