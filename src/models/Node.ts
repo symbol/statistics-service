@@ -177,11 +177,9 @@ const NodeSchema: Schema = new Schema({
 			},
 			district: {
 				type: String,
-				required: true,
 			},
 			zip: {
 				type: String,
-				required: true,
 			},
 		},
 	},
