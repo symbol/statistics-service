@@ -1,163 +1,123 @@
-import { monitor } from '@src/config';
-import { Constants } from '@src/constants';
 import { NodeMonitor } from '@src/services/NodeMonitor';
 import { HostInfo } from '@src/services/HostInfo';
 import { ApiNodeService } from '@src/services/ApiNodeService';
 import { PeerNodeService } from '@src/services/PeerNodeService';
 import { expect } from 'chai';
-import { stub, restore } from 'sinon';
-import { RoleType } from 'symbol-sdk';
+import { stub, restore, useFakeTimers } from 'sinon';
 
 describe('NodeMonitor', () => {
-	describe('removeStaleNodesAndUpdateLastAvailable when KEEP_STALE_NODES_FOR_HOURS is 3 days', () => {
-		stub(NodeMonitor.prototype, 'cacheCollection' as any);
-		stub(monitor, 'KEEP_STALE_NODES_FOR_HOURS').value(72); // 3 days
+	describe('removeUnavailableNodesAndUpdateLastAvailable', () => {
+		let clock: sinon.SinonFakeTimers;
+		let nodeMonitor: NodeMonitor;
+		const mockFixedDate = new Date('2024-01-14T12:00:00Z');
 
-		const nodeMonitor = new NodeMonitor(0);
-
-		it('should remove stale nodes and keep fresh ones', () => {
-			const freshNodeLastAvailable = new Date(new Date().getTime() - 1 * Constants.TIME_UNIT_DAY);
-			const nodes = [
-				{
-					publicKey: 'pkFresh',
-					host: 'hostFresh',
-					lastAvailable: freshNodeLastAvailable,
-					roles: RoleType.ApiNode + RoleType.PeerNode,
-					apiStatus: {
-						isAvailable: false,
-					},
-				},
-				{
-					publicKey: 'pkStale',
-					host: 'hostStale',
-					lastAvailable: new Date(new Date().getTime() - 4 * Constants.TIME_UNIT_DAY),
-					roles: RoleType.ApiNode + RoleType.PeerNode,
-					apiStatus: {
-						isAvailable: false,
-					},
-				},
-			];
-			const result = (nodeMonitor as any).removeStaleNodesAndUpdateLastAvailable(nodes);
-
-			expect(result.length).to.be.equal(1);
-			expect(result[0].publicKey).to.be.equal('pkFresh');
-			expect(result[0].lastAvailable).to.be.eq(freshNodeLastAvailable);
-		});
-
-		it("dual node - should refresh the stale node if at least one of two(API, Peer)'s status is available else remove the node", () => {
-			const getNode = (apiAvailable: boolean, peerAvailable: boolean) => [
-				{
-					publicKey: 'pkFresh',
-					host: 'hostFresh',
-					lastAvailable: new Date(new Date().getTime() - 4 * Constants.TIME_UNIT_DAY),
-					roles: RoleType.ApiNode + RoleType.PeerNode,
+		const createNode = (hostname: string, roles: number, apiAvailable?: any, peerAvailable?: any) =>
+			({
+				hostname,
+				roles,
+				...(apiAvailable !== undefined && {
 					apiStatus: {
 						isAvailable: apiAvailable,
+						lastStatusCheck: 1000,
 					},
+				}),
+				...(peerAvailable !== undefined && {
 					peerStatus: {
 						isAvailable: peerAvailable,
+						lastStatusCheck: 1000,
 					},
-				},
-			];
-			const resultApiOK_PeerNOT = (nodeMonitor as any).removeStaleNodesAndUpdateLastAvailable(getNode(true, false));
+				}),
+			} as any);
 
-			expect(resultApiOK_PeerNOT.length).to.be.equal(1);
-			expect(resultApiOK_PeerNOT[0].publicKey).to.be.equal('pkFresh');
-			expect(resultApiOK_PeerNOT[0].lastAvailable).to.be.greaterThan(new Date(new Date().getTime() - 1 * Constants.TIME_UNIT_MINUTE));
-
-			const resultApiNOT_PeerOK = (nodeMonitor as any).removeStaleNodesAndUpdateLastAvailable(getNode(false, true));
-
-			expect(resultApiNOT_PeerOK.length).to.be.equal(1);
-			expect(resultApiNOT_PeerOK[0].publicKey).to.be.equal('pkFresh');
-			expect(resultApiNOT_PeerOK[0].lastAvailable).to.be.greaterThan(new Date(new Date().getTime() - 1 * Constants.TIME_UNIT_MINUTE));
-
-			const resultApiOK_PeerOK = (nodeMonitor as any).removeStaleNodesAndUpdateLastAvailable(getNode(true, true));
-
-			expect(resultApiOK_PeerOK.length).to.be.equal(1);
-			expect(resultApiOK_PeerOK[0].publicKey).to.be.equal('pkFresh');
-			expect(resultApiOK_PeerOK[0].lastAvailable).to.be.greaterThan(new Date(new Date().getTime() - 1 * Constants.TIME_UNIT_MINUTE));
-
-			const resultApiNOT_PeerNOT = (nodeMonitor as any).removeStaleNodesAndUpdateLastAvailable(getNode(false, false));
-
-			expect(resultApiNOT_PeerNOT.length).to.be.equal(0);
+		beforeEach(() => {
+			clock = useFakeTimers(mockFixedDate);
+			nodeMonitor = new NodeMonitor(0);
 		});
 
-		it('api only - should keep the node in the list when fresh and available', () => {
-			const nodes = [
-				{
-					publicKey: 'pkApiOnly',
-					host: 'apiOnly',
-					lastAvailable: new Date(),
-					roles: RoleType.ApiNode,
-					apiStatus: {
-						isAvailable: true,
-					},
-				},
-			];
-			const result = (nodeMonitor as any).removeStaleNodesAndUpdateLastAvailable(nodes);
-
-			expect(result.length).to.be.equal(1);
-			expect(result[0].publicKey).to.be.equal('pkApiOnly');
+		afterEach(() => {
+			clock.restore();
 		});
 
-		it('peer only - should keep the node in the list when fresh and available', () => {
-			const nodes = [
-				{
-					publicKey: 'pkPeerOnly',
-					host: 'peerOnly',
-					lastAvailable: new Date(),
-					roles: RoleType.PeerNode,
-					peerStatus: {
-						isAvailable: true,
-					},
-				},
-			];
-			const result = (nodeMonitor as any).removeStaleNodesAndUpdateLastAvailable(nodes);
+		describe('API_PEER', () => {
+			it('should keep API_PEER node when both API and peer are available', () => {
+				const nodes = [createNode('API_PEER node', 3, true, true)];
 
-			expect(result.length).to.be.equal(1);
-			expect(result[0].publicKey).to.be.equal('pkPeerOnly');
+				const result = (nodeMonitor as any).removeUnavailableNodesAndUpdateLastAvailable(nodes);
+
+				expect(result).to.deep.equal([
+					{
+						...nodes[0],
+						lastAvailable: mockFixedDate,
+					},
+				]);
+			});
+
+			it('should remove API_PEER node when API is not available', () => {
+				const nodes = [createNode('API_PEER node', 3, false, true)];
+
+				const result = (nodeMonitor as any).removeUnavailableNodesAndUpdateLastAvailable(nodes);
+
+				expect(result).to.deep.equal([]);
+			});
+
+			it('should remove API_PEER node when Peer is not available', () => {
+				const nodes = [createNode('API_PEER node', 3, true, false)];
+
+				const result = (nodeMonitor as any).removeUnavailableNodesAndUpdateLastAvailable(nodes);
+
+				expect(result).to.deep.equal([]);
+			});
 		});
 
-		it('voting only - should keep the node in the list', () => {
-			const nodes = [
-				{
-					publicKey: 'pkVotingOnly',
-					host: 'votingOnly',
-					lastAvailable: new Date(new Date().getTime() - 3 * Constants.TIME_UNIT_DAY + 1 * Constants.TIME_UNIT_HOUR),
-					roles: RoleType.VotingNode,
-				},
-			];
-			const result = (nodeMonitor as any).removeStaleNodesAndUpdateLastAvailable(nodes);
+		describe('API', () => {
+			it('should keep API node when API is available', () => {
+				const nodes = [createNode('API node', 2, true)];
 
-			expect(result.length).to.be.equal(1);
-			expect(result[0].publicKey).to.be.equal('pkVotingOnly');
+				const result = (nodeMonitor as any).removeUnavailableNodesAndUpdateLastAvailable(nodes);
+
+				expect(result).to.deep.equal([
+					{
+						...nodes[0],
+						lastAvailable: mockFixedDate,
+					},
+				]);
+			});
+
+			it('should remove API node when API is not available', () => {
+				const nodes = [createNode('API node', 2, false)];
+
+				const result = (nodeMonitor as any).removeUnavailableNodesAndUpdateLastAvailable(nodes);
+
+				expect(result).to.deep.equal([]);
+			});
 		});
 
-		it('should keep a resurrecting node', () => {
-			const nodes = [
-				{
-					publicKey: 'pkFresh',
-					host: 'hostFresh',
-					lastAvailable: new Date(new Date().getTime() - 3 * Constants.TIME_UNIT_DAY + 1 * Constants.TIME_UNIT_HOUR),
-					roles: RoleType.ApiNode + RoleType.PeerNode,
-					apiStatus: {
-						isAvailable: true,
-					},
-				},
-				{
-					publicKey: 'pkStale',
-					host: 'hostStale',
-					lastAvailable: new Date(new Date().getTime() - 4 * Constants.TIME_UNIT_DAY),
-					roles: RoleType.ApiNode + RoleType.PeerNode,
-					apiStatus: {
-						isAvailable: false,
-					},
-				},
-			];
-			const result = (nodeMonitor as any).removeStaleNodesAndUpdateLastAvailable(nodes);
+		describe('PEER', () => {
+			it('should keep PEER node when peer is available', () => {
+				const nodes = [createNode('PEER node', 1, undefined, true)];
 
-			expect(result.length).to.be.equal(1);
-			expect(result[0].publicKey).to.be.equal('pkFresh');
+				const result = (nodeMonitor as any).removeUnavailableNodesAndUpdateLastAvailable(nodes);
+
+				expect(result).to.deep.equal([
+					{
+						...nodes[0],
+						lastAvailable: mockFixedDate,
+					},
+				]);
+			});
+
+			it('should remove PEER node when peer is not available', () => {
+				const nodes = [createNode('PEER node', 1, undefined, undefined)];
+
+				const result = (nodeMonitor as any).removeUnavailableNodesAndUpdateLastAvailable(nodes);
+
+				expect(result).to.deep.equal([]);
+			});
+		});
+
+		it('should handle empty node list', () => {
+			const result = (nodeMonitor as any).removeUnavailableNodesAndUpdateLastAvailable([]);
+			expect(result).to.deep.equal([]);
 		});
 	});
 
