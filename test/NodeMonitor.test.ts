@@ -161,7 +161,7 @@ describe('NodeMonitor', () => {
 		});
 	});
 
-	describe.only('getNodeInfo', () => {
+	describe('getNodeInfo', () => {
 		const nodeMonitor = new NodeMonitor(0);
 		const mockGeoInfo = {
 			host: 'abc.com',
