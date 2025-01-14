@@ -2,4 +2,4 @@
 
 set -ex
 
-npm install
+npm install --legacy-peer-deps
