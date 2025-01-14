@@ -13,9 +13,7 @@ import { Logger } from '@src/infrastructure';
 
 import { INode, validateNodeModel } from '@src/models/Node';
 import { symbol, monitor } from '@src/config';
-import { isAPIRole, isPeerRole, basename, showDuration, runTaskInChunks, splitByPredicate } from '@src/utils';
-import humanizeDuration = require('humanize-duration');
-import { Constants } from '@src/constants';
+import { isAPIRole, isPeerRole, basename, showDuration, runTaskInChunks } from '@src/utils';
 
 const logger: winston.Logger = Logger.getLogger(basename(__filename));
 
@@ -229,7 +227,7 @@ export class NodeMonitor {
 			logger.info(`Update collection`);
 			const prevNodeList = await DataBase.getNodeList();
 
-			this.nodeInfoList = this.removeStaleNodesAndUpdateLastAvailable(this.nodeInfoList);
+			this.nodeInfoList = this.removeUnavailableNodesAndUpdateLastAvailable(this.nodeInfoList);
 			try {
 				await DataBase.updateNodeList(this.nodeInfoList);
 				await DataBase.updateNodesStats(this.nodesStats);
@@ -240,38 +238,20 @@ export class NodeMonitor {
 		} else logger.error(`Failed to update collection. Collection length = ${this.nodeInfoList.length}`);
 	};
 
-	private removeStaleNodesAndUpdateLastAvailable(nodes: INode[]): INode[] {
-		let { filtered: availableNodes, unfiltered: unavailableNodes } = splitByPredicate((n) => this.checkNodeAvailable(n), nodes);
-
-		// set last available time for available nodes
-		availableNodes = availableNodes.map((n) => ({ ...n, lastAvailable: new Date() }));
-
-		let { filtered: staleNodes, unfiltered: soonTobeStaleNodes } = splitByPredicate((n) => this.checkNodeStale(n), unavailableNodes);
-
-		logger.info(
-			`[updateCollection] Removing stale nodes[${staleNodes
-				.map((n) => n.host)
-				.join(', ')}], available ones in the last ${humanizeDuration(
-				monitor.KEEP_STALE_NODES_FOR_HOURS * Constants.TIME_UNIT_HOUR,
-			)} are kept.`,
-		);
-		return [...availableNodes, ...soonTobeStaleNodes];
+	private removeUnavailableNodesAndUpdateLastAvailable(nodes: INode[]): INode[] {
+		return nodes
+			.filter((node) => this.checkNodeAvailable(node))
+			.map((node) => ({
+				...node,
+				lastAvailable: new Date(),
+			}));
 	}
-
-	private checkNodeStale = (node: INode): boolean => {
-		return (
-			!this.checkNodeAvailable(node) &&
-			!!node.lastAvailable &&
-			new Date().getTime() > node.lastAvailable.getTime() + monitor.KEEP_STALE_NODES_FOR_HOURS * Constants.TIME_UNIT_HOUR
-		);
-	};
 
 	private checkNodeAvailable = (node: INode): boolean => {
 		let available = true;
 
 		if (isAPIRole(node.roles) && isPeerRole(node.roles)) {
-			// in dual node mode, we consider the node is available if any of the two (REST and Peer) is available
-			available = !!node.apiStatus?.isAvailable || !!node.peerStatus?.isAvailable;
+			available = !!node.apiStatus?.isAvailable && !!node.peerStatus?.isAvailable;
 		} else if (isAPIRole(node.roles)) {
 			available = !!node.apiStatus?.isAvailable;
 		} else if (isPeerRole(node.roles)) {
