@@ -6,7 +6,7 @@ COPY . .
 
 ENV NODE_OPTIONS="--dns-result-order=ipv4first"
 
-RUN npm install pm2 -g && npm install && npm run build
+RUN npm install pm2 -g && npm install --legacy-peer-deps && npm run build
 
 EXPOSE 4001
 
