@@ -69,6 +69,8 @@ describe('ApiNodeService', () => {
 		const apiStatus = await ApiNodeService.getStatus(hostURL);
 
 		// Assert:
+		const { nodePublicKey, ...info } = nodeInfo;
+
 		expect(apiStatus.webSocket).to.be.deep.equal(webSocketStatus);
 		expect(apiStatus.restGatewayUrl).to.be.equal(hostURL);
 		expect(apiStatus.isAvailable).to.be.equal(true);
@@ -76,7 +78,8 @@ describe('ApiNodeService', () => {
 		expect(apiStatus.nodeStatus).to.be.deep.equal(nodeStatus);
 		expect(apiStatus.chainHeight).to.equal(chainInfo.height);
 		expect(apiStatus.finalization).to.be.deep.equal(finalization);
-		expect(apiStatus.nodePublicKey).to.be.equal(nodeInfo.nodePublicKey);
+		expect(apiStatus.nodePublicKey).to.be.equal(nodePublicKey);
+		expect(apiStatus.nodeInfo).to.be.deep.equal(info);
 		expect(apiStatus.restVersion).to.be.equal(serverInfo.restVersion);
 		expect(apiStatus.lastStatusCheck).to.be.not.undefined;
 	});
@@ -116,14 +119,14 @@ describe('ApiNodeService', () => {
 	it('closes websocket connection after checking websocket health', async () => {
 		// Arrange:
 		const close = stub();
-		const clientWsMock = ({
+		const clientWsMock = {
 			on: (event: string, callback: any) => {
 				if (event === 'open' || event === 'error') {
 					callback();
 				}
 			},
 			close,
-		} as unknown) as WebSocket;
+		} as unknown as WebSocket;
 
 		stub(ApiNodeService, 'createWebSocketClient').returns(clientWsMock);
 
