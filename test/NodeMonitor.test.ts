@@ -6,10 +6,11 @@ import { expect } from 'chai';
 import { stub, restore, useFakeTimers } from 'sinon';
 
 describe('NodeMonitor', () => {
+	let clock: sinon.SinonFakeTimers;
+	const mockFixedDate = new Date('2024-01-14T12:00:00Z');
+
 	describe('removeUnavailableNodesAndUpdateLastAvailable', () => {
-		let clock: sinon.SinonFakeTimers;
 		let nodeMonitor: NodeMonitor;
-		const mockFixedDate = new Date('2024-01-14T12:00:00Z');
 
 		const createNode = (hostname: string, roles: number, apiAvailable?: any, peerAvailable?: any) =>
 			({
@@ -118,6 +119,81 @@ describe('NodeMonitor', () => {
 		it('should handle empty node list', () => {
 			const result = (nodeMonitor as any).removeUnavailableNodesAndUpdateLastAvailable([]);
 			expect(result).to.deep.equal([]);
+		});
+	});
+
+	describe('addNodesToList', () => {
+		let nodeMonitor: NodeMonitor;
+
+		beforeEach(() => {
+			clock = useFakeTimers(mockFixedDate);
+			nodeMonitor = new NodeMonitor(0);
+			stub(nodeMonitor, 'generationHashSeed' as any).value('1234');
+			stub(nodeMonitor, 'networkIdentifier' as any).value(1);
+		});
+
+		afterEach(() => {
+			clock.restore();
+		});
+
+		const createNode = (hostname: string, publicKey: string) =>
+			({
+				hostname,
+				roles: 3,
+				networkGenerationHashSeed: '1234',
+				networkIdentifier: 1,
+				port: 3000,
+				publicKey,
+				nodePublicKey: 'node public',
+				version: 1,
+				hostDetail: {
+					host: 'abc.com',
+					coordinates: {
+						latitude: 51.1878,
+						longitude: 6.8607,
+					},
+					location: 'Düsseldorf, NW, Germany',
+					ip: '127.0.1.10',
+					organization: 'ABC Provider',
+					as: 'ABC Provider',
+					country: 'Germany',
+					region: 'NW',
+					city: 'Düsseldorf',
+				},
+			} as any);
+
+		it('should filter nodes with the duplicated hostname', () => {
+			// Arrange:
+			const nodes = [createNode('abc.com', 'publicKey1'), createNode('abc.com', 'publicKey2'), createNode('abc.com', 'publicKey3')];
+
+			// Act:
+			(nodeMonitor as any).addNodesToList(nodes);
+
+			// Assert:
+			expect((nodeMonitor as any).nodeList).to.have.lengthOf(1);
+			expect((nodeMonitor as any).nodeList).to.deep.equal([
+				{
+					...nodes[2],
+					lastAvailable: mockFixedDate,
+				},
+			]);
+		});
+
+		it('should filter nodes with the duplicated publicKey', () => {
+			// Arrange:
+			const nodes = [createNode('abc.com', 'publicKey1'), createNode('xyz.com', 'publicKey1')];
+
+			// Act:
+			(nodeMonitor as any).addNodesToList(nodes);
+
+			// Assert:
+			expect((nodeMonitor as any).nodeList).to.have.lengthOf(1);
+			expect((nodeMonitor as any).nodeList).to.deep.equal([
+				{
+					...nodes[1],
+					lastAvailable: mockFixedDate,
+				},
+			]);
 		});
 	});
 
