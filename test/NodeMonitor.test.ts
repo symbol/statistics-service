@@ -155,6 +155,7 @@ describe('NodeMonitor', () => {
 			lastStatusCheck: 1000,
 		};
 		const mockLightApiStatus = {
+			nodeInfo: mockNodeInfo,
 			restGatewayUrl: 'https://abc.com:3001',
 			isAvailable: true,
 			isHttpsEnabled: true,
@@ -253,29 +254,44 @@ describe('NodeMonitor', () => {
 			const result = await (nodeMonitor as any).getNodeInfo(mockNodeInfo);
 
 			// Assert:
+			const { nodeInfo, ...expectedApiStatus } = mockLightApiStatus;
 			expect(result).to.be.deep.equal({
 				...mockNodeInfo,
 				hostDetail: mockGeoInfo,
 				peerStatus: mockPeerStatus,
-				apiStatus: mockLightApiStatus,
+				apiStatus: expectedApiStatus,
 			});
 		});
 
-		it('returns api node info', async () => {
+		const assertApiNodeInfo = async (existingNodeInfo: any) => {
 			// Arrange:
 			stubHostDetailCached.returns(Promise.resolve(mockGeoInfo));
 			stubPeerStatus.returns(Promise.resolve(mockPeerStatus));
 			stubApiStatus.returns(Promise.resolve(mockFullApiStatus) as any);
 
 			// Act:
-			const result = await (nodeMonitor as any).getNodeInfo(mockNodeInfo);
+			const result = await (nodeMonitor as any).getNodeInfo(existingNodeInfo);
 
 			// Assert:
+			const { nodeInfo, ...expectedApiStatus } = mockFullApiStatus;
 			expect(result).to.be.deep.equal({
 				...mockNodeInfo,
 				hostDetail: mockGeoInfo,
 				peerStatus: mockPeerStatus,
-				apiStatus: mockFullApiStatus,
+				apiStatus: expectedApiStatus,
+			});
+		};
+
+		it('returns api node info', async () => {
+			assertApiNodeInfo(mockNodeInfo);
+		});
+
+		it('returns overwriting node info with latest node info', async () => {
+			assertApiNodeInfo({
+				...mockNodeInfo,
+				friendlyName: 'no-name',
+				host: '',
+				version: 0,
 			});
 		});
 	});
