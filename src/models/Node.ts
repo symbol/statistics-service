@@ -27,6 +27,7 @@ const NodeSchema: Schema = new Schema({
 	},
 	host: {
 		type: String,
+		required: true,
 	},
 	networkGenerationHashSeed: {
 		type: String,
