@@ -206,6 +206,7 @@ export class NodeMonitor {
 				nodeWithInfo = {
 					...nodeWithInfo,
 					...nodeInfo,
+					host: nodeInfo?.host || nodeWithInfo.host,
 					apiStatus: status,
 				};
 			}

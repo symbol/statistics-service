@@ -339,19 +339,19 @@ describe('NodeMonitor', () => {
 			});
 		});
 
-		const assertApiNodeInfo = async (existingNodeInfo: any) => {
+		const assertApiNodeInfo = async (existingNodeInfo: any, latestNodeInfo: any, expectedResult: any) => {
 			// Arrange:
 			stubHostDetailCached.returns(Promise.resolve(mockGeoInfo));
 			stubPeerStatus.returns(Promise.resolve(mockPeerStatus));
-			stubApiStatus.returns(Promise.resolve(mockFullApiStatus) as any);
+			stubApiStatus.returns(Promise.resolve(latestNodeInfo) as any);
 
 			// Act:
 			const result = await (nodeMonitor as any).getNodeInfo(existingNodeInfo);
 
 			// Assert:
-			const { nodeInfo, ...expectedApiStatus } = mockFullApiStatus;
+			const { nodeInfo, ...expectedApiStatus } = latestNodeInfo;
 			expect(result).to.be.deep.equal({
-				...mockNodeInfo,
+				...expectedResult,
 				hostDetail: mockGeoInfo,
 				peerStatus: mockPeerStatus,
 				apiStatus: expectedApiStatus,
@@ -359,16 +359,40 @@ describe('NodeMonitor', () => {
 		};
 
 		it('returns api node info', async () => {
-			assertApiNodeInfo(mockNodeInfo);
+			assertApiNodeInfo(mockNodeInfo, mockFullApiStatus, mockNodeInfo);
 		});
 
 		it('returns overwriting node info with latest node info', async () => {
-			assertApiNodeInfo({
-				...mockNodeInfo,
-				friendlyName: 'no-name',
-				host: '',
-				version: 0,
-			});
+			assertApiNodeInfo(
+				{
+					...mockNodeInfo,
+					friendlyName: 'no-name',
+					host: '',
+					version: 0,
+				},
+				mockFullApiStatus,
+				mockNodeInfo,
+			);
+		});
+
+		it('Remain host name if latest node info host is empty', async () => {
+			assertApiNodeInfo(
+				{
+					...mockNodeInfo,
+					host: '10.10.10.10',
+				},
+				{
+					...mockFullApiStatus,
+					nodeInfo: {
+						...mockNodeInfo,
+						host: '',
+					},
+				},
+				{
+					...mockNodeInfo,
+					host: '10.10.10.10',
+				},
+			);
 		});
 	});
 });
