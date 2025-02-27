@@ -307,8 +307,7 @@ export class NodeMonitor {
 			) {
 				return;
 			}
-
-			const nodeInx = this.nodeList.findIndex((addedNode) => addedNode.publicKey === node.publicKey || addedNode.host === node.host);
+			const nodeInx = this.nodeList.findIndex((addedNode) => addedNode.publicKey === node.publicKey);
 
 			if (nodeInx > -1) {
 				// already in the list then update and keep the last available time
