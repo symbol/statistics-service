@@ -200,7 +200,16 @@ export class NodeMonitor {
 			const hostUrl = await ApiNodeService.buildHostUrl(nodeHost);
 			const apiStatus = await ApiNodeService.getStatus(hostUrl);
 
-			if (apiStatus.isAvailable) nodeWithInfo.apiStatus = apiStatus;
+			if (apiStatus.isAvailable) {
+				const { nodeInfo, ...status } = apiStatus;
+
+				nodeWithInfo = {
+					...nodeWithInfo,
+					...nodeInfo,
+					host: nodeInfo?.host || nodeWithInfo.host,
+					apiStatus: status,
+				};
+			}
 
 			return nodeWithInfo;
 		} catch (e: any) {

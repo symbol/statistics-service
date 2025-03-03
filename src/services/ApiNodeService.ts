@@ -35,6 +35,7 @@ export interface ApiStatus {
 	nodeStatus?: NodeStatus;
 	chainHeight?: number;
 	finalization?: FinalizedBlock;
+	nodeInfo?: NodeInfo;
 	nodePublicKey?: string;
 	restVersion?: string;
 	lastStatusCheck: number;
@@ -109,8 +110,11 @@ export class ApiNodeService {
 			);
 
 			if (nodeInfo) {
+				const { nodePublicKey, ...info } = nodeInfo;
+
 				Object.assign(apiStatus, {
-					nodePublicKey: nodeInfo.nodePublicKey,
+					nodeInfo: info,
+					nodePublicKey: nodePublicKey,
 				});
 			}
 
