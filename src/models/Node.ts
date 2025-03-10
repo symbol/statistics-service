@@ -28,6 +28,7 @@ const NodeSchema: Schema = new Schema({
 	host: {
 		type: String,
 		required: true,
+		unique: true,
 	},
 	networkGenerationHashSeed: {
 		type: String,
@@ -115,7 +116,6 @@ const NodeSchema: Schema = new Schema({
 	publicKey: {
 		type: String,
 		required: true,
-		unique: true,
 		index: true,
 	},
 	roles: {
