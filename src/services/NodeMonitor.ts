@@ -324,13 +324,18 @@ export class NodeMonitor {
 				}
 				this.nodeList.push(node);
 			}
-
-			console.log('after nodeList :>> ', this.nodeList);
 		});
 	};
 
 	private addNodesToNodeInfoList = (nodes: INode[]) => {
-		this.nodeInfoList = this.nodeInfoList.concat(nodes);
+		const existingNodeHosts = new Set(this.nodeInfoList.map((node) => node.host));
+
+		nodes.forEach((node) => {
+			if (!existingNodeHosts.has(node.host)) {
+				this.nodeInfoList.push(node);
+				existingNodeHosts.add(node.host);
+			}
+		});
 	};
 
 	private isNodeBelongToNetwork = (node: INode): boolean => {

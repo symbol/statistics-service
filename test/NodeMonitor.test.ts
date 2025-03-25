@@ -378,4 +378,45 @@ describe('NodeMonitor', () => {
 			]);
 		});
 	});
+
+	describe('addNodesToNodeInfoList', () => {
+		const nodes = [
+			{
+				host: 'abc.com',
+				roles: 3,
+				networkGenerationHashSeed: '1234',
+				networkIdentifier: 1,
+				port: 3000,
+				publicKey: 'publicKey1',
+				nodePublicKey: 'node public',
+				version: 1,
+				hostDetail: {},
+			},
+		];
+
+		it('should add nodes to node info list', async () => {
+			// Arrange:
+			const nodeMonitor = new NodeMonitor(0);
+
+			// Act:
+			await (nodeMonitor as any).addNodesToNodeInfoList(nodes);
+
+			// Assert:
+			expect((nodeMonitor as any).nodeInfoList).to.have.lengthOf(1);
+		});
+
+		it('should filter nodes with the duplicated hostname', async () => {
+			// Arrange:
+			const nodeMonitor = new NodeMonitor(0);
+
+			// pre insert nodes
+			await (nodeMonitor as any).addNodesToNodeInfoList(nodes);
+
+			// Act:
+			await (nodeMonitor as any).addNodesToNodeInfoList(nodes);
+
+			// Assert:
+			expect((nodeMonitor as any).nodeInfoList).to.have.lengthOf(1);
+		});
+	});
 });
