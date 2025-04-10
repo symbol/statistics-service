@@ -3,6 +3,23 @@ All notable changes to this project will be documented in this file.
 
 The changelog format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [v1.2.0][v1.2.0] - 9-Apr-2025
+
+Package  | Version  | Link
+---|---|---
+REST Core| v2.5.0 | [catapult-rest][catapult-rest@v2.5.0]
+SDK Core| v3.2.3 | [symbol-sdk][symbol-sdk@v3.2.3]
+
+### Fix
+- Geo info unable to insert cause of `district` and `zip` value possibly empty string [#302](https://github.com/symbol/statistics-service/pull/302)
+- Remove unavailable node from list [#313](https://github.com/symbol/statistics-service/pull/313)
+- Update node version to latest [#332](https://github.com/symbol/statistics-service/pull/332)
+- Prevent duplicate data insertion into the database. [#336](https://github.com/symbol/statistics-service/pull/336) [#342](https://github.com/symbol/statistics-service/pull/342)
+
+### Upgrade
+- Dependencies and supported node version to v20 [#289](https://github.com/symbol/statistics-service/pull/289)
+- Docker build process [#317](https://github.com/symbol/statistics-service/pull/317)
+
 ## [v1.1.9][v1.1.9] - 25-Oct-2022
 
 Package  | Version | Link
@@ -215,6 +232,7 @@ REST Core| v2.1.0 | [catapult-rest](https://github.com/symbol/catapult-rest/rele
 [v1.1.1]: https://github.com/symbol/statistics-service/releases/tag/v1.1.1
 [v1.1.2]: https://github.com/symbol/statistics-service/releases/tag/v1.1.2
 [v1.1.3]: https://github.com/symbol/statistics-service/releases/tag/v1.1.3
+[v1.2.0]: https://github.com/symbol/statistics-service/releases/tag/v1.2.0
 
 [v1.0.1]: https://github.com/symbol/statistics-service/releases/tag/v1.0.1
 [v1.0.0]: https://github.com/symbol/statistics-service/releases/tag/v1.0.0
@@ -232,8 +250,10 @@ REST Core| v2.1.0 | [catapult-rest](https://github.com/symbol/catapult-rest/rele
 [symbol-sdk@v1.0.1]: https://www.npmjs.com/package/symbol-sdk/v/1.0.1
 [symbol-sdk@v1.0.3]: https://www.npmjs.com/package/symbol-sdk/v/1.0.3
 [symbol-sdk@v2.0.0]: https://www.npmjs.com/package/symbol-sdk/v/2.0.0
+[symbol-sdk@v3.2.3]: https://www.npmjs.com/package/symbol-sdk/v/3.2.3
 
 [catapult-rest@v2.3.3]: https://github.com/symbol/catapult-rest/releases/tag/v2.3.3
 [catapult-rest@v2.3.4]: https://github.com/symbol/catapult-rest/releases/tag/v2.3.4
 [catapult-rest@v2.3.6]: https://github.com/symbol/catapult-rest/releases/tag/v2.3.6
 [catapult-rest@v2.4.0]: https://github.com/symbol/catapult-rest/releases/tag/v2.4.0
+[catapult-rest@v2.5.0]: https://github.com/symbol/symbol/releases/tag/rest/v2.5.0
