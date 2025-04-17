@@ -154,26 +154,21 @@ const NodeSchema: Schema = new Schema({
 			},
 			organization: {
 				type: String,
-				required: true,
 			},
 			as: {
 				type: String,
-				required: true,
 			},
 			continent: {
 				type: String,
 			},
 			country: {
 				type: String,
-				required: true,
 			},
 			region: {
 				type: String,
-				required: true,
 			},
 			city: {
 				type: String,
-				required: true,
 			},
 			district: {
 				type: String,
